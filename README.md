@@ -1,2 +1,2 @@
 ### Endpoints:
-#### /
+#### /blogs
