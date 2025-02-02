@@ -21,7 +21,7 @@ describe("get all /blogs", () => {
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
         }
-        blogsRepository.addNewBlog(newBlog)
+        const createdBlogId = blogsRepository.addNewBlog(newBlog)
 
         const res = await req
             .get(SETTINGS.PATH.BLOGS)
@@ -30,7 +30,31 @@ describe("get all /blogs", () => {
         expect(res.body.length).toBe(1);
         expect(res.body[0]).toEqual({
             ...newBlog,
-            id: expect.any(String)
+            id: createdBlogId
+        });
+    })
+})
+
+describe("get blog by id /blogs", () => {
+    beforeAll(() => {
+        blogsRepository.clearDB();
+    })
+
+    it("should get not empty array", async () => {
+        const newBlog: Omit<BlogType, "id"> = {
+            name: "new new new blog",
+            description: "cannot create interesting description",
+            websiteUrl: "https://mynewblog.con"
+        }
+        const createdBlogId = blogsRepository.addNewBlog(newBlog);
+
+        const res = await req
+            .get(`${SETTINGS.PATH.BLOGS}/${createdBlogId}`)
+            .expect(200)
+
+        expect(res.body).toEqual({
+            ...newBlog,
+            id: createdBlogId
         });
     })
 })
