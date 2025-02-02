@@ -253,6 +253,15 @@ describe("update blog /blogs", () => {
         blogsRepository.clearDB();
     })
 
+    it("should return 401 for request without auth header", async () => {
+        const res = await req
+            .put(`${SETTINGS.PATH.BLOGS}/777777`)
+            .send({})
+            .expect(401)
+
+        expect(res.body.error).toBe(AUTH_ERROR_MESSAGES.NoHeader);
+    })
+
     it("should return 404 for non existent blog", async () => {
         const newBlog: Omit<BlogType, "id"> = {
             name: "test name",
@@ -308,5 +317,60 @@ describe("update blog /blogs", () => {
             ...updatedBlog,
             id: createRes.body.id
         });
+    })
+})
+
+describe("delete blog by id /blogs", () => {
+    beforeAll(() => {
+        blogsRepository.clearDB();
+    })
+
+    let blogIdForDeletion: string = "";
+
+    it("should return 401 for request without auth header", async () => {
+        const res = await req
+            .delete(`${SETTINGS.PATH.BLOGS}/777777`)
+            .expect(401)
+
+        expect(res.body.error).toBe(AUTH_ERROR_MESSAGES.NoHeader);
+    })
+
+    it("should get not empty array", async () => {
+        const blog: Omit<BlogType, "id"> = {
+            name: "test name 1",
+            description: "test description 1",
+            websiteUrl: "https://mytestsite1.com"
+        };
+        blogIdForDeletion = blogsRepository.addNewBlog(blog);
+
+        const checkRes = await req
+            .get(`${SETTINGS.PATH.BLOGS}/${blogIdForDeletion}`)
+            .expect(200)
+
+        expect(checkRes.body).toEqual({
+            ...blog,
+            id: blogIdForDeletion
+        });
+    })
+
+    it("should return 404 for non existent blog", async () => {
+        await req
+            .set("Authorization", validAuthHeader)
+            .delete(`${SETTINGS.PATH.BLOGS}/77777`)
+            .expect(404)
+    })
+
+
+    it("should get empty array", async () => {
+        await req
+            .set("Authorization", validAuthHeader)
+            .delete(`${SETTINGS.PATH.BLOGS}/${blogIdForDeletion}`)
+            .expect(204)
+
+        const checkRes = await req
+            .get(SETTINGS.PATH.BLOGS)
+            .expect(200)
+
+        expect(checkRes.body.length).toBe(0);
     })
 })

@@ -59,7 +59,7 @@ export const blogsRepository = {
             websiteUrl: string
         }): boolean => {
         const foundBlog = blogsRepository.getBlogById(id);
-        if(!foundBlog){
+        if (!foundBlog) {
             return false;
         }
 
@@ -67,6 +67,15 @@ export const blogsRepository = {
         foundBlog.description = description.trim();
         foundBlog.websiteUrl = websiteUrl.trim();
 
+        return true;
+    },
+    deleteBlogById: (id: string): boolean => {
+        const foundBlog = blogsRepository.getBlogById(id);
+        if (!foundBlog) {
+            return false;
+        }
+
+        blogsDB = blogsDB.filter((blog)=> blog.id !== id);
         return true;
     },
 }

@@ -64,6 +64,15 @@ const blogsController = {
 
         res.sendStatus(204)
     },
+    deleteBlogById: (req: Request<{id: string}>, res: Response) => {
+        const isDeleted = blogsRepository.deleteBlogById(req.params.id);
+        if (!isDeleted) {
+            res.sendStatus(404);
+            return;
+        }
+
+        res.sendStatus(204);
+    },
 }
 
 blogsRouter.get("/", blogsController.getBlogs);
@@ -82,4 +91,6 @@ blogsRouter.put("/:id",
     blogWebsiteUrlValidator,
     errorResultMiddleware,
     blogsController.updateBlog);
-// videoRouter.delete("/:id", videoController.deleteVideoById);
+blogsRouter.delete("/:id",
+    authorizationMiddleware,
+    blogsController.deleteBlogById);

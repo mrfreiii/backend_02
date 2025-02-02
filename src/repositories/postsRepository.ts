@@ -104,4 +104,13 @@ export const postsRepository = {
 
         return true;
     },
+    deletePostById: (id: string): boolean => {
+        const foundPost = postsDB.find((post) => post.id === id);
+        if(!foundPost){
+            return false;
+        }
+
+        postsDB = postsDB.filter((post) => post.id !== id);
+        return true;
+    },
 }

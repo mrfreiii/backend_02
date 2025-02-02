@@ -70,6 +70,15 @@ const postsController = {
 
         res.sendStatus(204);
     },
+    deletePostById: (req: Request<{id: string}>, res: Response<PostType>) => {
+        const isDeleted = postsRepository.deletePostById(req.params.id);
+        if (!isDeleted) {
+            res.sendStatus(404);
+            return;
+        }
+
+        res.sendStatus(204);
+    },
 }
 
 postsRouter.get("/", postsController.getPosts);
@@ -89,4 +98,6 @@ postsRouter.put("/:id",
     contentValidator,
     blogIdValidator,
     postsController.updatePost);
-// videoRouter.delete("/:id", videoController.deleteVideoById);
+postsRouter.delete("/:id",
+    authorizationMiddleware,
+    postsController.deletePostById);

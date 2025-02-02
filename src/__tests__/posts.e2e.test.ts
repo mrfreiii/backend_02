@@ -330,3 +330,61 @@ describe("update post by id /posts", () => {
         });
     })
 })
+
+describe("delete post by id /posts", () => {
+    beforeAll(() => {
+        postsRepository.clearDB();
+    })
+
+    let postIdForDeletion: string = "";
+
+    it("should return not empty array", async () => {
+        const blog: Omit<BlogType, "id"> = {
+            name: "test name 1",
+            description: "test description 1",
+            websiteUrl: "https://mytestsite1.com"
+        };
+        const blogId = blogsRepository.addNewBlog(blog);
+
+        const post: Omit<PostType, "id" | "blogName"> = {
+            title: "title1",
+            shortDescription: "shortDescription1",
+            content: "content1",
+            blogId: blogId,
+        }
+        postIdForDeletion = postsRepository.addNewPost(post) as string;
+
+        const checkRes = await req
+            .get(SETTINGS.PATH.POSTS)
+            .expect(200)
+
+        expect(checkRes.body.length).toBe(1);
+        expect(checkRes.body[0]).toEqual({
+            ...post,
+            id: postIdForDeletion,
+            blogName: blog.name,
+        });
+    })
+
+
+    it("should return 404 for non existent post", async () => {
+        await req
+            .set("Authorization", validAuthHeader)
+            .delete(`${SETTINGS.PATH.POSTS}/7777`)
+            .expect(404)
+    })
+
+
+    it("should return empty array", async () => {
+        await req
+            .set("Authorization", validAuthHeader)
+            .delete(`${SETTINGS.PATH.POSTS}/${postIdForDeletion}`)
+            .expect(204)
+
+        const checkRes = await req
+            .get(SETTINGS.PATH.POSTS)
+            .expect(200)
+
+        expect(checkRes.body.length).toBe(0);
+    })
+})
