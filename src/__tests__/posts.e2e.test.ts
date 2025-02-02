@@ -197,7 +197,6 @@ describe("create post /posts", () => {
                     field: "blogId",
                     message: "value must be a string"
                 },
-
             ]
         );
     })
@@ -281,6 +280,48 @@ describe("update post by id /posts", () => {
             .expect(401)
 
         expect(res.body.error).toBe(AUTH_ERROR_MESSAGES.NoHeader);
+    })
+
+    it("should return 400 for invalid title and no shortDescription", async () => {
+        const blog: Omit<BlogType, "id"> = {
+            name: "test name 1",
+            description: "test description 1",
+            websiteUrl: "https://mytestsite1.com"
+        };
+        const blogId = blogsRepository.addNewBlog(blog);
+
+        const post: Omit<PostType, "id" | "blogName"> = {
+            title: "title1",
+            shortDescription: "shortDescription1",
+            content: "content1",
+            blogId: blogId,
+        }
+        const postId = postsRepository.addNewPost(post) as string;
+
+        const updatedPost: Omit<PostType, "id" | "blogName" | "shortDescription"> = {
+            title: "1234567890123456789012345678901",
+            content: "content1",
+            blogId: blogId,
+        }
+
+        const res = await req
+            .set("Authorization", validAuthHeader)
+            .put(`${SETTINGS.PATH.POSTS}/${postId}`)
+            .send(updatedPost)
+            .expect(400)
+
+        expect(res.body.errorsMessages.length).toBe(2);
+        expect(res.body.errorsMessages).toEqual([
+                {
+                    field: "title",
+                    message: "length must be: min 1, max 30"
+                },
+                {
+                    field: "shortDescription",
+                    message: "value must be a string"
+                },
+            ]
+        );
     })
 
     it("should update a post", async () => {

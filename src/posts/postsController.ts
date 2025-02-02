@@ -97,6 +97,7 @@ postsRouter.put("/:id",
     shortDescriptionValidator,
     contentValidator,
     blogIdValidator,
+    errorResultMiddleware,
     postsController.updatePost);
 postsRouter.delete("/:id",
     authorizationMiddleware,
