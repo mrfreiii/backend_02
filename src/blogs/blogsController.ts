@@ -1,5 +1,13 @@
 import { Request, Router, Response } from "express";
 import { blogsRepository, BlogType } from "../repositories/blogsRepository";
+import { CreateBlogReqType } from "./types";
+import {
+    blogDescriptionValidator,
+    blogNameValidator,
+    blogWebsiteUrlValidator
+} from "./blogsValidators";
+import { errorResultMiddleware } from "../middlewares/errorResultMiddleware";
+import { authorizationMiddleware } from "../middlewares/authorizationMiddleware";
 
 export const blogsRouter = Router();
 
@@ -23,11 +31,33 @@ const blogsController = {
             .status(200)
             .json(foundBlog);
     },
+    createBlog: (req: CreateBlogReqType, res: Response<BlogType>) => {
+        const createdBlogId = blogsRepository.addNewBlog({
+            name: req.body.name,
+            description: req.body.description,
+            websiteUrl: req.body.websiteUrl,
+        });
+        const createdBlog = blogsRepository.getBlogById(createdBlogId);
+
+        if (!createdBlog) {
+            res.sendStatus(500);
+            return;
+        }
+
+        res
+            .status(201)
+            .json(createdBlog);
+    },
 }
 
 blogsRouter.get("/", blogsController.getBlogs);
 blogsRouter.get("/:id", blogsController.getBlogById);
-// videoRouter.get("/:id", videoController.getVideoById);
-// videoRouter.post("/", videoController.createVideo);
+blogsRouter.post("/",
+    authorizationMiddleware,
+    blogNameValidator,
+    blogDescriptionValidator,
+    blogWebsiteUrlValidator,
+    errorResultMiddleware,
+    blogsController.createBlog);
 // videoRouter.put("/:id", videoController.updateVideo);
 // videoRouter.delete("/:id", videoController.deleteVideoById);

@@ -34,9 +34,9 @@ export const blogsRepository = {
         const createdBlogId = `${+Date.now()}`;
         const newBlog: BlogType = {
             id: createdBlogId,
-            name,
-            description,
-            websiteUrl,
+            name: name.trim(),
+            description: description.trim(),
+            websiteUrl: websiteUrl.trim(),
         };
 
         blogsDB.push(newBlog);

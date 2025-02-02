@@ -8,4 +8,8 @@ export const SETTINGS = {
         POSTS: '/posts',
         TESTING: "/testing"
     },
+    CREDENTIALS: {
+        LOGIN: "admin",
+        PASSWORD: "qwerty",
+    }
 };
