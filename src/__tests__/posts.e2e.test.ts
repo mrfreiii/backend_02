@@ -267,3 +267,66 @@ describe("create post /posts", () => {
         );
     })
 })
+
+
+describe("update post by id /posts", () => {
+    beforeAll(() => {
+        postsRepository.clearDB();
+    })
+
+    it("should return 401 for request without auth header", async () => {
+        const res = await req
+            .put(`${SETTINGS.PATH.POSTS}/7777`)
+            .send({})
+            .expect(401)
+
+        expect(res.body.error).toBe(AUTH_ERROR_MESSAGES.NoHeader);
+    })
+
+    it("should update a post", async () => {
+        const blog1: Omit<BlogType, "id"> = {
+            name: "test name 1",
+            description: "test description 1",
+            websiteUrl: "https://mytestsite1.com"
+        };
+        const blog2: Omit<BlogType, "id"> = {
+            name: "test name 2",
+            description: "test description 2",
+            websiteUrl: "https://mytestsite2.com"
+        };
+
+        const blog1Id = blogsRepository.addNewBlog(blog1);
+        const blog2Id = blogsRepository.addNewBlog(blog2);
+
+        const newPost: Omit<PostType, "id" | "blogName"> = {
+            title: "title1",
+            shortDescription: "shortDescription1",
+            content: "content1",
+            blogId: blog1Id,
+        }
+        const postId = postsRepository.addNewPost(newPost);
+
+        const updatedPost: Omit<PostType, "id" | "blogName"> = {
+            title: "title2",
+            shortDescription: "shortDescription2",
+            content: "content2",
+            blogId: blog2Id,
+        }
+
+        await req
+            .set("Authorization", validAuthHeader)
+            .put(`${SETTINGS.PATH.POSTS}/${postId}`)
+            .send(updatedPost)
+            .expect(204)
+
+        const res = await req
+            .get(`${SETTINGS.PATH.POSTS}/${postId}`)
+            .expect(200)
+
+        expect(res.body).toEqual({
+            ...updatedPost,
+            id: postId,
+            blogName: blog2.name,
+        });
+    })
+})

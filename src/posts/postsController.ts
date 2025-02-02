@@ -1,6 +1,6 @@
 import { Request, Router, Response } from "express";
 import { postsRepository, PostType } from "../repositories/postsRepository";
-import { CreatePostReqType } from "./types";
+import { CreatePostReqType, UpdatePostReqType } from "./types";
 import {
     blogIdValidator,
     contentValidator,
@@ -54,6 +54,22 @@ const postsController = {
             .status(201)
             .json(createdPost);
     },
+    updatePost: (req: UpdatePostReqType, res: Response) => {
+        const isUpdated = postsRepository.updatePost({
+            id: req.params.id,
+            title: req.body.title,
+            shortDescription: req.body.shortDescription,
+            content: req.body.content,
+            blogId: req.body.blogId,
+        });
+
+        if (!isUpdated) {
+            res.sendStatus(404);
+            return;
+        }
+
+        res.sendStatus(204);
+    },
 }
 
 postsRouter.get("/", postsController.getPosts);
@@ -66,5 +82,11 @@ postsRouter.post("/",
     blogIdValidator,
     errorResultMiddleware,
     postsController.createPost);
-// videoRouter.put("/:id", videoController.updateVideo);
+postsRouter.put("/:id",
+    authorizationMiddleware,
+    postTitleValidator,
+    shortDescriptionValidator,
+    contentValidator,
+    blogIdValidator,
+    postsController.updatePost);
 // videoRouter.delete("/:id", videoController.deleteVideoById);

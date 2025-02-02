@@ -53,7 +53,7 @@ export const postsRepository = {
             }
     ) => {
         const blogName = blogsRepository.getBlogById(blogId)?.name;
-        if(!blogName){
+        if (!blogName) {
             return;
         }
 
@@ -69,5 +69,39 @@ export const postsRepository = {
 
         postsDB.push(newPost);
         return createdPostId;
+    },
+    updatePost: (
+        {
+            id,
+            title,
+            shortDescription,
+            content,
+            blogId,
+        }:
+            {
+                id: string;
+                title: string;
+                shortDescription: string;
+                content: string;
+                blogId: string;
+            }
+    ): boolean => {
+        const foundPost = postsRepository.getPostById(id);
+        if (!foundPost) {
+            return false;
+        }
+
+        const foundBlog = blogsRepository.getBlogById(blogId);
+        if (!foundBlog) {
+            return false;
+        }
+
+        foundPost.title = title.trim();
+        foundPost.shortDescription = shortDescription.trim();
+        foundPost.content = content.trim();
+        foundPost.blogId = blogId.trim();
+        foundPost.blogName = foundBlog.name;
+
+        return true;
     },
 }

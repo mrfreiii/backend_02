@@ -233,7 +233,6 @@ describe("create blog /blogs", () => {
             websiteUrl: "https://mytestsite.com"
         }
 
-
         const res = await req
             .set("Authorization", validAuthHeader)
             .post(SETTINGS.PATH.BLOGS)
@@ -246,5 +245,68 @@ describe("create blog /blogs", () => {
                 id: expect.any(String)
             }
         );
+    })
+})
+
+describe("update blog /blogs", () => {
+    beforeAll(() => {
+        blogsRepository.clearDB();
+    })
+
+    it("should return 404 for non existent blog", async () => {
+        const newBlog: Omit<BlogType, "id"> = {
+            name: "test name",
+            description: "test description",
+            websiteUrl: "https://mytestsite.com"
+        }
+
+
+        await req
+            .set("Authorization", validAuthHeader)
+            .put(`${SETTINGS.PATH.BLOGS}/777777`)
+            .send(newBlog)
+            .expect(404)
+    })
+
+    it("should update a blog", async () => {
+        const newBlog: Omit<BlogType, "id"> = {
+            name: "test name 1",
+            description: "test description 1",
+            websiteUrl: "https://mytestsite1.com"
+        }
+
+        const createRes = await req
+            .set("Authorization", validAuthHeader)
+            .post(SETTINGS.PATH.BLOGS)
+            .send(newBlog)
+            .expect(201)
+
+        expect(createRes.body).toEqual(
+            {
+                ...newBlog,
+                id: expect.any(String)
+            }
+        );
+
+        const updatedBlog: Omit<BlogType, "id"> = {
+            name: "test name 2",
+            description: "test description 2",
+            websiteUrl: "https://mytestsite2.com"
+        }
+
+        await req
+            .set("Authorization", validAuthHeader)
+            .put(`${SETTINGS.PATH.BLOGS}/${createRes.body.id}`)
+            .send(updatedBlog)
+            .expect(204)
+
+        const checkRes = await req
+            .get(`${SETTINGS.PATH.BLOGS}/${createRes.body.id}`)
+            .expect(200)
+
+        expect(checkRes.body).toEqual({
+            ...updatedBlog,
+            id: createRes.body.id
+        });
     })
 })

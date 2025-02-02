@@ -1,6 +1,6 @@
 import { Request, Router, Response } from "express";
 import { blogsRepository, BlogType } from "../repositories/blogsRepository";
-import { CreateBlogReqType } from "./types";
+import { CreateBlogReqType, UpdateBlogReqType } from "./types";
 import {
     blogDescriptionValidator,
     blogNameValidator,
@@ -40,13 +40,29 @@ const blogsController = {
         const createdBlog = blogsRepository.getBlogById(createdBlogId);
 
         if (!createdBlog) {
-            res.sendStatus(500);
+            res.sendStatus(599);
             return;
         }
 
         res
             .status(201)
             .json(createdBlog);
+    },
+    updateBlog: (req: UpdateBlogReqType, res: Response) => {
+        const isUpdated = blogsRepository.updateBlog({
+            id: req.params.id,
+            name: req.body.name,
+            description: req.body.description,
+            websiteUrl: req.body.websiteUrl,
+        });
+
+
+        if (!isUpdated) {
+            res.sendStatus(404);
+            return;
+        }
+
+        res.sendStatus(204)
     },
 }
 
@@ -59,5 +75,11 @@ blogsRouter.post("/",
     blogWebsiteUrlValidator,
     errorResultMiddleware,
     blogsController.createBlog);
-// videoRouter.put("/:id", videoController.updateVideo);
+blogsRouter.put("/:id",
+    authorizationMiddleware,
+    blogNameValidator,
+    blogDescriptionValidator,
+    blogWebsiteUrlValidator,
+    errorResultMiddleware,
+    blogsController.updateBlog);
 // videoRouter.delete("/:id", videoController.deleteVideoById);

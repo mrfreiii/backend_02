@@ -30,7 +30,11 @@ export const blogsRepository = {
     getBlogById: (id: string) => {
         return blogsDB.find((blog) => blog.id === id);
     },
-    addNewBlog: ({ name, description, websiteUrl }:{ name: string; description: string; websiteUrl: string }) => {
+    addNewBlog: ({
+                     name,
+                     description,
+                     websiteUrl
+                 }: { name: string; description: string; websiteUrl: string }) => {
         const createdBlogId = `${+Date.now()}`;
         const newBlog: BlogType = {
             id: createdBlogId,
@@ -41,5 +45,28 @@ export const blogsRepository = {
 
         blogsDB.push(newBlog);
         return createdBlogId;
+    },
+    updateBlog: (
+        {
+            id,
+            name,
+            description,
+            websiteUrl
+        }: {
+            id: string;
+            name: string;
+            description: string;
+            websiteUrl: string
+        }): boolean => {
+        const foundBlog = blogsRepository.getBlogById(id);
+        if(!foundBlog){
+            return false;
+        }
+
+        foundBlog.name = name.trim();
+        foundBlog.description = description.trim();
+        foundBlog.websiteUrl = websiteUrl.trim();
+
+        return true;
     },
 }
