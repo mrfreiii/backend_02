@@ -1,13 +1,5 @@
-import { blogsRepository } from "./blogsRepository";
-
-export type PostType = {
-    id: string;
-    title: string;
-    shortDescription: string;
-    content: string;
-    blogId: string;
-    blogName: string;
-}
+import { blogsRepositoryInMemory } from "./blogsRepositoryInMemory";
+import { PostType } from "../db/types";
 
 let postsDB: PostType[] = [
     {
@@ -28,17 +20,19 @@ let postsDB: PostType[] = [
     },
 ]
 
-export const postsRepository = {
-    clearDB: () => {
+export const postsRepositoryInMemory = {
+    clearDB: async () => {
         postsDB = [];
+        return Promise.resolve();
     },
-    getAllPosts: () => {
-        return postsDB;
+    getAllPosts: async () => {
+        return Promise.resolve(postsDB);
     },
-    getPostById: (id: string) => {
-        return postsDB.find((post) => post.id === id);
+    getPostById: async (id: string) => {
+        const post = postsDB.find((post) => post.id === id);
+        return Promise.resolve(post);
     },
-    addNewPost: (
+    addNewPost: async (
         {
             title,
             shortDescription,
@@ -52,25 +46,25 @@ export const postsRepository = {
                 blogId: string;
             }
     ) => {
-        const blogName = blogsRepository.getBlogById(blogId)?.name;
-        if (!blogName) {
-            return;
+        const blog = await blogsRepositoryInMemory.getBlogById(blogId);
+        if (!blog) {
+            return Promise.resolve(undefined);
         }
 
-        const createdPostId = `${+Date.now()}`;
+        const createdPostId = `${Date.now() + (Math.random() * 10000).toFixed()}`;
         const newPost: PostType = {
             id: createdPostId,
             title,
             shortDescription,
             content,
             blogId,
-            blogName,
+            blogName: blog.name,
         };
 
         postsDB.push(newPost);
-        return createdPostId;
+        return Promise.resolve(createdPostId);
     },
-    updatePost: (
+    updatePost: async (
         {
             id,
             title,
@@ -85,13 +79,13 @@ export const postsRepository = {
                 content: string;
                 blogId: string;
             }
-    ): boolean => {
-        const foundPost = postsRepository.getPostById(id);
+    ): Promise<boolean> => {
+        const foundPost = await postsRepositoryInMemory.getPostById(id);
         if (!foundPost) {
             return false;
         }
 
-        const foundBlog = blogsRepository.getBlogById(blogId);
+        const foundBlog = await blogsRepositoryInMemory.getBlogById(blogId);
         if (!foundBlog) {
             return false;
         }
@@ -102,15 +96,15 @@ export const postsRepository = {
         foundPost.blogId = blogId.trim();
         foundPost.blogName = foundBlog.name;
 
-        return true;
+        return Promise.resolve(true);
     },
-    deletePostById: (id: string): boolean => {
+    deletePostById: async (id: string): Promise<boolean> => {
         const foundPost = postsDB.find((post) => post.id === id);
         if(!foundPost){
-            return false;
+            return Promise.resolve(false);
         }
 
         postsDB = postsDB.filter((post) => post.id !== id);
-        return true;
+        return Promise.resolve(true);
     },
 }

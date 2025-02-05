@@ -1,12 +1,14 @@
 import { req, validAuthHeader } from "./test-helpers";
 import { SETTINGS } from "../settings";
-import { blogsRepository, BlogType } from "../repositories/blogsRepository";
-import { postsRepository, PostType } from "../repositories/postsRepository";
+import { blogsRepositoryInMemory } from "../repositories_in_memory/blogsRepositoryInMemory";
+import { postsRepositoryInMemory } from "../repositories_in_memory/postsRepositoryInMemory";
 import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
+import { BlogType, PostType } from "../db/types";
 
 describe("get all /posts", () => {
-    beforeAll(() => {
-        postsRepository.clearDB();
+    beforeAll(async () => {
+        await postsRepositoryInMemory.clearDB();
+        await blogsRepositoryInMemory.clearDB();
     })
 
     it("should get empty array", async () => {
@@ -23,7 +25,7 @@ describe("get all /posts", () => {
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
         }
-        const createdBlogId = blogsRepository.addNewBlog(newBlog);
+        const createdBlogId = await blogsRepositoryInMemory.addNewBlog(newBlog);
 
         const newPost: Omit<PostType, "id" | "blogName"> = {
             title: "test post title 1",
@@ -31,7 +33,7 @@ describe("get all /posts", () => {
             content: "test post content 1",
             blogId: createdBlogId,
         }
-        const createdPostId = postsRepository.addNewPost(newPost)
+        const createdPostId = await postsRepositoryInMemory.addNewPost(newPost)
 
         const res = await req
             .get(SETTINGS.PATH.POSTS)
@@ -47,8 +49,9 @@ describe("get all /posts", () => {
 })
 
 describe("get post by id /posts", () => {
-    beforeAll(() => {
-        postsRepository.clearDB();
+    beforeAll(async () => {
+        await postsRepositoryInMemory.clearDB();
+        await blogsRepositoryInMemory.clearDB();
     })
 
     it("should get not empty array", async () => {
@@ -57,7 +60,7 @@ describe("get post by id /posts", () => {
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
         }
-        const createdBlogId = blogsRepository.addNewBlog(newBlog);
+        const createdBlogId = await blogsRepositoryInMemory.addNewBlog(newBlog);
 
         const newPost: Omit<PostType, "id" | "blogName"> = {
             title: "test post title 1",
@@ -65,7 +68,7 @@ describe("get post by id /posts", () => {
             content: "test post content 1",
             blogId: createdBlogId,
         }
-        const createdPostId = postsRepository.addNewPost(newPost)
+        const createdPostId = await postsRepositoryInMemory.addNewPost(newPost)
 
         const res = await req
             .get(`${SETTINGS.PATH.POSTS}/${createdPostId}`)
@@ -80,8 +83,10 @@ describe("get post by id /posts", () => {
 })
 
 describe("create post /posts", () => {
-    beforeAll(() => {
-        postsRepository.clearDB();
+    beforeAll(async () => {
+       await postsRepositoryInMemory.clearDB();
+       await blogsRepositoryInMemory.clearDB();
+       req.set("Authorization", "");
     })
 
     it("should return 401 for request without auth header", async () => {
@@ -267,10 +272,11 @@ describe("create post /posts", () => {
     })
 })
 
-
 describe("update post by id /posts", () => {
-    beforeAll(() => {
-        postsRepository.clearDB();
+    beforeAll(async () => {
+        await postsRepositoryInMemory.clearDB();
+        await blogsRepositoryInMemory.clearDB();
+        req.set("Authorization", "");
     })
 
     it("should return 401 for request without auth header", async () => {
@@ -288,7 +294,7 @@ describe("update post by id /posts", () => {
             description: "test description 1",
             websiteUrl: "https://mytestsite1.com"
         };
-        const blogId = blogsRepository.addNewBlog(blog);
+        const blogId = await blogsRepositoryInMemory.addNewBlog(blog);
 
         const post: Omit<PostType, "id" | "blogName"> = {
             title: "title1",
@@ -296,7 +302,7 @@ describe("update post by id /posts", () => {
             content: "content1",
             blogId: blogId,
         }
-        const postId = postsRepository.addNewPost(post) as string;
+        const postId = await postsRepositoryInMemory.addNewPost(post) as string;
 
         const updatedPost: Omit<PostType, "id" | "blogName" | "shortDescription"> = {
             title: "1234567890123456789012345678901",
@@ -336,8 +342,8 @@ describe("update post by id /posts", () => {
             websiteUrl: "https://mytestsite2.com"
         };
 
-        const blog1Id = blogsRepository.addNewBlog(blog1);
-        const blog2Id = blogsRepository.addNewBlog(blog2);
+        const blog1Id = await blogsRepositoryInMemory.addNewBlog(blog1);
+        const blog2Id = await blogsRepositoryInMemory.addNewBlog(blog2);
 
         const newPost: Omit<PostType, "id" | "blogName"> = {
             title: "title1",
@@ -345,7 +351,7 @@ describe("update post by id /posts", () => {
             content: "content1",
             blogId: blog1Id,
         }
-        const postId = postsRepository.addNewPost(newPost);
+        const postId = await postsRepositoryInMemory.addNewPost(newPost);
 
         const updatedPost: Omit<PostType, "id" | "blogName"> = {
             title: "title2",
@@ -373,8 +379,10 @@ describe("update post by id /posts", () => {
 })
 
 describe("delete post by id /posts", () => {
-    beforeAll(() => {
-        postsRepository.clearDB();
+    beforeAll(async () => {
+        await postsRepositoryInMemory.clearDB();
+        await blogsRepositoryInMemory.clearDB();
+        req.set("Authorization", "");
     })
 
     let postIdForDeletion: string = "";
@@ -385,7 +393,7 @@ describe("delete post by id /posts", () => {
             description: "test description 1",
             websiteUrl: "https://mytestsite1.com"
         };
-        const blogId = blogsRepository.addNewBlog(blog);
+        const blogId = await blogsRepositoryInMemory.addNewBlog(blog);
 
         const post: Omit<PostType, "id" | "blogName"> = {
             title: "title1",
@@ -393,7 +401,7 @@ describe("delete post by id /posts", () => {
             content: "content1",
             blogId: blogId,
         }
-        postIdForDeletion = postsRepository.addNewPost(post) as string;
+        postIdForDeletion = await postsRepositoryInMemory.addNewPost(post) as string;
 
         const checkRes = await req
             .get(SETTINGS.PATH.POSTS)

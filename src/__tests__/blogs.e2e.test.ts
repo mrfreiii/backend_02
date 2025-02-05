@@ -1,11 +1,12 @@
 import { req, validAuthHeader } from "./test-helpers";
 import { SETTINGS } from "../settings";
-import { blogsRepository, BlogType } from "../repositories/blogsRepository";
+import { blogsRepositoryInMemory } from "../repositories_in_memory/blogsRepositoryInMemory";
 import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
+import { BlogType } from "../db/types";
 
 describe("get all /blogs", () => {
-    beforeAll(() => {
-        blogsRepository.clearDB();
+    beforeAll(async () => {
+        await blogsRepositoryInMemory.clearDB();
     })
 
     it("should get empty array", async () => {
@@ -22,7 +23,7 @@ describe("get all /blogs", () => {
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
         }
-        const createdBlogId = blogsRepository.addNewBlog(newBlog)
+        const createdBlogId = await blogsRepositoryInMemory.addNewBlog(newBlog)
 
         const res = await req
             .get(SETTINGS.PATH.BLOGS)
@@ -37,8 +38,8 @@ describe("get all /blogs", () => {
 })
 
 describe("get blog by id /blogs", () => {
-    beforeAll(() => {
-        blogsRepository.clearDB();
+    beforeAll(async () => {
+        await blogsRepositoryInMemory.clearDB();
     })
 
     it("should get not empty array", async () => {
@@ -47,7 +48,7 @@ describe("get blog by id /blogs", () => {
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
         }
-        const createdBlogId = blogsRepository.addNewBlog(newBlog);
+        const createdBlogId = await blogsRepositoryInMemory.addNewBlog(newBlog);
 
         const res = await req
             .get(`${SETTINGS.PATH.BLOGS}/${createdBlogId}`)
@@ -61,8 +62,9 @@ describe("get blog by id /blogs", () => {
 })
 
 describe("create blog /blogs", () => {
-    beforeAll(() => {
-        blogsRepository.clearDB();
+    beforeAll(async () => {
+        await blogsRepositoryInMemory.clearDB();
+        req.set("Authorization", "");
     })
 
     it("should return 401 for request without auth header", async () => {
@@ -249,8 +251,9 @@ describe("create blog /blogs", () => {
 })
 
 describe("update blog /blogs", () => {
-    beforeAll(() => {
-        blogsRepository.clearDB();
+    beforeAll(async () => {
+        await blogsRepositoryInMemory.clearDB();
+        req.set("Authorization", "");
     })
 
     it("should return 401 for request without auth header", async () => {
@@ -321,8 +324,9 @@ describe("update blog /blogs", () => {
 })
 
 describe("delete blog by id /blogs", () => {
-    beforeAll(() => {
-        blogsRepository.clearDB();
+    beforeAll(async () => {
+        await blogsRepositoryInMemory.clearDB();
+        req.set("Authorization", "");
     })
 
     let blogIdForDeletion: string = "";
@@ -341,7 +345,7 @@ describe("delete blog by id /blogs", () => {
             description: "test description 1",
             websiteUrl: "https://mytestsite1.com"
         };
-        blogIdForDeletion = blogsRepository.addNewBlog(blog);
+        blogIdForDeletion = await blogsRepositoryInMemory.addNewBlog(blog);
 
         const checkRes = await req
             .get(`${SETTINGS.PATH.BLOGS}/${blogIdForDeletion}`)

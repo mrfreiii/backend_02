@@ -1,5 +1,5 @@
 import { Request, Router, Response } from "express";
-import { postsRepository, PostType } from "../repositories/postsRepository";
+import { postsRepositoryInMemory } from "../repositories_in_memory/postsRepositoryInMemory";
 import { CreatePostReqType, UpdatePostReqType } from "./types";
 import {
     blogIdValidator,
@@ -9,19 +9,20 @@ import {
 } from "./postsValidators";
 import { errorResultMiddleware } from "../middlewares/errorResultMiddleware";
 import { authorizationMiddleware } from "../middlewares/authorizationMiddleware";
+import { PostType } from "../db/types";
 
 export const postsRouter = Router();
 
 const postsController = {
-    getPosts: (req: Request, res: Response<PostType[]>) => {
-        const allPosts = postsRepository.getAllPosts();
+    getPosts: async (req: Request, res: Response<PostType[]>) => {
+        const allPosts = await postsRepositoryInMemory.getAllPosts();
 
         res
             .status(200)
             .json(allPosts);
     },
-    getPostById: (req: Request<{id: string}>, res: Response<PostType>) => {
-        const foundPost = postsRepository.getPostById(req.params.id);
+    getPostById: async (req: Request<{id: string}>, res: Response<PostType>) => {
+        const foundPost = await postsRepositoryInMemory.getPostById(req.params.id);
 
         if (!foundPost) {
             res.sendStatus(404);
@@ -32,19 +33,20 @@ const postsController = {
             .status(200)
             .json(foundPost);
     },
-    createPost: (req: CreatePostReqType, res: Response<PostType>) => {
-        const createdPostId = postsRepository.addNewPost({
+    createPost: async (req: CreatePostReqType, res: Response<PostType>) => {
+        const createdPostId = await postsRepositoryInMemory.addNewPost({
             title: req.body.title.trim(),
             shortDescription: req.body.shortDescription.trim(),
             content: req.body.content.trim(),
             blogId: req.body.blogId.trim(),
         });
         if (!createdPostId) {
+            // validator must check blogId and if we here then something went wrong
             res.sendStatus(599);
             return;
         }
 
-        const createdPost = postsRepository.getPostById(createdPostId);
+        const createdPost = await postsRepositoryInMemory.getPostById(createdPostId);
         if (!createdPostId) {
             res.sendStatus(599);
             return;
@@ -54,8 +56,8 @@ const postsController = {
             .status(201)
             .json(createdPost);
     },
-    updatePost: (req: UpdatePostReqType, res: Response) => {
-        const isUpdated = postsRepository.updatePost({
+    updatePost: async (req: UpdatePostReqType, res: Response) => {
+        const isUpdated = await postsRepositoryInMemory.updatePost({
             id: req.params.id,
             title: req.body.title,
             shortDescription: req.body.shortDescription,
@@ -70,8 +72,8 @@ const postsController = {
 
         res.sendStatus(204);
     },
-    deletePostById: (req: Request<{id: string}>, res: Response<PostType>) => {
-        const isDeleted = postsRepository.deletePostById(req.params.id);
+    deletePostById: async (req: Request<{id: string}>, res: Response<PostType>) => {
+        const isDeleted = await postsRepositoryInMemory.deletePostById(req.params.id);
         if (!isDeleted) {
             res.sendStatus(404);
             return;

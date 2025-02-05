@@ -1,5 +1,5 @@
 import { Request, Router, Response } from "express";
-import { blogsRepository, BlogType } from "../repositories/blogsRepository";
+import { blogsRepositoryInMemory } from "../repositories_in_memory/blogsRepositoryInMemory";
 import { CreateBlogReqType, UpdateBlogReqType } from "./types";
 import {
     blogDescriptionValidator,
@@ -8,19 +8,20 @@ import {
 } from "./blogsValidators";
 import { errorResultMiddleware } from "../middlewares/errorResultMiddleware";
 import { authorizationMiddleware } from "../middlewares/authorizationMiddleware";
+import { BlogType } from "../db/types";
 
 export const blogsRouter = Router();
 
 const blogsController = {
-    getBlogs: (req: Request, res: Response<BlogType[]>) => {
-        const allBlogs = blogsRepository.getAllBlogs();
+    getBlogs: async (req: Request, res: Response<BlogType[]>) => {
+        const allBlogs = await blogsRepositoryInMemory.getAllBlogs();
 
         res
             .status(200)
             .json(allBlogs);
     },
-    getBlogById: (req: Request<{id: string}>, res: Response<BlogType>) => {
-        const foundBlog = blogsRepository.getBlogById(req.params.id);
+    getBlogById: async (req: Request<{id: string}>, res: Response<BlogType>) => {
+        const foundBlog = await blogsRepositoryInMemory.getBlogById(req.params.id);
 
         if (!foundBlog) {
             res.sendStatus(404);
@@ -31,13 +32,13 @@ const blogsController = {
             .status(200)
             .json(foundBlog);
     },
-    createBlog: (req: CreateBlogReqType, res: Response<BlogType>) => {
-        const createdBlogId = blogsRepository.addNewBlog({
+    createBlog: async (req: CreateBlogReqType, res: Response<BlogType>) => {
+        const createdBlogId = await blogsRepositoryInMemory.addNewBlog({
             name: req.body.name,
             description: req.body.description,
             websiteUrl: req.body.websiteUrl,
         });
-        const createdBlog = blogsRepository.getBlogById(createdBlogId);
+        const createdBlog = await blogsRepositoryInMemory.getBlogById(createdBlogId);
 
         if (!createdBlog) {
             res.sendStatus(599);
@@ -48,8 +49,8 @@ const blogsController = {
             .status(201)
             .json(createdBlog);
     },
-    updateBlog: (req: UpdateBlogReqType, res: Response) => {
-        const isUpdated = blogsRepository.updateBlog({
+    updateBlog: async (req: UpdateBlogReqType, res: Response) => {
+        const isUpdated = await blogsRepositoryInMemory.updateBlog({
             id: req.params.id,
             name: req.body.name,
             description: req.body.description,
@@ -64,8 +65,8 @@ const blogsController = {
 
         res.sendStatus(204)
     },
-    deleteBlogById: (req: Request<{id: string}>, res: Response) => {
-        const isDeleted = blogsRepository.deleteBlogById(req.params.id);
+    deleteBlogById: async (req: Request<{id: string}>, res: Response) => {
+        const isDeleted = await blogsRepositoryInMemory.deleteBlogById(req.params.id);
         if (!isDeleted) {
             res.sendStatus(404);
             return;

@@ -1,5 +1,5 @@
 import {body} from 'express-validator';
-import { blogsRepository } from "../repositories/blogsRepository";
+import { blogsRepositoryInMemory } from "../repositories_in_memory/blogsRepositoryInMemory";
 
 export const postTitleValidator = body('title')
     .isString().withMessage("value must be a string")
@@ -16,7 +16,9 @@ export const contentValidator = body('content')
 export const blogIdValidator = body('blogId')
     .isString().withMessage("value must be a string")
     .trim()
-    .custom((blogId)=>{
-        const blog = blogsRepository.getBlogById(blogId);
-        return !!blog;
+    .custom(async (blogId)=>{
+        const blog = await blogsRepositoryInMemory.getBlogById(blogId);
+        if(!blog){
+            return Promise.reject();
+        }
     }).withMessage("blog not found")

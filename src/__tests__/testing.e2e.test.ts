@@ -1,12 +1,13 @@
 import { req } from "./test-helpers";
 import { SETTINGS } from "../settings";
-import { blogsRepository, BlogType } from "../repositories/blogsRepository";
-import { postsRepository, PostType } from "../repositories/postsRepository";
+import { blogsRepositoryInMemory } from "../repositories_in_memory/blogsRepositoryInMemory";
+import { postsRepositoryInMemory } from "../repositories_in_memory/postsRepositoryInMemory";
+import { BlogType, PostType } from "../db/types";
 
 describe("delete all data", () => {
-    beforeAll(() => {
-        blogsRepository.clearDB();
-        postsRepository.clearDB();
+    beforeAll(async () => {
+        await blogsRepositoryInMemory.clearDB();
+        await postsRepositoryInMemory.clearDB();
     })
 
     it("should get default post and blog", async () => {
@@ -15,7 +16,7 @@ describe("delete all data", () => {
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
         }
-        const createdBlogId = blogsRepository.addNewBlog(newBlog);
+        const createdBlogId = await blogsRepositoryInMemory.addNewBlog(newBlog);
 
         const blogsRes = await req
             .get(SETTINGS.PATH.BLOGS)
@@ -33,7 +34,7 @@ describe("delete all data", () => {
             content: "test post content 1",
             blogId: createdBlogId,
         }
-        const createdPostId = postsRepository.addNewPost(newPost)
+        const createdPostId = await postsRepositoryInMemory.addNewPost(newPost)
 
         const postsRes = await req
             .get(SETTINGS.PATH.POSTS)

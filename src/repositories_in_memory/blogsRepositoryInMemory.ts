@@ -1,9 +1,4 @@
-export type BlogType = {
-    id: string;
-    name: string;
-    description: string;
-    websiteUrl: string;
-}
+import { BlogType } from "../db/types";
 
 let blogsDB: BlogType[] = [
     {
@@ -20,22 +15,22 @@ let blogsDB: BlogType[] = [
     },
 ]
 
-export const blogsRepository = {
-    clearDB: () => {
+export const blogsRepositoryInMemory = {
+    clearDB: async () => {
         blogsDB = [];
     },
-    getAllBlogs: () => {
+    getAllBlogs: async () => {
         return blogsDB;
     },
-    getBlogById: (id: string) => {
+    getBlogById: async (id: string) => {
         return blogsDB.find((blog) => blog.id === id);
     },
-    addNewBlog: ({
+    addNewBlog: async ({
                      name,
                      description,
                      websiteUrl
-                 }: { name: string; description: string; websiteUrl: string }) => {
-        const createdBlogId = `${+Date.now()}`;
+                 }: { name: string; description: string; websiteUrl: string }): Promise<string> => {
+        const createdBlogId = `${Date.now() + (Math.random() * 10000).toFixed()}`;
         const newBlog: BlogType = {
             id: createdBlogId,
             name: name.trim(),
@@ -46,7 +41,7 @@ export const blogsRepository = {
         blogsDB.push(newBlog);
         return createdBlogId;
     },
-    updateBlog: (
+    updateBlog: async (
         {
             id,
             name,
@@ -57,8 +52,8 @@ export const blogsRepository = {
             name: string;
             description: string;
             websiteUrl: string
-        }): boolean => {
-        const foundBlog = blogsRepository.getBlogById(id);
+        }): Promise<boolean> => {
+        const foundBlog = await blogsRepositoryInMemory.getBlogById(id);
         if (!foundBlog) {
             return false;
         }
@@ -69,8 +64,8 @@ export const blogsRepository = {
 
         return true;
     },
-    deleteBlogById: (id: string): boolean => {
-        const foundBlog = blogsRepository.getBlogById(id);
+    deleteBlogById: async (id: string): Promise<boolean> => {
+        const foundBlog = await blogsRepositoryInMemory.getBlogById(id);
         if (!foundBlog) {
             return false;
         }
