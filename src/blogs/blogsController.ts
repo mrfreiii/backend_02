@@ -1,5 +1,4 @@
 import { Request, Router, Response } from "express";
-import { blogsRepositoryInMemory } from "../repositories_in_memory/blogsRepositoryInMemory";
 import { CreateBlogReqType, UpdateBlogReqType } from "./types";
 import {
     blogDescriptionValidator,
@@ -9,19 +8,20 @@ import {
 import { errorResultMiddleware } from "../middlewares/errorResultMiddleware";
 import { authorizationMiddleware } from "../middlewares/authorizationMiddleware";
 import { BlogType } from "../db/types";
+import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
 
 export const blogsRouter = Router();
 
 const blogsController = {
     getBlogs: async (req: Request, res: Response<BlogType[]>) => {
-        const allBlogs = await blogsRepositoryInMemory.getAllBlogs();
+        const allBlogs = await blogsRepositoryMongoDb.getAllBlogs();
 
         res
             .status(200)
             .json(allBlogs);
     },
     getBlogById: async (req: Request<{id: string}>, res: Response<BlogType>) => {
-        const foundBlog = await blogsRepositoryInMemory.getBlogById(req.params.id);
+        const foundBlog = await blogsRepositoryMongoDb.getBlogById(req.params.id);
 
         if (!foundBlog) {
             res.sendStatus(404);
@@ -33,12 +33,12 @@ const blogsController = {
             .json(foundBlog);
     },
     createBlog: async (req: CreateBlogReqType, res: Response<BlogType>) => {
-        const createdBlogId = await blogsRepositoryInMemory.addNewBlog({
+        const createdBlogId = await blogsRepositoryMongoDb.addNewBlog({
             name: req.body.name,
             description: req.body.description,
             websiteUrl: req.body.websiteUrl,
         });
-        const createdBlog = await blogsRepositoryInMemory.getBlogById(createdBlogId);
+        const createdBlog = await blogsRepositoryMongoDb.getBlogById(createdBlogId);
 
         if (!createdBlog) {
             res.sendStatus(599);
@@ -50,7 +50,7 @@ const blogsController = {
             .json(createdBlog);
     },
     updateBlog: async (req: UpdateBlogReqType, res: Response) => {
-        const isUpdated = await blogsRepositoryInMemory.updateBlog({
+        const isUpdated = await blogsRepositoryMongoDb.updateBlog({
             id: req.params.id,
             name: req.body.name,
             description: req.body.description,
@@ -66,7 +66,7 @@ const blogsController = {
         res.sendStatus(204)
     },
     deleteBlogById: async (req: Request<{id: string}>, res: Response) => {
-        const isDeleted = await blogsRepositoryInMemory.deleteBlogById(req.params.id);
+        const isDeleted = await blogsRepositoryMongoDb.deleteBlogById(req.params.id);
         if (!isDeleted) {
             res.sendStatus(404);
             return;

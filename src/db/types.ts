@@ -1,12 +1,16 @@
+import { ObjectId } from "mongodb";
+
 export type BlogType = {
-    id: string;
+    id?: string; // deprecated
+    _id?: ObjectId; // new from mongodb
     name: string;
     description: string;
     websiteUrl: string;
 }
 
 export type PostType = {
-    id: string;
+    id?: string; // deprecated
+    _id?: ObjectId; // new from mongodb
     title: string;
     shortDescription: string;
     content: string;

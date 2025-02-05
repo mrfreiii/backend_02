@@ -1,5 +1,5 @@
 import {body} from 'express-validator';
-import { blogsRepositoryInMemory } from "../repositories_in_memory/blogsRepositoryInMemory";
+import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
 
 export const postTitleValidator = body('title')
     .isString().withMessage("value must be a string")
@@ -17,8 +17,13 @@ export const blogIdValidator = body('blogId')
     .isString().withMessage("value must be a string")
     .trim()
     .custom(async (blogId)=>{
-        const blog = await blogsRepositoryInMemory.getBlogById(blogId);
-        if(!blog){
+        try{
+            const blog = await blogsRepositoryMongoDb.getBlogById(blogId);
+            if(!blog){
+                return Promise.reject();
+            }
+        } catch (e){
+            console.log(e)
             return Promise.reject();
         }
     }).withMessage("blog not found")

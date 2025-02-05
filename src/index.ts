@@ -12,7 +12,13 @@ const startApp = async () =>{
         process.exit(1);
     }
 
-    const res = await connectToDB(dbUrl);
+    const dbName = process.env?.MONGO_DB_NAME;
+    if(!dbName){
+        console.log("db name is undefined");
+        process.exit(1);
+    }
+
+    const res = await connectToDB({dbUrl, dbName});
     if(!res) process.exit(1);
 
     app.listen(SETTINGS.PORT, () => {

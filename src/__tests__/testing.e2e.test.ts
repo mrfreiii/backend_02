@@ -1,22 +1,32 @@
 import { req } from "./test-helpers";
 import { SETTINGS } from "../settings";
-import { blogsRepositoryInMemory } from "../repositories_in_memory/blogsRepositoryInMemory";
-import { postsRepositoryInMemory } from "../repositories_in_memory/postsRepositoryInMemory";
 import { BlogType, PostType } from "../db/types";
+import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
+import { postsRepositoryInMemory } from "../repositories_in_memory/postsRepositoryInMemory";
+import { MongoMemoryServer } from "mongodb-memory-server";
+import { runTestServerDB } from "../db/mongodb";
+
+let server: MongoMemoryServer;
 
 describe("delete all data", () => {
     beforeAll(async () => {
-        await blogsRepositoryInMemory.clearDB();
+        server = await runTestServerDB();
+
+        await blogsRepositoryMongoDb.clearDB();
         await postsRepositoryInMemory.clearDB();
     })
 
+    afterAll(async ()=>{
+        await server.stop();
+    })
+
     it("should get default post and blog", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: "new new new blog",
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
         }
-        const createdBlogId = await blogsRepositoryInMemory.addNewBlog(newBlog);
+        const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog);
 
         const blogsRes = await req
             .get(SETTINGS.PATH.BLOGS)

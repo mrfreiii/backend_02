@@ -1,12 +1,22 @@
-import { req, validAuthHeader } from "./test-helpers";
+import { MongoMemoryServer } from "mongodb-memory-server"
+
 import { SETTINGS } from "../settings";
-import { blogsRepositoryInMemory } from "../repositories_in_memory/blogsRepositoryInMemory";
-import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
 import { BlogType } from "../db/types";
+import { req, validAuthHeader } from "./test-helpers";
+import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
+import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
+import { runTestServerDB } from "../db/mongodb";
+
+let server: MongoMemoryServer;
 
 describe("get all /blogs", () => {
     beforeAll(async () => {
-        await blogsRepositoryInMemory.clearDB();
+        server = await runTestServerDB();
+        await blogsRepositoryMongoDb.clearDB();
+    })
+
+    afterAll(async ()=>{
+        await server.stop();
     })
 
     it("should get empty array", async () => {
@@ -18,12 +28,12 @@ describe("get all /blogs", () => {
     })
 
     it("should get not empty array", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: "new new new blog",
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
         }
-        const createdBlogId = await blogsRepositoryInMemory.addNewBlog(newBlog)
+        const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog)
 
         const res = await req
             .get(SETTINGS.PATH.BLOGS)
@@ -39,16 +49,21 @@ describe("get all /blogs", () => {
 
 describe("get blog by id /blogs", () => {
     beforeAll(async () => {
-        await blogsRepositoryInMemory.clearDB();
+        server = await runTestServerDB();
+        await blogsRepositoryMongoDb.clearDB();
+    })
+
+    afterAll(async ()=>{
+        await server.stop();
     })
 
     it("should get not empty array", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: "new new new blog",
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
         }
-        const createdBlogId = await blogsRepositoryInMemory.addNewBlog(newBlog);
+        const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog);
 
         const res = await req
             .get(`${SETTINGS.PATH.BLOGS}/${createdBlogId}`)
@@ -63,67 +78,53 @@ describe("get blog by id /blogs", () => {
 
 describe("create blog /blogs", () => {
     beforeAll(async () => {
-        await blogsRepositoryInMemory.clearDB();
+        server = await runTestServerDB();
+        await blogsRepositoryMongoDb.clearDB();
         req.set("Authorization", "");
     })
 
-    it("should return 401 for request without auth header", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
-            name: "new blog name",
-            description: "cannot create interesting description",
-            websiteUrl: "https://mynewblog.con"
-        }
+    afterAll(async ()=>{
+        await server.stop();
+    })
 
+    it("should return 401 for request without auth header", async () => {
         const res = await req
             .post(SETTINGS.PATH.BLOGS)
-            .send(newBlog)
+            .send({})
             .expect(401)
 
         expect(res.body.error).toBe(AUTH_ERROR_MESSAGES.NoHeader);
     })
 
     it("should return 401 for auth header with invalid auth type", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
-            name: "new blog name",
-            description: "cannot create interesting description",
-            websiteUrl: "https://mynewblog.con"
-        }
-
         const res = await req
             .set("Authorization", "Bearer 1234567890")
             .post(SETTINGS.PATH.BLOGS)
-            .send(newBlog)
+            .send({})
             .expect(401)
 
         expect(res.body.error).toBe(AUTH_ERROR_MESSAGES.InvalidHeader);
     })
 
     it("should return 401 for auth header with invalid auth type", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
-            name: "new blog name",
-            description: "cannot create interesting description",
-            websiteUrl: "https://mynewblog.con"
-        }
-
         const invalidUserCreds = "login:password";
         const encodedCreds = Buffer.from(invalidUserCreds, "utf8").toString("base64");
 
         const res = await req
             .set("Authorization", `Basic ${encodedCreds}`)
             .post(SETTINGS.PATH.BLOGS)
-            .send(newBlog)
+            .send({})
             .expect(401)
 
         expect(res.body.error).toBe(AUTH_ERROR_MESSAGES.InvalidLoginOrPassword);
     })
 
     it("should return 400 for name, description, and websiteUrl are not string", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: null as unknown as string,
             description: null as unknown as string,
             websiteUrl: null as unknown as string
         }
-
 
         const res = await req
             .set("Authorization", validAuthHeader)
@@ -150,7 +151,7 @@ describe("create blog /blogs", () => {
     })
 
     it("should return 400 for name, description, websiteUrl and too short", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: " ",
             description: " ",
             websiteUrl: " "
@@ -182,12 +183,11 @@ describe("create blog /blogs", () => {
     })
 
     it("should return 400 for name too long", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: "1234567890123456",
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
         }
-
 
         const res = await req
             .set("Authorization", validAuthHeader)
@@ -205,12 +205,11 @@ describe("create blog /blogs", () => {
     })
 
     it("should return 400 for invalid websiteUrl", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: "test name",
             description: "test description",
             websiteUrl: "invalid websiteUrl"
         }
-
 
         const res = await req
             .set("Authorization", validAuthHeader)
@@ -229,7 +228,7 @@ describe("create blog /blogs", () => {
 
 
     it("should create a blog", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: "test name",
             description: "test description",
             websiteUrl: "https://mytestsite.com"
@@ -252,8 +251,13 @@ describe("create blog /blogs", () => {
 
 describe("update blog /blogs", () => {
     beforeAll(async () => {
-        await blogsRepositoryInMemory.clearDB();
+        server = await runTestServerDB();
+        await blogsRepositoryMongoDb.clearDB();
         req.set("Authorization", "");
+    })
+
+    afterAll(async ()=>{
+        await server.stop();
     })
 
     it("should return 401 for request without auth header", async () => {
@@ -266,12 +270,11 @@ describe("update blog /blogs", () => {
     })
 
     it("should return 404 for non existent blog", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: "test name",
             description: "test description",
             websiteUrl: "https://mytestsite.com"
         }
-
 
         await req
             .set("Authorization", validAuthHeader)
@@ -281,7 +284,7 @@ describe("update blog /blogs", () => {
     })
 
     it("should update a blog", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: "test name 1",
             description: "test description 1",
             websiteUrl: "https://mytestsite1.com"
@@ -300,7 +303,7 @@ describe("update blog /blogs", () => {
             }
         );
 
-        const updatedBlog: Omit<BlogType, "id"> = {
+        const updatedBlog: BlogType = {
             name: "test name 2",
             description: "test description 2",
             websiteUrl: "https://mytestsite2.com"
@@ -325,8 +328,13 @@ describe("update blog /blogs", () => {
 
 describe("delete blog by id /blogs", () => {
     beforeAll(async () => {
-        await blogsRepositoryInMemory.clearDB();
+        server = await runTestServerDB();
+        await blogsRepositoryMongoDb.clearDB();
         req.set("Authorization", "");
+    })
+
+    afterAll(async ()=>{
+        await server.stop();
     })
 
     let blogIdForDeletion: string = "";
@@ -340,12 +348,12 @@ describe("delete blog by id /blogs", () => {
     })
 
     it("should get not empty array", async () => {
-        const blog: Omit<BlogType, "id"> = {
+        const blog: BlogType = {
             name: "test name 1",
             description: "test description 1",
             websiteUrl: "https://mytestsite1.com"
         };
-        blogIdForDeletion = await blogsRepositoryInMemory.addNewBlog(blog);
+        blogIdForDeletion = await blogsRepositoryMongoDb.addNewBlog(blog);
 
         const checkRes = await req
             .get(`${SETTINGS.PATH.BLOGS}/${blogIdForDeletion}`)
@@ -365,7 +373,7 @@ describe("delete blog by id /blogs", () => {
     })
 
 
-    it("should get empty array", async () => {
+    it("should delete blog and get empty array", async () => {
         await req
             .set("Authorization", validAuthHeader)
             .delete(`${SETTINGS.PATH.BLOGS}/${blogIdForDeletion}`)

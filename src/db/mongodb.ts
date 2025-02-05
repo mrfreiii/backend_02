@@ -1,7 +1,5 @@
 import { Collection, Db, MongoClient } from "mongodb";
-import {config} from 'dotenv';
-
-config();
+import { MongoMemoryServer } from "mongodb-memory-server"
 
 import { SETTINGS } from "../settings";
 import { BlogType, PostType } from "./types";
@@ -9,15 +7,8 @@ import { BlogType, PostType } from "./types";
 export let blogCollection: Collection<BlogType>;
 export let postCollection: Collection<PostType>;
 
-export const connectToDB = async (url: string): Promise<boolean> => {
-    const client: MongoClient = new MongoClient(url);
-
-    const dbName = process.env?.MONGO_DB_NAME;
-    if(!dbName){
-        console.log("db name is undefined");
-        return false;
-    }
-
+export const connectToDB = async ({ dbUrl, dbName }:{ dbUrl: string, dbName: string }): Promise<boolean> => {
+    const client: MongoClient = new MongoClient(dbUrl);
     const db: Db = client.db(dbName);
 
     blogCollection = db.collection<BlogType>(SETTINGS.PATH.BLOGS);
@@ -26,7 +17,7 @@ export const connectToDB = async (url: string): Promise<boolean> => {
     try {
         await client.connect();
         await db.command({ping: 1});
-        console.log('connected to db');
+        console.log("connected to db");
 
         return true;
     } catch (e) {
@@ -35,4 +26,27 @@ export const connectToDB = async (url: string): Promise<boolean> => {
 
         return false;
     }
+}
+
+export const runTestServerDB = async (): Promise<MongoMemoryServer> => {
+    const server = await MongoMemoryServer.create()
+
+    const uri = server.getUri()
+    const client: MongoClient = new MongoClient(uri)
+
+    const db: Db = client.db("test");
+
+    blogCollection = db.collection<BlogType>(SETTINGS.PATH.BLOGS);
+    postCollection = db.collection<PostType>(SETTINGS.PATH.POSTS);
+
+    try {
+        await client.connect();
+        await db.command({ping: 1});
+        console.log("connected to db");
+    } catch (e) {
+        console.log(e);
+        await server.stop();
+    }
+
+    return server;
 }
