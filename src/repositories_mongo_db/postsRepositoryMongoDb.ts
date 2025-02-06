@@ -51,6 +51,7 @@ export const postsRepositoryMongoDb = {
             content,
             blogId,
             blogName: blog.name,
+            createdAt: (new Date()).toISOString(),
         };
 
         const createdPost = await postCollection.insertOne(newPost);

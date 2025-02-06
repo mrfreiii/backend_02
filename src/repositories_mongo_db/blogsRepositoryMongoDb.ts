@@ -29,17 +29,21 @@ export const blogsRepositoryMongoDb = {
         {
             name,
             description,
-            websiteUrl
+            websiteUrl,
+            isMembership,
         }:
             {
                 name: string;
                 description: string;
-                websiteUrl: string
+                websiteUrl: string;
+                isMembership?: boolean;
             }): Promise<string> => {
         const newBlog: BlogType = {
             name: name.trim(),
             description: description.trim(),
             websiteUrl: websiteUrl.trim(),
+            isMembership: typeof isMembership === "boolean" ? isMembership : false,
+            createdAt: (new Date()).toISOString(),
         };
 
         const createdBlog = await blogCollection.insertOne(newBlog);
@@ -50,17 +54,20 @@ export const blogsRepositoryMongoDb = {
             id,
             name,
             description,
-            websiteUrl
+            websiteUrl,
+            isMembership,
         }: {
             id: string;
             name: string;
             description: string;
-            websiteUrl: string
+            websiteUrl: string;
+            isMembership?: boolean;
         }): Promise<boolean> => {
-        const updatedBlog: BlogType = {
+        const updatedBlog: Omit<BlogType, "createdAt"> = {
             name: name.trim(),
             description: description.trim(),
             websiteUrl: websiteUrl.trim(),
+            isMembership: typeof isMembership === "boolean" ? isMembership : false,
         }
 
         try {

@@ -1,19 +1,6 @@
 import { BlogType } from "../db/types";
 
-let blogsDB: BlogType[] = [
-    {
-        id: "1111",
-        name: "some blog name 1",
-        description: "some blog name 1",
-        websiteUrl: "https://some.url.com",
-    },
-    {
-        id: "2222",
-        name: "some blog name 1",
-        description: "some blog name 1",
-        websiteUrl: "https://some.url.com",
-    },
-]
+let blogsDB: BlogType[] = []
 
 export const blogsRepositoryInMemory = {
     clearDB: async () => {
@@ -36,6 +23,7 @@ export const blogsRepositoryInMemory = {
             name: name.trim(),
             description: description.trim(),
             websiteUrl: websiteUrl.trim(),
+            isMembership: false
         };
 
         blogsDB.push(newBlog);

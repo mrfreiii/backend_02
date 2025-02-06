@@ -24,7 +24,8 @@ describe("get all /posts", () => {
         const newBlog: BlogType = {
             name: "new new new blog",
             description: "cannot create interesting description",
-            websiteUrl: "https://mynewblog.con"
+            websiteUrl: "https://mynewblog.con",
+            isMembership: true
         }
         const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog);
 
@@ -45,6 +46,7 @@ describe("get all /posts", () => {
             ...newPost,
             id: createdPostId,
             blogName: newBlog.name,
+            createdAt: expect.any(String)
         });
     })
 })
@@ -56,7 +58,8 @@ describe("get post by id /posts", () => {
         const newBlog: BlogType = {
             name: "new new new blog",
             description: "cannot create interesting description",
-            websiteUrl: "https://mynewblog.con"
+            websiteUrl: "https://mynewblog.con",
+            isMembership: true
         }
         const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog);
 
@@ -76,6 +79,7 @@ describe("get post by id /posts", () => {
             ...newPost,
             id: createdPostId,
             blogName: newBlog.name,
+            createdAt: expect.any(String)
         });
     })
 })
@@ -220,7 +224,8 @@ describe("create post /posts", () => {
         const newBlog: BlogType = {
             name: "test name",
             description: "test description",
-            websiteUrl: "https://mytestsite.com"
+            websiteUrl: "https://mytestsite.com",
+            isMembership: true
         }
 
         const blogRes = await req
@@ -232,7 +237,8 @@ describe("create post /posts", () => {
         expect(blogRes.body).toEqual(
             {
                 ...newBlog,
-                id: expect.any(String)
+                id: expect.any(String),
+                createdAt: expect.any(String)
             }
         );
 
@@ -253,7 +259,8 @@ describe("create post /posts", () => {
             {
                 ...newPost,
                 id: expect.any(String),
-                blogName: newBlog.name
+                blogName: newBlog.name,
+                createdAt: expect.any(String)
             }
         );
     })
@@ -275,7 +282,8 @@ describe("update post by id /posts", () => {
         const blog: BlogType = {
             name: "test name 1",
             description: "test description 1",
-            websiteUrl: "https://mytestsite1.com"
+            websiteUrl: "https://mytestsite1.com",
+            isMembership: false
         };
         const blogId = await blogsRepositoryMongoDb.addNewBlog(blog);
 
@@ -317,12 +325,14 @@ describe("update post by id /posts", () => {
         const blog1: BlogType = {
             name: "test name 1",
             description: "test description 1",
-            websiteUrl: "https://mytestsite1.com"
+            websiteUrl: "https://mytestsite1.com",
+            isMembership: true
         };
         const blog2: BlogType = {
             name: "test name 2",
             description: "test description 2",
-            websiteUrl: "https://mytestsite2.com"
+            websiteUrl: "https://mytestsite2.com",
+            isMembership: true
         };
 
         const blog1Id = await blogsRepositoryMongoDb.addNewBlog(blog1);
@@ -357,6 +367,7 @@ describe("update post by id /posts", () => {
             ...updatedPost,
             id: postId,
             blogName: blog2.name,
+            createdAt: expect.any(String)
         });
     })
 })
@@ -370,7 +381,8 @@ describe("delete post by id /posts", () => {
         const blog: BlogType = {
             name: "test name 1",
             description: "test description 1",
-            websiteUrl: "https://mytestsite1.com"
+            websiteUrl: "https://mytestsite1.com",
+            isMembership: false
         };
         const blogId = await blogsRepositoryMongoDb.addNewBlog(blog);
 
@@ -391,6 +403,7 @@ describe("delete post by id /posts", () => {
             ...post,
             id: postIdForDeletion,
             blogName: blog.name,
+            createdAt: expect.any(String)
         });
     })
 

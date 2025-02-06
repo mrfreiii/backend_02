@@ -37,6 +37,7 @@ const blogsController = {
             name: req.body.name,
             description: req.body.description,
             websiteUrl: req.body.websiteUrl,
+            isMembership: req.body.isMembership,
         });
         const createdBlog = await blogsRepositoryMongoDb.getBlogById(createdBlogId);
 
@@ -55,6 +56,7 @@ const blogsController = {
             name: req.body.name,
             description: req.body.description,
             websiteUrl: req.body.websiteUrl,
+            isMembership: req.body.isMembership
         });
 
 

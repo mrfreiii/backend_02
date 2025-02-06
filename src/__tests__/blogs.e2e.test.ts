@@ -23,7 +23,8 @@ describe("get all /blogs", () => {
         const newBlog: BlogType = {
             name: "new new new blog",
             description: "cannot create interesting description",
-            websiteUrl: "https://mynewblog.con"
+            websiteUrl: "https://mynewblog.con",
+            isMembership: true,
         }
         const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog)
 
@@ -34,7 +35,8 @@ describe("get all /blogs", () => {
         expect(res.body.length).toBe(1);
         expect(res.body[0]).toEqual({
             ...newBlog,
-            id: createdBlogId
+            id: createdBlogId,
+            createdAt: expect.any(String),
         });
     })
 })
@@ -46,7 +48,8 @@ describe("get blog by id /blogs", () => {
         const newBlog: BlogType = {
             name: "new new new blog",
             description: "cannot create interesting description",
-            websiteUrl: "https://mynewblog.con"
+            websiteUrl: "https://mynewblog.con",
+            isMembership: true,
         }
         const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog);
 
@@ -56,7 +59,8 @@ describe("get blog by id /blogs", () => {
 
         expect(res.body).toEqual({
             ...newBlog,
-            id: createdBlogId
+            id: createdBlogId,
+            createdAt: expect.any(String),
         });
     })
 })
@@ -97,7 +101,7 @@ describe("create blog /blogs", () => {
     })
 
     it("should return 400 for name, description, and websiteUrl are not string", async () => {
-        const newBlog: BlogType = {
+        const newBlog: Omit<BlogType, "isMembership"> = {
             name: null as unknown as string,
             description: null as unknown as string,
             websiteUrl: null as unknown as string
@@ -128,7 +132,7 @@ describe("create blog /blogs", () => {
     })
 
     it("should return 400 for name, description, websiteUrl and too short", async () => {
-        const newBlog: BlogType = {
+        const newBlog: Omit<BlogType, "isMembership"> = {
             name: " ",
             description: " ",
             websiteUrl: " "
@@ -160,7 +164,7 @@ describe("create blog /blogs", () => {
     })
 
     it("should return 400 for name too long", async () => {
-        const newBlog: BlogType = {
+        const newBlog: Omit<BlogType, "isMembership"> = {
             name: "1234567890123456",
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
@@ -182,7 +186,7 @@ describe("create blog /blogs", () => {
     })
 
     it("should return 400 for invalid websiteUrl", async () => {
-        const newBlog: BlogType = {
+        const newBlog: Omit<BlogType, "isMembership"> = {
             name: "test name",
             description: "test description",
             websiteUrl: "invalid websiteUrl"
@@ -208,7 +212,8 @@ describe("create blog /blogs", () => {
         const newBlog: BlogType = {
             name: "test name",
             description: "test description",
-            websiteUrl: "https://mytestsite.com"
+            websiteUrl: "https://mytestsite.com",
+            isMembership: true,
         }
 
         const res = await req
@@ -220,7 +225,8 @@ describe("create blog /blogs", () => {
         expect(res.body).toEqual(
             {
                 ...newBlog,
-                id: expect.any(String)
+                id: expect.any(String),
+                createdAt: expect.any(String)
             }
         );
     })
@@ -242,7 +248,8 @@ describe("update blog /blogs", () => {
         const newBlog: BlogType = {
             name: "test name",
             description: "test description",
-            websiteUrl: "https://mytestsite.com"
+            websiteUrl: "https://mytestsite.com",
+            isMembership: true
         }
 
         await req
@@ -256,7 +263,8 @@ describe("update blog /blogs", () => {
         const newBlog: BlogType = {
             name: "test name 1",
             description: "test description 1",
-            websiteUrl: "https://mytestsite1.com"
+            websiteUrl: "https://mytestsite1.com",
+            isMembership: true
         }
 
         const createRes = await req
@@ -268,14 +276,16 @@ describe("update blog /blogs", () => {
         expect(createRes.body).toEqual(
             {
                 ...newBlog,
-                id: expect.any(String)
+                id: expect.any(String),
+                createdAt: expect.any(String)
             }
         );
 
         const updatedBlog: BlogType = {
             name: "test name 2",
             description: "test description 2",
-            websiteUrl: "https://mytestsite2.com"
+            websiteUrl: "https://mytestsite2.com",
+            isMembership: false
         }
 
         await req
@@ -290,7 +300,8 @@ describe("update blog /blogs", () => {
 
         expect(checkRes.body).toEqual({
             ...updatedBlog,
-            id: createRes.body.id
+            id: createRes.body.id,
+            createdAt: checkRes.body.createdAt
         });
     })
 })
@@ -312,7 +323,8 @@ describe("delete blog by id /blogs", () => {
         const blog: BlogType = {
             name: "test name 1",
             description: "test description 1",
-            websiteUrl: "https://mytestsite1.com"
+            websiteUrl: "https://mytestsite1.com",
+            isMembership: true
         };
         blogIdForDeletion = await blogsRepositoryMongoDb.addNewBlog(blog);
 
@@ -322,7 +334,8 @@ describe("delete blog by id /blogs", () => {
 
         expect(checkRes.body).toEqual({
             ...blog,
-            id: blogIdForDeletion
+            id: blogIdForDeletion,
+            createdAt: expect.any(String)
         });
     })
 

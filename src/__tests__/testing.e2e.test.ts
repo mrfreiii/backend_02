@@ -8,10 +8,10 @@ describe("delete all data", () => {
     connectToTestDBAndClearRepositories();
 
     it("should get default post and blog", async () => {
-        const newBlog: BlogType = {
+        const newBlog: Omit<BlogType, "isMembership"> = {
             name: "new new new blog",
             description: "cannot create interesting description",
-            websiteUrl: "https://mynewblog.con"
+            websiteUrl: "https://mynewblog.con",
         }
         const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog);
 
@@ -22,7 +22,9 @@ describe("delete all data", () => {
         expect(blogsRes.body.length).toBe(1);
         expect(blogsRes.body[0]).toEqual({
             ...newBlog,
-            id: createdBlogId
+            id: createdBlogId,
+            isMembership: false,
+            createdAt: expect.any(String)
         });
 
         const newPost: Omit<PostType, "blogName"> = {
@@ -42,6 +44,7 @@ describe("delete all data", () => {
             ...newPost,
             id: createdPostId,
             blogName: newBlog.name,
+            createdAt: expect.any(String)
         });
     })
 
