@@ -1,15 +1,16 @@
-import { req, validAuthHeader } from "./test-helpers";
+import {
+    req,
+    validAuthHeader,
+    connectToTestDBAndClearRepositories
+} from "./test-helpers";
 import { SETTINGS } from "../settings";
-import { blogsRepositoryInMemory } from "../repositories_in_memory/blogsRepositoryInMemory";
-import { postsRepositoryInMemory } from "../repositories_in_memory/postsRepositoryInMemory";
-import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
 import { BlogType, PostType } from "../db/types";
+import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
+import { postsRepositoryMongoDb } from "../repositories_mongo_db/postsRepositoryMongoDb";
+import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
 
 describe("get all /posts", () => {
-    beforeAll(async () => {
-        await postsRepositoryInMemory.clearDB();
-        await blogsRepositoryInMemory.clearDB();
-    })
+    connectToTestDBAndClearRepositories();
 
     it("should get empty array", async () => {
         const res = await req
@@ -20,20 +21,20 @@ describe("get all /posts", () => {
     })
 
     it("should get not empty array", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: "new new new blog",
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
         }
-        const createdBlogId = await blogsRepositoryInMemory.addNewBlog(newBlog);
+        const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog);
 
-        const newPost: Omit<PostType, "id" | "blogName"> = {
+        const newPost: Omit<PostType, "blogName"> = {
             title: "test post title 1",
             shortDescription: "test post description 1",
             content: "test post content 1",
             blogId: createdBlogId,
         }
-        const createdPostId = await postsRepositoryInMemory.addNewPost(newPost)
+        const createdPostId = await postsRepositoryMongoDb.addNewPost(newPost)
 
         const res = await req
             .get(SETTINGS.PATH.POSTS)
@@ -49,26 +50,23 @@ describe("get all /posts", () => {
 })
 
 describe("get post by id /posts", () => {
-    beforeAll(async () => {
-        await postsRepositoryInMemory.clearDB();
-        await blogsRepositoryInMemory.clearDB();
-    })
+    connectToTestDBAndClearRepositories();
 
     it("should get not empty array", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: "new new new blog",
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
         }
-        const createdBlogId = await blogsRepositoryInMemory.addNewBlog(newBlog);
+        const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog);
 
-        const newPost: Omit<PostType, "id" | "blogName"> = {
+        const newPost: Omit<PostType, "blogName"> = {
             title: "test post title 1",
             shortDescription: "test post description 1",
             content: "test post content 1",
             blogId: createdBlogId,
         }
-        const createdPostId = await postsRepositoryInMemory.addNewPost(newPost)
+        const createdPostId = await postsRepositoryMongoDb.addNewPost(newPost)
 
         const res = await req
             .get(`${SETTINGS.PATH.POSTS}/${createdPostId}`)
@@ -83,30 +81,19 @@ describe("get post by id /posts", () => {
 })
 
 describe("create post /posts", () => {
-    beforeAll(async () => {
-       await postsRepositoryInMemory.clearDB();
-       await blogsRepositoryInMemory.clearDB();
-       req.set("Authorization", "");
-    })
+    connectToTestDBAndClearRepositories();
 
     it("should return 401 for request without auth header", async () => {
-        const newPost: Omit<PostType, "id" | "blogName"> = {
-            title: "new post title",
-            shortDescription: "new shortDescription",
-            content: "new content",
-            blogId: "any"
-        }
-
         const res = await req
             .post(SETTINGS.PATH.POSTS)
-            .send(newPost)
+            .send({})
             .expect(401)
 
         expect(res.body.error).toBe(AUTH_ERROR_MESSAGES.NoHeader);
     })
 
     it("should return 400 for title, shortDescription, content, and blogId are not string", async () => {
-        const newPost: Omit<PostType, "id" | "blogName"> = {
+        const newPost: Omit<PostType, "blogName"> = {
             title: null as unknown as string,
             shortDescription: null as unknown as string,
             content: null as unknown as string,
@@ -142,7 +129,7 @@ describe("create post /posts", () => {
     })
 
     it("should return 400 for title, shortDescription, and content too short", async () => {
-        const newPost: Omit<PostType, "id" | "blogName"> = {
+        const newPost: Omit<PostType, "blogName"> = {
             title: " ",
             shortDescription: " ",
             content: " ",
@@ -179,7 +166,7 @@ describe("create post /posts", () => {
     })
 
     it("should return 400 for title too long", async () => {
-        const newPost: Omit<PostType, "id" | "blogName"> = {
+        const newPost: Omit<PostType, "blogName"> = {
             title: "1234567890123456789012345678901 ",
             shortDescription: "123",
             content: "123",
@@ -207,7 +194,7 @@ describe("create post /posts", () => {
     })
 
     it("should return 400 for blog with blogId no exist", async () => {
-        const newPost: Omit<PostType, "id" | "blogName"> = {
+        const newPost: Omit<PostType, "blogName"> = {
             title: "title",
             shortDescription: "shortDescription",
             content: "content",
@@ -230,7 +217,7 @@ describe("create post /posts", () => {
     })
 
     it("should create a post", async () => {
-        const newBlog: Omit<BlogType, "id"> = {
+        const newBlog: BlogType = {
             name: "test name",
             description: "test description",
             websiteUrl: "https://mytestsite.com"
@@ -249,7 +236,7 @@ describe("create post /posts", () => {
             }
         );
 
-        const newPost: Omit<PostType, "id" | "blogName"> = {
+        const newPost: Omit<PostType, "blogName"> = {
             title: "title1",
             shortDescription: "shortDescription1",
             content: "content1",
@@ -273,11 +260,7 @@ describe("create post /posts", () => {
 })
 
 describe("update post by id /posts", () => {
-    beforeAll(async () => {
-        await postsRepositoryInMemory.clearDB();
-        await blogsRepositoryInMemory.clearDB();
-        req.set("Authorization", "");
-    })
+    connectToTestDBAndClearRepositories();
 
     it("should return 401 for request without auth header", async () => {
         const res = await req
@@ -289,22 +272,22 @@ describe("update post by id /posts", () => {
     })
 
     it("should return 400 for invalid title and no shortDescription", async () => {
-        const blog: Omit<BlogType, "id"> = {
+        const blog: BlogType = {
             name: "test name 1",
             description: "test description 1",
             websiteUrl: "https://mytestsite1.com"
         };
-        const blogId = await blogsRepositoryInMemory.addNewBlog(blog);
+        const blogId = await blogsRepositoryMongoDb.addNewBlog(blog);
 
-        const post: Omit<PostType, "id" | "blogName"> = {
+        const post: Omit<PostType, "blogName"> = {
             title: "title1",
             shortDescription: "shortDescription1",
             content: "content1",
             blogId: blogId,
         }
-        const postId = await postsRepositoryInMemory.addNewPost(post) as string;
+        const postId = await postsRepositoryMongoDb.addNewPost(post) as string;
 
-        const updatedPost: Omit<PostType, "id" | "blogName" | "shortDescription"> = {
+        const updatedPost: Omit<PostType, "blogName" | "shortDescription"> = {
             title: "1234567890123456789012345678901",
             content: "content1",
             blogId: blogId,
@@ -331,29 +314,29 @@ describe("update post by id /posts", () => {
     })
 
     it("should update a post", async () => {
-        const blog1: Omit<BlogType, "id"> = {
+        const blog1: BlogType = {
             name: "test name 1",
             description: "test description 1",
             websiteUrl: "https://mytestsite1.com"
         };
-        const blog2: Omit<BlogType, "id"> = {
+        const blog2: BlogType = {
             name: "test name 2",
             description: "test description 2",
             websiteUrl: "https://mytestsite2.com"
         };
 
-        const blog1Id = await blogsRepositoryInMemory.addNewBlog(blog1);
-        const blog2Id = await blogsRepositoryInMemory.addNewBlog(blog2);
+        const blog1Id = await blogsRepositoryMongoDb.addNewBlog(blog1);
+        const blog2Id = await blogsRepositoryMongoDb.addNewBlog(blog2);
 
-        const newPost: Omit<PostType, "id" | "blogName"> = {
+        const newPost: Omit<PostType,"blogName"> = {
             title: "title1",
             shortDescription: "shortDescription1",
             content: "content1",
             blogId: blog1Id,
         }
-        const postId = await postsRepositoryInMemory.addNewPost(newPost);
+        const postId = await postsRepositoryMongoDb.addNewPost(newPost);
 
-        const updatedPost: Omit<PostType, "id" | "blogName"> = {
+        const updatedPost: Omit<PostType, "blogName"> = {
             title: "title2",
             shortDescription: "shortDescription2",
             content: "content2",
@@ -379,29 +362,25 @@ describe("update post by id /posts", () => {
 })
 
 describe("delete post by id /posts", () => {
-    beforeAll(async () => {
-        await postsRepositoryInMemory.clearDB();
-        await blogsRepositoryInMemory.clearDB();
-        req.set("Authorization", "");
-    })
+    connectToTestDBAndClearRepositories();
 
     let postIdForDeletion: string = "";
 
     it("should return not empty array", async () => {
-        const blog: Omit<BlogType, "id"> = {
+        const blog: BlogType = {
             name: "test name 1",
             description: "test description 1",
             websiteUrl: "https://mytestsite1.com"
         };
-        const blogId = await blogsRepositoryInMemory.addNewBlog(blog);
+        const blogId = await blogsRepositoryMongoDb.addNewBlog(blog);
 
-        const post: Omit<PostType, "id" | "blogName"> = {
+        const post: Omit<PostType, "blogName"> = {
             title: "title1",
             shortDescription: "shortDescription1",
             content: "content1",
             blogId: blogId,
         }
-        postIdForDeletion = await postsRepositoryInMemory.addNewPost(post) as string;
+        postIdForDeletion = await postsRepositoryMongoDb.addNewPost(post) as string;
 
         const checkRes = await req
             .get(SETTINGS.PATH.POSTS)

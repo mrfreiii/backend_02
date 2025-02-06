@@ -1,24 +1,11 @@
-import { req } from "./test-helpers";
 import { SETTINGS } from "../settings";
 import { BlogType, PostType } from "../db/types";
+import { connectToTestDBAndClearRepositories, req } from "./test-helpers";
 import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
-import { postsRepositoryInMemory } from "../repositories_in_memory/postsRepositoryInMemory";
-import { MongoMemoryServer } from "mongodb-memory-server";
-import { connectToTestDB } from "../db/mongodb";
+import { postsRepositoryMongoDb } from "../repositories_mongo_db/postsRepositoryMongoDb";
 
 describe("delete all data", () => {
-    let server: MongoMemoryServer;
-
-    beforeAll(async () => {
-        server = await connectToTestDB();
-
-        await blogsRepositoryMongoDb.clearDB();
-        await postsRepositoryInMemory.clearDB();
-    })
-
-    afterAll(async ()=>{
-        await server.stop();
-    })
+    connectToTestDBAndClearRepositories();
 
     it("should get default post and blog", async () => {
         const newBlog: BlogType = {
@@ -38,13 +25,13 @@ describe("delete all data", () => {
             id: createdBlogId
         });
 
-        const newPost: Omit<PostType, "id" | "blogName"> = {
+        const newPost: Omit<PostType, "blogName"> = {
             title: "test post title 1",
             shortDescription: "test post description 1",
             content: "test post content 1",
             blogId: createdBlogId,
         }
-        const createdPostId = await postsRepositoryInMemory.addNewPost(newPost)
+        const createdPostId = await postsRepositoryMongoDb.addNewPost(newPost)
 
         const postsRes = await req
             .get(SETTINGS.PATH.POSTS)

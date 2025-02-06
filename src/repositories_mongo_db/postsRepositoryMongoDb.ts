@@ -1,36 +1,32 @@
-import { blogsRepositoryMongoDb } from "./blogsRepositoryMongoDb";
-import { PostType } from "../db/types";
+import { ObjectId } from "mongodb";
 
-let postsDB: PostType[] = [
-    {
-        id: "10888",
-        title: "some post title 1",
-        shortDescription: "some post description 1",
-        content: "some post content 1",
-        blogId: "99101",
-        blogName: "some blog name 1",
-    },
-    {
-        id: "10999",
-        title: "some post title 2",
-        shortDescription: "some post description 2",
-        content: "some post content 2",
-        blogId: "99102",
-        blogName: "some blog name 2",
-    },
-]
+import { PostType } from "../db/types";
+import { postCollection } from "../db/mongodb";
+import { replaceMongo_idByid } from "../utils/mapDbResult";
+import { blogsRepositoryMongoDb } from "./blogsRepositoryMongoDb";
 
 export const postsRepositoryMongoDb = {
-    clearDB: () => {
-        postsDB = [];
+    clearDB: async () => {
+        return postCollection.drop();
     },
-    getAllPosts: () => {
-        return postsDB;
+    getAllPosts: async () => {
+        const result = await postCollection.find({}).toArray();
+        return result?.map((post) => replaceMongo_idByid(post));
     },
-    getPostById: (id: string) => {
-        return postsDB.find((post) => post.id === id);
+    getPostById: async (id: string) => {
+        try {
+            const result = await postCollection.findOne({_id: new ObjectId(id)});
+            if (!result) {
+                return;
+            }
+
+            return replaceMongo_idByid(result);
+        } catch (e) {
+            console.log(e);
+            return;
+        }
     },
-    addNewPost: (
+    addNewPost: async (
         {
             title,
             shortDescription,
@@ -43,26 +39,24 @@ export const postsRepositoryMongoDb = {
                 content: string;
                 blogId: string;
             }
-    ) => {
-        // const blogName = blogsRepository.getBlogById(blogId)?.name;
-        // if (!blogName) {
-        //     return;
-        // }
+    ): Promise<string | undefined> => {
+        const blog = await blogsRepositoryMongoDb.getBlogById(blogId);
+        if (!blog) {
+            return;
+        }
 
-        // const createdPostId = `${+Date.now()}`;
-        // const newPost: PostType = {
-        //     id: createdPostId,
-        //     title,
-        //     shortDescription,
-        //     content,
-        //     blogId,
-        //     // blogName,
-        // };
+        const newPost: PostType = {
+            title,
+            shortDescription,
+            content,
+            blogId,
+            blogName: blog.name,
+        };
 
-        // postsDB.push(newPost);
-        // return createdPostId;
+        const createdPost = await postCollection.insertOne(newPost);
+        return createdPost?.insertedId?.toString();
     },
-    updatePost: (
+    updatePost: async (
         {
             id,
             title,
@@ -77,32 +71,39 @@ export const postsRepositoryMongoDb = {
                 content: string;
                 blogId: string;
             }
-    ): boolean => {
-        const foundPost = postsRepositoryMongoDb.getPostById(id);
-        if (!foundPost) {
+    ): Promise<boolean> => {
+        try {
+            const foundBlog = await blogsRepositoryMongoDb.getBlogById(blogId);
+            if (!foundBlog) {
+                return false;
+            }
+
+            const updatedPost: PostType = {
+                title: title.trim(),
+                shortDescription: shortDescription.trim(),
+                content: content.trim(),
+                blogId: blogId,
+                blogName: foundBlog.name,
+            }
+
+            const result = await postCollection.updateOne(
+                {_id: new ObjectId(id)},
+                {$set: updatedPost}
+            );
+
+            return result.matchedCount === 1;
+        } catch (e){
+            console.log(e);
             return false;
         }
-
-        const foundBlog = blogsRepositoryMongoDb.getBlogById(blogId);
-        if (!foundBlog) {
-            return false;
-        }
-
-        foundPost.title = title.trim();
-        foundPost.shortDescription = shortDescription.trim();
-        foundPost.content = content.trim();
-        foundPost.blogId = blogId.trim();
-        // foundPost.blogName = foundBlog.name;
-
-        return true;
     },
-    deletePostById: (id: string): boolean => {
-        const foundPost = postsDB.find((post) => post.id === id);
-        if(!foundPost){
+    deletePostById: async (id: string): Promise<boolean> => {
+        try{
+            const result = await postCollection.deleteOne({_id: new ObjectId(id)});
+            return result.deletedCount === 1;
+        } catch (e){
+            console.log(e);
             return false;
         }
-
-        postsDB = postsDB.filter((post) => post.id !== id);
-        return true;
     },
 }

@@ -1,5 +1,6 @@
 import { Router, Request,Response  } from "express";
 import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
+import { postsRepositoryMongoDb } from "../repositories_mongo_db/postsRepositoryMongoDb";
 
 export const testingRouter = Router();
 
@@ -7,10 +8,10 @@ const testingController = {
     deleteAllData: async (req: Request, res: Response) => {
         try{
             const isBlogsDeleted = await blogsRepositoryMongoDb.clearDB();
-            // await postsRepositoryInMemory.clearDB();
+            const isPostsDeleted = await postsRepositoryMongoDb.clearDB();
 
 
-            if(!isBlogsDeleted){
+            if(!isBlogsDeleted || !isPostsDeleted){
                 res.sendStatus(599)
                 return;
             }

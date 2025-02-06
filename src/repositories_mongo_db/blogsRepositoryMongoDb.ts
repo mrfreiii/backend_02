@@ -1,6 +1,8 @@
+import { ObjectId } from "mongodb";
+
 import { BlogType } from "../db/types";
 import { blogCollection } from "../db/mongodb";
-import { ObjectId } from "mongodb";
+import { replaceMongo_idByid } from "../utils/mapDbResult";
 
 export const blogsRepositoryMongoDb = {
     clearDB: async () => {
@@ -8,16 +10,16 @@ export const blogsRepositoryMongoDb = {
     },
     getAllBlogs: async () => {
         const result = await blogCollection.find({}).toArray();
-        return result?.map((blog) => blogsRepositoryMongoDb.mapBlogResult(blog))
+        return result?.map((blog) => replaceMongo_idByid(blog))
     },
-    getBlogById: async (id: string) => {
+    getBlogById: async (id: string): Promise<BlogType | undefined> => {
         try {
             const result = await blogCollection.findOne({_id: new ObjectId(id)});
             if (!result) {
                 return;
             }
 
-            return blogsRepositoryMongoDb.mapBlogResult(result);
+            return replaceMongo_idByid(result);
         } catch (e) {
             console.log(e);
             return;
@@ -33,7 +35,7 @@ export const blogsRepositoryMongoDb = {
                 name: string;
                 description: string;
                 websiteUrl: string
-            }) => {
+            }): Promise<string> => {
         const newBlog: BlogType = {
             name: name.trim(),
             description: description.trim(),
@@ -55,7 +57,7 @@ export const blogsRepositoryMongoDb = {
             description: string;
             websiteUrl: string
         }): Promise<boolean> => {
-        const updatedBlog = {
+        const updatedBlog: BlogType = {
             name: name.trim(),
             description: description.trim(),
             websiteUrl: websiteUrl.trim(),
@@ -82,9 +84,4 @@ export const blogsRepositoryMongoDb = {
             return false;
         }
     },
-    mapBlogResult: (blog: BlogType) => {
-        const {_id, ...rest} = blog;
-
-        return {id: _id?.toString(), ...rest};
-    }
 }

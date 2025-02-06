@@ -1,28 +1,29 @@
 import { Request, Router, Response } from "express";
-import { postsRepositoryInMemory } from "../repositories_in_memory/postsRepositoryInMemory";
-import { CreatePostReqType, UpdatePostReqType } from "./types";
+
 import {
     blogIdValidator,
     contentValidator,
     postTitleValidator,
     shortDescriptionValidator
 } from "./postsValidators";
+import { PostType } from "../db/types";
+import { CreatePostReqType, UpdatePostReqType } from "./types";
 import { errorResultMiddleware } from "../middlewares/errorResultMiddleware";
 import { authorizationMiddleware } from "../middlewares/authorizationMiddleware";
-import { PostType } from "../db/types";
+import { postsRepositoryMongoDb } from "../repositories_mongo_db/postsRepositoryMongoDb";
 
 export const postsRouter = Router();
 
 const postsController = {
     getPosts: async (req: Request, res: Response<PostType[]>) => {
-        const allPosts = await postsRepositoryInMemory.getAllPosts();
+        const allPosts = await postsRepositoryMongoDb.getAllPosts();
 
         res
             .status(200)
             .json(allPosts);
     },
     getPostById: async (req: Request<{id: string}>, res: Response<PostType>) => {
-        const foundPost = await postsRepositoryInMemory.getPostById(req.params.id);
+        const foundPost = await postsRepositoryMongoDb.getPostById(req.params.id);
 
         if (!foundPost) {
             res.sendStatus(404);
@@ -34,7 +35,7 @@ const postsController = {
             .json(foundPost);
     },
     createPost: async (req: CreatePostReqType, res: Response<PostType>) => {
-        const createdPostId = await postsRepositoryInMemory.addNewPost({
+        const createdPostId = await postsRepositoryMongoDb.addNewPost({
             title: req.body.title.trim(),
             shortDescription: req.body.shortDescription.trim(),
             content: req.body.content.trim(),
@@ -46,7 +47,7 @@ const postsController = {
             return;
         }
 
-        const createdPost = await postsRepositoryInMemory.getPostById(createdPostId);
+        const createdPost = await postsRepositoryMongoDb.getPostById(createdPostId);
         if (!createdPostId) {
             res.sendStatus(599);
             return;
@@ -57,7 +58,7 @@ const postsController = {
             .json(createdPost);
     },
     updatePost: async (req: UpdatePostReqType, res: Response) => {
-        const isUpdated = await postsRepositoryInMemory.updatePost({
+        const isUpdated = await postsRepositoryMongoDb.updatePost({
             id: req.params.id,
             title: req.body.title,
             shortDescription: req.body.shortDescription,
@@ -73,7 +74,7 @@ const postsController = {
         res.sendStatus(204);
     },
     deletePostById: async (req: Request<{id: string}>, res: Response<PostType>) => {
-        const isDeleted = await postsRepositoryInMemory.deletePostById(req.params.id);
+        const isDeleted = await postsRepositoryMongoDb.deletePostById(req.params.id);
         if (!isDeleted) {
             res.sendStatus(404);
             return;

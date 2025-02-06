@@ -1,23 +1,15 @@
-import { MongoMemoryServer } from "mongodb-memory-server"
-
+import {
+    req,
+    validAuthHeader,
+    connectToTestDBAndClearRepositories
+} from "./test-helpers";
 import { SETTINGS } from "../settings";
 import { BlogType } from "../db/types";
-import { req, validAuthHeader } from "./test-helpers";
 import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
 import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
-import { connectToTestDB } from "../db/mongodb";
 
 describe("get all /blogs", () => {
-    let server: MongoMemoryServer;
-
-    beforeAll(async () => {
-        server = await connectToTestDB();
-        await blogsRepositoryMongoDb.clearDB();
-    })
-
-    afterAll(async ()=>{
-        await server.stop();
-    })
+    connectToTestDBAndClearRepositories();
 
     it("should get empty array", async () => {
         const res = await req
@@ -48,16 +40,7 @@ describe("get all /blogs", () => {
 })
 
 describe("get blog by id /blogs", () => {
-    let server: MongoMemoryServer;
-
-    beforeAll(async () => {
-        server = await connectToTestDB();
-        await blogsRepositoryMongoDb.clearDB();
-    })
-
-    afterAll(async ()=>{
-        await server.stop();
-    })
+    connectToTestDBAndClearRepositories();
 
     it("should get not empty array", async () => {
         const newBlog: BlogType = {
@@ -79,17 +62,7 @@ describe("get blog by id /blogs", () => {
 })
 
 describe("create blog /blogs", () => {
-    let server: MongoMemoryServer;
-
-    beforeAll(async () => {
-        server = await connectToTestDB();
-        await blogsRepositoryMongoDb.clearDB();
-        req.set("Authorization", "");
-    })
-
-    afterAll(async ()=>{
-        await server.stop();
-    })
+    connectToTestDBAndClearRepositories();
 
     it("should return 401 for request without auth header", async () => {
         const res = await req
@@ -254,17 +227,7 @@ describe("create blog /blogs", () => {
 })
 
 describe("update blog /blogs", () => {
-    let server: MongoMemoryServer;
-
-    beforeAll(async () => {
-        server = await connectToTestDB();
-        await blogsRepositoryMongoDb.clearDB();
-        req.set("Authorization", "");
-    })
-
-    afterAll(async ()=>{
-        await server.stop();
-    })
+    connectToTestDBAndClearRepositories();
 
     it("should return 401 for request without auth header", async () => {
         const res = await req
@@ -333,17 +296,7 @@ describe("update blog /blogs", () => {
 })
 
 describe("delete blog by id /blogs", () => {
-    let server: MongoMemoryServer;
-
-    beforeAll(async () => {
-        server = await connectToTestDB();
-        await blogsRepositoryMongoDb.clearDB();
-        req.set("Authorization", "");
-    })
-
-    afterAll(async ()=>{
-        await server.stop();
-    })
+    connectToTestDBAndClearRepositories();
 
     let blogIdForDeletion: string = "";
 
