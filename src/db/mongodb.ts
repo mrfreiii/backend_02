@@ -28,7 +28,7 @@ export const connectToDB = async ({ dbUrl, dbName }:{ dbUrl: string, dbName: str
     }
 }
 
-export const runTestServerDB = async (): Promise<MongoMemoryServer> => {
+export const connectToTestDB = async (): Promise<MongoMemoryServer> => {
     const server = await MongoMemoryServer.create()
 
     const uri = server.getUri()
@@ -42,7 +42,7 @@ export const runTestServerDB = async (): Promise<MongoMemoryServer> => {
     try {
         await client.connect();
         await db.command({ping: 1});
-        console.log("connected to db");
+        console.log("connected to test db");
     } catch (e) {
         console.log(e);
         await server.stop();

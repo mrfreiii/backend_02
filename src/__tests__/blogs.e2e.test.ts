@@ -5,13 +5,13 @@ import { BlogType } from "../db/types";
 import { req, validAuthHeader } from "./test-helpers";
 import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
 import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
-import { runTestServerDB } from "../db/mongodb";
-
-let server: MongoMemoryServer;
+import { connectToTestDB } from "../db/mongodb";
 
 describe("get all /blogs", () => {
+    let server: MongoMemoryServer;
+
     beforeAll(async () => {
-        server = await runTestServerDB();
+        server = await connectToTestDB();
         await blogsRepositoryMongoDb.clearDB();
     })
 
@@ -48,8 +48,10 @@ describe("get all /blogs", () => {
 })
 
 describe("get blog by id /blogs", () => {
+    let server: MongoMemoryServer;
+
     beforeAll(async () => {
-        server = await runTestServerDB();
+        server = await connectToTestDB();
         await blogsRepositoryMongoDb.clearDB();
     })
 
@@ -77,8 +79,10 @@ describe("get blog by id /blogs", () => {
 })
 
 describe("create blog /blogs", () => {
+    let server: MongoMemoryServer;
+
     beforeAll(async () => {
-        server = await runTestServerDB();
+        server = await connectToTestDB();
         await blogsRepositoryMongoDb.clearDB();
         req.set("Authorization", "");
     })
@@ -250,8 +254,10 @@ describe("create blog /blogs", () => {
 })
 
 describe("update blog /blogs", () => {
+    let server: MongoMemoryServer;
+
     beforeAll(async () => {
-        server = await runTestServerDB();
+        server = await connectToTestDB();
         await blogsRepositoryMongoDb.clearDB();
         req.set("Authorization", "");
     })
@@ -327,8 +333,10 @@ describe("update blog /blogs", () => {
 })
 
 describe("delete blog by id /blogs", () => {
+    let server: MongoMemoryServer;
+
     beforeAll(async () => {
-        server = await runTestServerDB();
+        server = await connectToTestDB();
         await blogsRepositoryMongoDb.clearDB();
         req.set("Authorization", "");
     })

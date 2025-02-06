@@ -4,13 +4,13 @@ import { BlogType, PostType } from "../db/types";
 import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
 import { postsRepositoryInMemory } from "../repositories_in_memory/postsRepositoryInMemory";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { runTestServerDB } from "../db/mongodb";
-
-let server: MongoMemoryServer;
+import { connectToTestDB } from "../db/mongodb";
 
 describe("delete all data", () => {
+    let server: MongoMemoryServer;
+
     beforeAll(async () => {
-        server = await runTestServerDB();
+        server = await connectToTestDB();
 
         await blogsRepositoryMongoDb.clearDB();
         await postsRepositoryInMemory.clearDB();
