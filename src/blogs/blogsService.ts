@@ -1,15 +1,9 @@
-import { ObjectId } from "mongodb";
-
 import { BlogType } from "./types";
-import { blogCollection } from "../db/mongodb";
-import { replaceMongo_idByid } from "../utils/mapDbResult";
-import { QueryType, WithPagination } from "../types";
 import { blogsRepository } from "./blogsRepository";
+import { QueryType, WithPagination } from "../types";
+import { replaceMongo_idByid } from "../utils/mapDbResult";
 
 export const blogsService = {
-    clearDB: async () => {
-        return blogCollection.drop();
-    },
     getAllBlogs: async (parsedQuery: QueryType): Promise<WithPagination<BlogType>> => {
         const allBlogs = await blogsRepository._getAllBlogs(parsedQuery);
         const blogsCount = await blogsRepository._getBlogsCount(parsedQuery.searchNameTerm);
@@ -23,17 +17,12 @@ export const blogsService = {
         }
     },
     getBlogById: async (id: string): Promise<BlogType | undefined> => {
-        try {
-            const result = await blogCollection.findOne({_id: new ObjectId(id)});
-            if (!result) {
-                return;
-            }
-
-            return replaceMongo_idByid(result);
-        } catch (e) {
-            console.log(e);
+        const result = await blogsRepository._getBlogById(id);
+        if (!result) {
             return;
         }
+
+        return replaceMongo_idByid(result);
     },
     addNewBlog: async (
         {
@@ -56,8 +45,7 @@ export const blogsService = {
             createdAt: (new Date()).toISOString(),
         };
 
-        const createdBlog = await blogCollection.insertOne(newBlog);
-        return createdBlog?.insertedId?.toString();
+        return blogsRepository._addNewBlog(newBlog);
     },
     updateBlog: async (
         {
@@ -80,25 +68,9 @@ export const blogsService = {
             isMembership: typeof isMembership === "boolean" ? isMembership : false,
         }
 
-        try {
-            const result = await blogCollection.updateOne(
-                {_id: new ObjectId(id)},
-                {$set: updatedBlog}
-            );
-
-            return result.matchedCount === 1;
-        } catch (e){
-            console.log(e);
-            return false;
-        }
+        return blogsRepository._updateBlog({id, updatedBlog});
     },
     deleteBlogById: async (id: string): Promise<boolean> => {
-        try{
-            const result = await blogCollection.deleteOne({_id: new ObjectId(id)});
-            return result.deletedCount === 1;
-        } catch (e){
-            console.log(e);
-            return false;
-        }
+        return blogsRepository._deleteBlogById(id);
     },
 }

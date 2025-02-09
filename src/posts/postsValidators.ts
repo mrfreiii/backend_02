@@ -1,5 +1,6 @@
 import {body} from 'express-validator';
 import { blogsRepository } from "../blogs/blogsRepository";
+import { blogsService } from "../blogs/blogsService";
 
 export const postTitleValidator = body('title')
     .isString().withMessage("value must be a string")
@@ -18,7 +19,7 @@ export const blogIdValidator = body('blogId')
     .trim()
     .custom(async (blogId)=>{
         try{
-            const blog = await blogsRepository.getBlogById(blogId);
+            const blog = await blogsService.getBlogById(blogId);
             if(!blog){
                 return Promise.reject();
             }

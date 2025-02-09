@@ -4,27 +4,28 @@ import { postCollection } from "../db/mongodb";
 import { replaceMongo_idByid } from "../utils/mapDbResult";
 import { blogsRepository } from "../blogs/blogsRepository";
 import { PostType } from "./types";
+import { blogsService } from "../blogs/blogsService";
 
 export const postsRepository = {
     clearDB: async () => {
-        return postCollection.drop();
+        // return postCollection.drop();
     },
     getAllPosts: async () => {
-        const result = await postCollection.find({}).toArray();
-        return result?.map((post) => replaceMongo_idByid(post));
+        // const result = await postCollection.find({}).toArray();
+        // return result?.map((post) => replaceMongo_idByid(post));
     },
     getPostById: async (id: string) => {
-        try {
-            const result = await postCollection.findOne({_id: new ObjectId(id)});
-            if (!result) {
-                return;
-            }
-
-            return replaceMongo_idByid(result);
-        } catch (e) {
-            console.log(e);
-            return;
-        }
+        // try {
+        //     const result = await postCollection.findOne({_id: new ObjectId(id)});
+        //     if (!result) {
+        //         return;
+        //     }
+        //
+        //     return replaceMongo_idByid(result);
+        // } catch (e) {
+        //     console.log(e);
+        //     return;
+        // }
     },
     addNewPost: async (
         {
@@ -40,22 +41,23 @@ export const postsRepository = {
                 blogId: string;
             }
     ): Promise<string | undefined> => {
-        const blog = await blogsRepository.getBlogById(blogId);
-        if (!blog) {
-            return;
-        }
-
-        const newPost: PostType = {
-            title,
-            shortDescription,
-            content,
-            blogId,
-            blogName: blog.name,
-            createdAt: (new Date()).toISOString(),
-        };
-
-        const createdPost = await postCollection.insertOne(newPost);
-        return createdPost?.insertedId?.toString();
+        // const blog = await blogsService.getBlogById(blogId);
+        // if (!blog) {
+        //     return;
+        // }
+        //
+        // const newPost: PostType = {
+        //     title,
+        //     shortDescription,
+        //     content,
+        //     blogId,
+        //     blogName: blog.name,
+        //     createdAt: (new Date()).toISOString(),
+        // };
+        //
+        // const createdPost = await postCollection.insertOne(newPost);
+        // return createdPost?.insertedId?.toString();
+        return ""
     },
     updatePost: async (
         {
@@ -73,38 +75,40 @@ export const postsRepository = {
                 blogId: string;
             }
     ): Promise<boolean> => {
-        try {
-            const foundBlog = await blogsRepository.getBlogById(blogId);
-            if (!foundBlog) {
-                return false;
-            }
-
-            const updatedPost: PostType = {
-                title: title.trim(),
-                shortDescription: shortDescription.trim(),
-                content: content.trim(),
-                blogId: blogId,
-                blogName: foundBlog.name,
-            }
-
-            const result = await postCollection.updateOne(
-                {_id: new ObjectId(id)},
-                {$set: updatedPost}
-            );
-
-            return result.matchedCount === 1;
-        } catch (e){
-            console.log(e);
-            return false;
-        }
+        // try {
+        //     const foundBlog = await blogsRepository.getBlogById(blogId);
+        //     if (!foundBlog) {
+        //         return false;
+        //     }
+        //
+        //     const updatedPost: PostType = {
+        //         title: title.trim(),
+        //         shortDescription: shortDescription.trim(),
+        //         content: content.trim(),
+        //         blogId: blogId,
+        //         blogName: foundBlog.name,
+        //     }
+        //
+        //     const result = await postCollection.updateOne(
+        //         {_id: new ObjectId(id)},
+        //         {$set: updatedPost}
+        //     );
+        //
+        //     return result.matchedCount === 1;
+        // } catch (e){
+        //     console.log(e);
+        //     return false;
+        // }
+        return true
     },
     deletePostById: async (id: string): Promise<boolean> => {
-        try{
-            const result = await postCollection.deleteOne({_id: new ObjectId(id)});
-            return result.deletedCount === 1;
-        } catch (e){
-            console.log(e);
-            return false;
-        }
+        // try{
+        //     const result = await postCollection.deleteOne({_id: new ObjectId(id)});
+        //     return result.deletedCount === 1;
+        // } catch (e){
+        //     console.log(e);
+        //     return false;
+        // }
+        return true
     },
 }

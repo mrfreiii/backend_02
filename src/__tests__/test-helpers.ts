@@ -19,8 +19,8 @@ export const connectToTestDBAndClearRepositories = () => {
     beforeAll(async () => {
         server = await connectToTestDB();
 
-        await postsRepository.clearDB();
-        await blogsRepository.clearDB();
+        // await postsRepository.clearDB();
+        await blogsRepository._clearDB();
         req.set("Authorization", "");
     })
 

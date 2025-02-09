@@ -6,7 +6,7 @@ import { replaceMongo_idByid } from "../utils/mapDbResult";
 import { QueryType } from "../types";
 
 export const blogsRepository = {
-    clearDB: async () => {
+    _clearDB: async () => {
         return blogCollection.drop();
     },
     _getAllBlogs: async (parsedQuery: QueryType) => {
@@ -16,8 +16,6 @@ export const blogsRepository = {
         if (searchNameTerm) {
             filter.name = {$regex: searchNameTerm, $options: "i"};
         }
-        console.log("filter")
-        console.log(filter)
 
         return blogCollection
             .find(filter)
@@ -35,7 +33,7 @@ export const blogsRepository = {
 
         return blogCollection.countDocuments(filter);
     },
-    getBlogById: async (id: string): Promise<BlogType | undefined> => {
+    _getBlogById: async (id: string): Promise<BlogType | undefined> => {
         try {
             const result = await blogCollection.findOne({_id: new ObjectId(id)});
             if (!result) {
@@ -48,51 +46,18 @@ export const blogsRepository = {
             return;
         }
     },
-    _addNewBlog: async (
-        {
-            name,
-            description,
-            websiteUrl,
-            isMembership,
-        }:
-            {
-                name: string;
-                description: string;
-                websiteUrl: string;
-                isMembership?: boolean;
-            }): Promise<string> => {
-        const newBlog: BlogType = {
-            name: name.trim(),
-            description: description.trim(),
-            websiteUrl: websiteUrl.trim(),
-            isMembership: typeof isMembership === "boolean" ? isMembership : false,
-            createdAt: (new Date()).toISOString(),
-        };
-
+    _addNewBlog: async (newBlog: BlogType): Promise<string> => {
         const createdBlog = await blogCollection.insertOne(newBlog);
         return createdBlog?.insertedId?.toString();
     },
-    updateBlog: async (
+    _updateBlog: async (
         {
             id,
-            name,
-            description,
-            websiteUrl,
-            isMembership,
+            updatedBlog
         }: {
             id: string;
-            name: string;
-            description: string;
-            websiteUrl: string;
-            isMembership?: boolean;
+            updatedBlog: BlogType
         }): Promise<boolean> => {
-        const updatedBlog: Omit<BlogType, "createdAt"> = {
-            name: name.trim(),
-            description: description.trim(),
-            websiteUrl: websiteUrl.trim(),
-            isMembership: typeof isMembership === "boolean" ? isMembership : false,
-        }
-
         try {
             const result = await blogCollection.updateOne(
                 {_id: new ObjectId(id)},
@@ -105,7 +70,7 @@ export const blogsRepository = {
             return false;
         }
     },
-    deleteBlogById: async (id: string): Promise<boolean> => {
+    _deleteBlogById: async (id: string): Promise<boolean> => {
         try {
             const result = await blogCollection.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
