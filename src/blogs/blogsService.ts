@@ -1,39 +1,26 @@
-import { ObjectId, SortDirection } from "mongodb";
+import { ObjectId } from "mongodb";
 
 import { BlogType } from "./types";
 import { blogCollection } from "../db/mongodb";
 import { replaceMongo_idByid } from "../utils/mapDbResult";
-import { QueryType } from "../types";
+import { QueryType, WithPagination } from "../types";
+import { blogsRepository } from "./blogsRepository";
 
-export const blogsRepository = {
+export const blogsService = {
     clearDB: async () => {
         return blogCollection.drop();
     },
-    _getAllBlogs: async (parsedQuery: QueryType) => {
-        const {searchNameTerm, sortBy, sortDirection, pageSize, pageNumber} = parsedQuery;
-        const filter: any = {};
+    getAllBlogs: async (parsedQuery: QueryType): Promise<WithPagination<BlogType>> => {
+        const allBlogs = await blogsRepository._getAllBlogs(parsedQuery);
+        const blogsCount = await blogsRepository._getBlogsCount(parsedQuery.searchNameTerm);
 
-        if (searchNameTerm) {
-            filter.name = {$regex: searchNameTerm, $options: "i"};
+        return {
+            pagesCount: Math.ceil(blogsCount / parsedQuery.pageSize),
+            page: parsedQuery.pageNumber,
+            pageSize: parsedQuery.pageSize,
+            totalCount: blogsCount,
+            items: allBlogs.map((blog) => replaceMongo_idByid(blog))
         }
-        console.log("filter")
-        console.log(filter)
-
-        return blogCollection
-            .find(filter)
-            .sort({[sortBy as string]: sortDirection as SortDirection})
-            .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
-            .toArray();
-    },
-    _getBlogsCount: async (searchNameTerm: string | null) => {
-        const filter: any = {};
-
-        if (searchNameTerm) {
-            filter.name = {$regex: searchNameTerm, $options: "i"};
-        }
-
-        return blogCollection.countDocuments(filter);
     },
     getBlogById: async (id: string): Promise<BlogType | undefined> => {
         try {
@@ -48,7 +35,7 @@ export const blogsRepository = {
             return;
         }
     },
-    _addNewBlog: async (
+    addNewBlog: async (
         {
             name,
             description,
@@ -100,16 +87,16 @@ export const blogsRepository = {
             );
 
             return result.matchedCount === 1;
-        } catch (e) {
+        } catch (e){
             console.log(e);
             return false;
         }
     },
     deleteBlogById: async (id: string): Promise<boolean> => {
-        try {
+        try{
             const result = await blogCollection.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
-        } catch (e) {
+        } catch (e){
             console.log(e);
             return false;
         }

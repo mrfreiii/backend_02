@@ -6,8 +6,7 @@ import {
     postTitleValidator,
     shortDescriptionValidator
 } from "./postsValidators";
-import { PostType } from "../db/types";
-import { CreatePostReqType, UpdatePostReqType } from "./types";
+import { CreatePostReqType, PostType, UpdatePostReqType } from "./types";
 import { errorResultMiddleware } from "../middlewares/errorResultMiddleware";
 import { authorizationMiddleware } from "../middlewares/authorizationMiddleware";
 import { postsRepository } from "./postsRepository";

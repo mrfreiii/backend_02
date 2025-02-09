@@ -2,7 +2,8 @@ import { Collection, Db, MongoClient } from "mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server"
 
 import { SETTINGS } from "../settings";
-import { BlogType, PostType } from "./types";
+import { BlogType } from "../blogs/types";
+import { PostType } from "../posts/types";
 
 export let blogCollection: Collection<BlogType>;
 export let postCollection: Collection<PostType>;

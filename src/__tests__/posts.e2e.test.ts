@@ -4,10 +4,11 @@ import {
     connectToTestDBAndClearRepositories
 } from "./test-helpers";
 import { SETTINGS } from "../settings";
-import { BlogType, PostType } from "../db/types";
 import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
 import { postsRepository } from "../posts/postsRepository";
 import { blogsRepository } from "../blogs/blogsRepository";
+import { BlogType } from "../blogs/types";
+import { PostType } from "../posts/types";
 
 describe("get all /posts", () => {
     connectToTestDBAndClearRepositories();

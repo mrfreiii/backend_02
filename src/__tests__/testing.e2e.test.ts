@@ -1,8 +1,9 @@
 import { SETTINGS } from "../settings";
-import { BlogType, PostType } from "../db/types";
 import { connectToTestDBAndClearRepositories, req } from "./test-helpers";
 import { blogsRepository } from "../blogs/blogsRepository";
 import { postsRepository } from "../posts/postsRepository";
+import { BlogType } from "../blogs/types";
+import { PostType } from "../posts/types";
 
 describe("delete all data", () => {
     connectToTestDBAndClearRepositories();

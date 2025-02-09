@@ -1,9 +1,9 @@
 import { ObjectId } from "mongodb";
 
-import { PostType } from "../db/types";
 import { postCollection } from "../db/mongodb";
 import { replaceMongo_idByid } from "../utils/mapDbResult";
 import { blogsRepository } from "../blogs/blogsRepository";
+import { PostType } from "./types";
 
 export const postsRepository = {
     clearDB: async () => {
