@@ -1,5 +1,5 @@
 import {body} from 'express-validator';
-import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
+import { blogsRepository } from "../blogs/blogsRepository";
 
 export const postTitleValidator = body('title')
     .isString().withMessage("value must be a string")
@@ -18,7 +18,7 @@ export const blogIdValidator = body('blogId')
     .trim()
     .custom(async (blogId)=>{
         try{
-            const blog = await blogsRepositoryMongoDb.getBlogById(blogId);
+            const blog = await blogsRepository.getBlogById(blogId);
             if(!blog){
                 return Promise.reject();
             }

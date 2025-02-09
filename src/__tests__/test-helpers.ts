@@ -3,8 +3,8 @@ import { agent } from "supertest";
 import { SETTINGS } from "../settings";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { connectToTestDB } from "../db/mongodb";
-import { postsRepositoryMongoDb } from "../repositories_mongo_db/postsRepositoryMongoDb";
-import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
+import { postsRepository } from "../posts/postsRepository";
+import { blogsRepository } from "../blogs/blogsRepository";
 
 export const req = agent(app);
 
@@ -19,8 +19,8 @@ export const connectToTestDBAndClearRepositories = () => {
     beforeAll(async () => {
         server = await connectToTestDB();
 
-        await postsRepositoryMongoDb.clearDB();
-        await blogsRepositoryMongoDb.clearDB();
+        await postsRepository.clearDB();
+        await blogsRepository.clearDB();
         req.set("Authorization", "");
     })
 

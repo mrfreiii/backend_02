@@ -6,8 +6,8 @@ import {
 import { SETTINGS } from "../settings";
 import { BlogType, PostType } from "../db/types";
 import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
-import { postsRepositoryMongoDb } from "../repositories_mongo_db/postsRepositoryMongoDb";
-import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
+import { postsRepository } from "../posts/postsRepository";
+import { blogsRepository } from "../blogs/blogsRepository";
 
 describe("get all /posts", () => {
     connectToTestDBAndClearRepositories();
@@ -27,7 +27,7 @@ describe("get all /posts", () => {
             websiteUrl: "https://mynewblog.con",
             isMembership: true
         }
-        const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog);
+        const createdBlogId = await blogsRepository.addNewBlog(newBlog);
 
         const newPost: Omit<PostType, "blogName"> = {
             title: "test post title 1",
@@ -35,7 +35,7 @@ describe("get all /posts", () => {
             content: "test post content 1",
             blogId: createdBlogId,
         }
-        const createdPostId = await postsRepositoryMongoDb.addNewPost(newPost)
+        const createdPostId = await postsRepository.addNewPost(newPost)
 
         const res = await req
             .get(SETTINGS.PATH.POSTS)
@@ -61,7 +61,7 @@ describe("get post by id /posts", () => {
             websiteUrl: "https://mynewblog.con",
             isMembership: true
         }
-        const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog);
+        const createdBlogId = await blogsRepository.addNewBlog(newBlog);
 
         const newPost: Omit<PostType, "blogName"> = {
             title: "test post title 1",
@@ -69,7 +69,7 @@ describe("get post by id /posts", () => {
             content: "test post content 1",
             blogId: createdBlogId,
         }
-        const createdPostId = await postsRepositoryMongoDb.addNewPost(newPost)
+        const createdPostId = await postsRepository.addNewPost(newPost)
 
         const res = await req
             .get(`${SETTINGS.PATH.POSTS}/${createdPostId}`)
@@ -285,7 +285,7 @@ describe("update post by id /posts", () => {
             websiteUrl: "https://mytestsite1.com",
             isMembership: false
         };
-        const blogId = await blogsRepositoryMongoDb.addNewBlog(blog);
+        const blogId = await blogsRepository.addNewBlog(blog);
 
         const post: Omit<PostType, "blogName"> = {
             title: "title1",
@@ -293,7 +293,7 @@ describe("update post by id /posts", () => {
             content: "content1",
             blogId: blogId,
         }
-        const postId = await postsRepositoryMongoDb.addNewPost(post) as string;
+        const postId = await postsRepository.addNewPost(post) as string;
 
         const updatedPost: Omit<PostType, "blogName" | "shortDescription"> = {
             title: "1234567890123456789012345678901",
@@ -335,8 +335,8 @@ describe("update post by id /posts", () => {
             isMembership: true
         };
 
-        const blog1Id = await blogsRepositoryMongoDb.addNewBlog(blog1);
-        const blog2Id = await blogsRepositoryMongoDb.addNewBlog(blog2);
+        const blog1Id = await blogsRepository.addNewBlog(blog1);
+        const blog2Id = await blogsRepository.addNewBlog(blog2);
 
         const newPost: Omit<PostType,"blogName"> = {
             title: "title1",
@@ -344,7 +344,7 @@ describe("update post by id /posts", () => {
             content: "content1",
             blogId: blog1Id,
         }
-        const postId = await postsRepositoryMongoDb.addNewPost(newPost);
+        const postId = await postsRepository.addNewPost(newPost);
 
         const updatedPost: Omit<PostType, "blogName"> = {
             title: "title2",
@@ -384,7 +384,7 @@ describe("delete post by id /posts", () => {
             websiteUrl: "https://mytestsite1.com",
             isMembership: false
         };
-        const blogId = await blogsRepositoryMongoDb.addNewBlog(blog);
+        const blogId = await blogsRepository.addNewBlog(blog);
 
         const post: Omit<PostType, "blogName"> = {
             title: "title1",
@@ -392,7 +392,7 @@ describe("delete post by id /posts", () => {
             content: "content1",
             blogId: blogId,
         }
-        postIdForDeletion = await postsRepositoryMongoDb.addNewPost(post) as string;
+        postIdForDeletion = await postsRepository.addNewPost(post) as string;
 
         const checkRes = await req
             .get(SETTINGS.PATH.POSTS)

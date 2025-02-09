@@ -3,9 +3,9 @@ import { ObjectId } from "mongodb";
 import { PostType } from "../db/types";
 import { postCollection } from "../db/mongodb";
 import { replaceMongo_idByid } from "../utils/mapDbResult";
-import { blogsRepositoryMongoDb } from "./blogsRepositoryMongoDb";
+import { blogsRepository } from "../blogs/blogsRepository";
 
-export const postsRepositoryMongoDb = {
+export const postsRepository = {
     clearDB: async () => {
         return postCollection.drop();
     },
@@ -40,7 +40,7 @@ export const postsRepositoryMongoDb = {
                 blogId: string;
             }
     ): Promise<string | undefined> => {
-        const blog = await blogsRepositoryMongoDb.getBlogById(blogId);
+        const blog = await blogsRepository.getBlogById(blogId);
         if (!blog) {
             return;
         }
@@ -74,7 +74,7 @@ export const postsRepositoryMongoDb = {
             }
     ): Promise<boolean> => {
         try {
-            const foundBlog = await blogsRepositoryMongoDb.getBlogById(blogId);
+            const foundBlog = await blogsRepository.getBlogById(blogId);
             if (!foundBlog) {
                 return false;
             }

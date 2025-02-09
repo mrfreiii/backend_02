@@ -8,20 +8,20 @@ import {
 import { errorResultMiddleware } from "../middlewares/errorResultMiddleware";
 import { authorizationMiddleware } from "../middlewares/authorizationMiddleware";
 import { BlogType } from "../db/types";
-import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
+import { blogsRepository } from "./blogsRepository";
 
 export const blogsRouter = Router();
 
 const blogsController = {
     getBlogs: async (req: Request, res: Response<BlogType[]>) => {
-        const allBlogs = await blogsRepositoryMongoDb.getAllBlogs();
+        const allBlogs = await blogsRepository.getAllBlogs();
 
         res
             .status(200)
             .json(allBlogs);
     },
     getBlogById: async (req: Request<{id: string}>, res: Response<BlogType>) => {
-        const foundBlog = await blogsRepositoryMongoDb.getBlogById(req.params.id);
+        const foundBlog = await blogsRepository.getBlogById(req.params.id);
 
         if (!foundBlog) {
             res.sendStatus(404);
@@ -33,13 +33,13 @@ const blogsController = {
             .json(foundBlog);
     },
     createBlog: async (req: CreateBlogReqType, res: Response<BlogType>) => {
-        const createdBlogId = await blogsRepositoryMongoDb.addNewBlog({
+        const createdBlogId = await blogsRepository.addNewBlog({
             name: req.body.name,
             description: req.body.description,
             websiteUrl: req.body.websiteUrl,
             isMembership: req.body.isMembership,
         });
-        const createdBlog = await blogsRepositoryMongoDb.getBlogById(createdBlogId);
+        const createdBlog = await blogsRepository.getBlogById(createdBlogId);
 
         if (!createdBlog) {
             res.sendStatus(599);
@@ -51,7 +51,7 @@ const blogsController = {
             .json(createdBlog);
     },
     updateBlog: async (req: UpdateBlogReqType, res: Response) => {
-        const isUpdated = await blogsRepositoryMongoDb.updateBlog({
+        const isUpdated = await blogsRepository.updateBlog({
             id: req.params.id,
             name: req.body.name,
             description: req.body.description,
@@ -68,7 +68,7 @@ const blogsController = {
         res.sendStatus(204)
     },
     deleteBlogById: async (req: Request<{id: string}>, res: Response) => {
-        const isDeleted = await blogsRepositoryMongoDb.deleteBlogById(req.params.id);
+        const isDeleted = await blogsRepository.deleteBlogById(req.params.id);
         if (!isDeleted) {
             res.sendStatus(404);
             return;

@@ -1,8 +1,8 @@
 import { SETTINGS } from "../settings";
 import { BlogType, PostType } from "../db/types";
 import { connectToTestDBAndClearRepositories, req } from "./test-helpers";
-import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
-import { postsRepositoryMongoDb } from "../repositories_mongo_db/postsRepositoryMongoDb";
+import { blogsRepository } from "../blogs/blogsRepository";
+import { postsRepository } from "../posts/postsRepository";
 
 describe("delete all data", () => {
     connectToTestDBAndClearRepositories();
@@ -13,7 +13,7 @@ describe("delete all data", () => {
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con",
         }
-        const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog);
+        const createdBlogId = await blogsRepository.addNewBlog(newBlog);
 
         const blogsRes = await req
             .get(SETTINGS.PATH.BLOGS)
@@ -33,7 +33,7 @@ describe("delete all data", () => {
             content: "test post content 1",
             blogId: createdBlogId,
         }
-        const createdPostId = await postsRepositoryMongoDb.addNewPost(newPost)
+        const createdPostId = await postsRepository.addNewPost(newPost)
 
         const postsRes = await req
             .get(SETTINGS.PATH.POSTS)

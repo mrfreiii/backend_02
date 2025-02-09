@@ -6,7 +6,7 @@ import {
 import { SETTINGS } from "../settings";
 import { BlogType } from "../db/types";
 import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
-import { blogsRepositoryMongoDb } from "../repositories_mongo_db/blogsRepositoryMongoDb";
+import { blogsRepository } from "../blogs/blogsRepository";
 
 describe("get all /blogs", () => {
     connectToTestDBAndClearRepositories();
@@ -26,7 +26,7 @@ describe("get all /blogs", () => {
             websiteUrl: "https://mynewblog.con",
             isMembership: true,
         }
-        const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog)
+        const createdBlogId = await blogsRepository.addNewBlog(newBlog)
 
         const res = await req
             .get(SETTINGS.PATH.BLOGS)
@@ -51,7 +51,7 @@ describe("get blog by id /blogs", () => {
             websiteUrl: "https://mynewblog.con",
             isMembership: true,
         }
-        const createdBlogId = await blogsRepositoryMongoDb.addNewBlog(newBlog);
+        const createdBlogId = await blogsRepository.addNewBlog(newBlog);
 
         const res = await req
             .get(`${SETTINGS.PATH.BLOGS}/${createdBlogId}`)
@@ -326,7 +326,7 @@ describe("delete blog by id /blogs", () => {
             websiteUrl: "https://mytestsite1.com",
             isMembership: true
         };
-        blogIdForDeletion = await blogsRepositoryMongoDb.addNewBlog(blog);
+        blogIdForDeletion = await blogsRepository.addNewBlog(blog);
 
         const checkRes = await req
             .get(`${SETTINGS.PATH.BLOGS}/${blogIdForDeletion}`)

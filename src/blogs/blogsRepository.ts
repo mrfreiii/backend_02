@@ -4,7 +4,7 @@ import { BlogType } from "../db/types";
 import { blogCollection } from "../db/mongodb";
 import { replaceMongo_idByid } from "../utils/mapDbResult";
 
-export const blogsRepositoryMongoDb = {
+export const blogsRepository = {
     clearDB: async () => {
         return blogCollection.drop();
     },
