@@ -3,10 +3,9 @@ import {
     validAuthHeader,
     connectToTestDBAndClearRepositories
 } from "./test-helpers";
-import { QueryType } from "../types";
 import { SETTINGS } from "../settings";
-import { BlogType } from "../blogs/types";
 import { blogsService } from "../blogs/blogsService";
+import { BlogQueryType, BlogType } from "../blogs/types";
 import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
 import { convertObjectToQueryString } from "../utils/convertObjectToQueryString";
 
@@ -68,7 +67,7 @@ describe("get all /blogs", () => {
 
 
     it("should get 2 blogs with searchName query", async () => {
-        const query: Pick<QueryType, "searchNameTerm"> = {
+        const query: Pick<BlogQueryType, "searchNameTerm"> = {
             searchNameTerm: "og"
         };
         const queryString = convertObjectToQueryString(query);
@@ -96,7 +95,7 @@ describe("get all /blogs", () => {
     })
 
     it("should get 2 blogs with sortDirection asc", async () => {
-        const query: Pick<QueryType, "sortDirection"> = {
+        const query: Pick<BlogQueryType, "sortDirection"> = {
             sortDirection: "asc"
         };
         const queryString = convertObjectToQueryString(query);
@@ -124,7 +123,7 @@ describe("get all /blogs", () => {
     })
 
     it("should get 2 blogs with sortBy name", async () => {
-        const query: Pick<QueryType, "sortBy"> = {
+        const query: Pick<BlogQueryType, "sortBy"> = {
             sortBy: "name"
         };
         const queryString = convertObjectToQueryString(query);
@@ -152,7 +151,7 @@ describe("get all /blogs", () => {
     })
 
     it("should get 2 blogs with page number and page size", async () => {
-        const query: Pick<QueryType, "pageNumber" | "pageSize"> = {
+        const query: Pick<BlogQueryType, "pageNumber" | "pageSize"> = {
             pageNumber: 2,
             pageSize: 1,
         };

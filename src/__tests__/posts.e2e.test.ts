@@ -4,11 +4,11 @@ import {
     connectToTestDBAndClearRepositories
 } from "./test-helpers";
 import { SETTINGS } from "../settings";
-import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
-import { postsRepository } from "../posts/postsRepository";
-import { blogsRepository } from "../blogs/blogsRepository";
 import { BlogType } from "../blogs/types";
 import { PostType } from "../posts/types";
+import { blogsService } from "../blogs/blogsService";
+import { postsService } from "../posts/postsService";
+import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
 
 describe("get all /posts", () => {
     connectToTestDBAndClearRepositories();
@@ -18,7 +18,7 @@ describe("get all /posts", () => {
             .get(SETTINGS.PATH.POSTS)
             .expect(200)
 
-        expect(res.body.length).toBe(0);
+        expect(res.body.items.length).toBe(0);
     })
 
     it("should get not empty array", async () => {
@@ -28,24 +28,24 @@ describe("get all /posts", () => {
             websiteUrl: "https://mynewblog.con",
             isMembership: true
         }
-        const createdBlogId = await blogsRepository.addNewBlog(newBlog);
+        const createdBlog = await blogsService.addNewBlog(newBlog);
 
         const newPost: Omit<PostType, "blogName"> = {
             title: "test post title 1",
             shortDescription: "test post description 1",
             content: "test post content 1",
-            blogId: createdBlogId,
+            blogId: createdBlog?.id as string,
         }
-        const createdPostId = await postsRepository.addNewPost(newPost)
+        const createdPost = await postsService.addNewPost(newPost)
 
         const res = await req
             .get(SETTINGS.PATH.POSTS)
             .expect(200)
 
-        expect(res.body.length).toBe(1);
-        expect(res.body[0]).toEqual({
+        expect(res.body.items.length).toBe(1);
+        expect(res.body.items[0]).toEqual({
             ...newPost,
-            id: createdPostId,
+            id: createdPost?.id,
             blogName: newBlog.name,
             createdAt: expect.any(String)
         });
@@ -62,23 +62,23 @@ describe("get post by id /posts", () => {
             websiteUrl: "https://mynewblog.con",
             isMembership: true
         }
-        const createdBlogId = await blogsRepository.addNewBlog(newBlog);
+        const createdBlog = await blogsService.addNewBlog(newBlog);
 
         const newPost: Omit<PostType, "blogName"> = {
             title: "test post title 1",
             shortDescription: "test post description 1",
             content: "test post content 1",
-            blogId: createdBlogId,
+            blogId: createdBlog?.id as string,
         }
-        const createdPostId = await postsRepository.addNewPost(newPost)
+        const createdPost = await postsService.addNewPost(newPost)
 
         const res = await req
-            .get(`${SETTINGS.PATH.POSTS}/${createdPostId}`)
+            .get(`${SETTINGS.PATH.POSTS}/${createdPost?.id}`)
             .expect(200)
 
         expect(res.body).toEqual({
             ...newPost,
-            id: createdPostId,
+            id: createdPost?.id,
             blogName: newBlog.name,
             createdAt: expect.any(String)
         });
@@ -286,25 +286,25 @@ describe("update post by id /posts", () => {
             websiteUrl: "https://mytestsite1.com",
             isMembership: false
         };
-        const blogId = await blogsRepository.addNewBlog(blog);
+        const createdBlog = await blogsService.addNewBlog(blog);
 
         const post: Omit<PostType, "blogName"> = {
             title: "title1",
             shortDescription: "shortDescription1",
             content: "content1",
-            blogId: blogId,
+            blogId: createdBlog?.id as string,
         }
-        const postId = await postsRepository.addNewPost(post) as string;
+        const createdPost = await postsService.addNewPost(post);
 
         const updatedPost: Omit<PostType, "blogName" | "shortDescription"> = {
             title: "1234567890123456789012345678901",
             content: "content1",
-            blogId: blogId,
+            blogId: createdBlog?.id as string,
         }
 
         const res = await req
             .set("Authorization", validAuthHeader)
-            .put(`${SETTINGS.PATH.POSTS}/${postId}`)
+            .put(`${SETTINGS.PATH.POSTS}/${createdPost?.id}`)
             .send(updatedPost)
             .expect(400)
 
@@ -336,37 +336,37 @@ describe("update post by id /posts", () => {
             isMembership: true
         };
 
-        const blog1Id = await blogsRepository.addNewBlog(blog1);
-        const blog2Id = await blogsRepository.addNewBlog(blog2);
+        const createdBlog1 = await blogsService.addNewBlog(blog1);
+        const createdBlog2 = await blogsService.addNewBlog(blog2);
 
         const newPost: Omit<PostType,"blogName"> = {
             title: "title1",
             shortDescription: "shortDescription1",
             content: "content1",
-            blogId: blog1Id,
+            blogId: createdBlog1?.id as string,
         }
-        const postId = await postsRepository.addNewPost(newPost);
+        const createdPost = await postsService.addNewPost(newPost);
 
         const updatedPost: Omit<PostType, "blogName"> = {
             title: "title2",
             shortDescription: "shortDescription2",
             content: "content2",
-            blogId: blog2Id,
+            blogId: createdBlog2?.id as string,
         }
 
         await req
             .set("Authorization", validAuthHeader)
-            .put(`${SETTINGS.PATH.POSTS}/${postId}`)
+            .put(`${SETTINGS.PATH.POSTS}/${createdPost?.id}`)
             .send(updatedPost)
             .expect(204)
 
         const res = await req
-            .get(`${SETTINGS.PATH.POSTS}/${postId}`)
+            .get(`${SETTINGS.PATH.POSTS}/${createdPost?.id}`)
             .expect(200)
 
         expect(res.body).toEqual({
             ...updatedPost,
-            id: postId,
+            id: createdPost?.id,
             blogName: blog2.name,
             createdAt: expect.any(String)
         });
@@ -376,7 +376,7 @@ describe("update post by id /posts", () => {
 describe("delete post by id /posts", () => {
     connectToTestDBAndClearRepositories();
 
-    let postIdForDeletion: string = "";
+    let postForDeletion: PostType | undefined;
 
     it("should return not empty array", async () => {
         const blog: BlogType = {
@@ -385,24 +385,24 @@ describe("delete post by id /posts", () => {
             websiteUrl: "https://mytestsite1.com",
             isMembership: false
         };
-        const blogId = await blogsRepository.addNewBlog(blog);
+        const createdBlog = await blogsService.addNewBlog(blog);
 
         const post: Omit<PostType, "blogName"> = {
             title: "title1",
             shortDescription: "shortDescription1",
             content: "content1",
-            blogId: blogId,
+            blogId: createdBlog?.id as string,
         }
-        postIdForDeletion = await postsRepository.addNewPost(post) as string;
+        postForDeletion = await postsService.addNewPost(post);
 
         const checkRes = await req
             .get(SETTINGS.PATH.POSTS)
             .expect(200)
 
-        expect(checkRes.body.length).toBe(1);
-        expect(checkRes.body[0]).toEqual({
+        expect(checkRes.body.items.length).toBe(1);
+        expect(checkRes.body.items[0]).toEqual({
             ...post,
-            id: postIdForDeletion,
+            id: postForDeletion?.id,
             blogName: blog.name,
             createdAt: expect.any(String)
         });
@@ -420,13 +420,13 @@ describe("delete post by id /posts", () => {
     it("should return empty array", async () => {
         await req
             .set("Authorization", validAuthHeader)
-            .delete(`${SETTINGS.PATH.POSTS}/${postIdForDeletion}`)
+            .delete(`${SETTINGS.PATH.POSTS}/${postForDeletion?.id}`)
             .expect(204)
 
         const checkRes = await req
             .get(SETTINGS.PATH.POSTS)
             .expect(200)
 
-        expect(checkRes.body.length).toBe(0);
+        expect(checkRes.body.items.length).toBe(0);
     })
 })

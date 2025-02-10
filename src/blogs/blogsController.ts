@@ -13,7 +13,7 @@ import {
 } from "./blogsValidators";
 import { WithPagination } from "../types";
 import { blogsService } from "./blogsService";
-import { parseQueryParams } from "../utils/parseQueryParams";
+import { parseBlogsQueryParams } from "../utils/parseQueryParams";
 import { errorResultMiddleware } from "../middlewares/errorResultMiddleware";
 import { authorizationMiddleware } from "../middlewares/authorizationMiddleware";
 
@@ -21,7 +21,7 @@ export const blogsRouter = Router();
 
 const blogsController = {
     getBlogs: async (req: GetAllBlogsReqType, res: Response<WithPagination<BlogType>>) => {
-        const parsedQuery = parseQueryParams({
+        const parsedQuery = parseBlogsQueryParams({
             queryParams: req.query,
             availableFieldSortBy: BlogsAvailableSortBy
         })

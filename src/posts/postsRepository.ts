@@ -1,114 +1,76 @@
-import { ObjectId } from "mongodb";
+import { ObjectId, SortDirection } from "mongodb";
 
 import { postCollection } from "../db/mongodb";
-import { replaceMongo_idByid } from "../utils/mapDbResult";
-import { blogsRepository } from "../blogs/blogsRepository";
-import { PostType } from "./types";
-import { blogsService } from "../blogs/blogsService";
+import { PostQueryType, PostType } from "./types";
 
 export const postsRepository = {
-    clearDB: async () => {
-        // return postCollection.drop();
+    _clearDB: async () => {
+        return postCollection.drop();
     },
-    getAllPosts: async () => {
-        // const result = await postCollection.find({}).toArray();
-        // return result?.map((post) => replaceMongo_idByid(post));
+    _getAllPosts: async (parsedQuery: PostQueryType) => {
+        const {sortBy, sortDirection, pageSize, pageNumber} = parsedQuery;
+
+        return postCollection
+            .find({})
+            .sort({[sortBy as string]: sortDirection as SortDirection})
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .toArray();
     },
-    getPostById: async (id: string) => {
-        // try {
-        //     const result = await postCollection.findOne({_id: new ObjectId(id)});
-        //     if (!result) {
-        //         return;
-        //     }
-        //
-        //     return replaceMongo_idByid(result);
-        // } catch (e) {
-        //     console.log(e);
-        //     return;
-        // }
+    _getPostsCount: async () => {
+        return postCollection.countDocuments({});
     },
-    addNewPost: async (
-        {
-            title,
-            shortDescription,
-            content,
-            blogId,
-        }:
-            {
-                title: string;
-                shortDescription: string;
-                content: string;
-                blogId: string;
+    _getPostById: async (id: string) => {
+        try {
+            const result = await postCollection.findOne({_id: new ObjectId(id)});
+            if (!result) {
+                return;
             }
-    ): Promise<string | undefined> => {
-        // const blog = await blogsService.getBlogById(blogId);
-        // if (!blog) {
-        //     return;
-        // }
-        //
-        // const newPost: PostType = {
-        //     title,
-        //     shortDescription,
-        //     content,
-        //     blogId,
-        //     blogName: blog.name,
-        //     createdAt: (new Date()).toISOString(),
-        // };
-        //
-        // const createdPost = await postCollection.insertOne(newPost);
-        // return createdPost?.insertedId?.toString();
-        return ""
+
+            return result;
+        } catch (e) {
+            console.log(e);
+            return;
+        }
     },
-    updatePost: async (
+    _addNewPost: async (
+        newPost: PostType
+    ): Promise<string> => {
+        try {
+            const createdPost = await postCollection.insertOne(newPost);
+            return createdPost?.insertedId?.toString();
+        } catch {
+            return ""
+        }
+    },
+    _updatePost: async (
         {
             id,
-            title,
-            shortDescription,
-            content,
-            blogId,
-        }:
-            {
-                id: string;
-                title: string;
-                shortDescription: string;
-                content: string;
-                blogId: string;
-            }
+            updatedPost,
+        }: {
+            id: string;
+            updatedPost: PostType;
+        }
     ): Promise<boolean> => {
-        // try {
-        //     const foundBlog = await blogsRepository.getBlogById(blogId);
-        //     if (!foundBlog) {
-        //         return false;
-        //     }
-        //
-        //     const updatedPost: PostType = {
-        //         title: title.trim(),
-        //         shortDescription: shortDescription.trim(),
-        //         content: content.trim(),
-        //         blogId: blogId,
-        //         blogName: foundBlog.name,
-        //     }
-        //
-        //     const result = await postCollection.updateOne(
-        //         {_id: new ObjectId(id)},
-        //         {$set: updatedPost}
-        //     );
-        //
-        //     return result.matchedCount === 1;
-        // } catch (e){
-        //     console.log(e);
-        //     return false;
-        // }
-        return true
+        try {
+            const result = await postCollection.updateOne(
+                {_id: new ObjectId(id)},
+                {$set: updatedPost}
+            );
+
+            return result.matchedCount === 1;
+        } catch (e) {
+            console.log(e);
+            return false;
+        }
     },
-    deletePostById: async (id: string): Promise<boolean> => {
-        // try{
-        //     const result = await postCollection.deleteOne({_id: new ObjectId(id)});
-        //     return result.deletedCount === 1;
-        // } catch (e){
-        //     console.log(e);
-        //     return false;
-        // }
-        return true
+    _deletePostById: async (id: string): Promise<boolean> => {
+        try{
+            const result = await postCollection.deleteOne({_id: new ObjectId(id)});
+            return result.deletedCount === 1;
+        } catch (e){
+            console.log(e);
+            return false;
+        }
     },
 }

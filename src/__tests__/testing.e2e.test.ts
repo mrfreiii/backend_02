@@ -1,9 +1,9 @@
 import { SETTINGS } from "../settings";
-import { connectToTestDBAndClearRepositories, req } from "./test-helpers";
-import { blogsRepository } from "../blogs/blogsRepository";
-import { postsRepository } from "../posts/postsRepository";
 import { BlogType } from "../blogs/types";
 import { PostType } from "../posts/types";
+import { blogsService } from "../blogs/blogsService";
+import { postsService } from "../posts/postsService";
+import { connectToTestDBAndClearRepositories, req } from "./test-helpers";
 
 describe("delete all data", () => {
     connectToTestDBAndClearRepositories();
@@ -14,16 +14,16 @@ describe("delete all data", () => {
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con",
         }
-        const createdBlogId = await blogsRepository.addNewBlog(newBlog);
+        const createdBlog = await blogsService.addNewBlog(newBlog);
 
         const blogsRes = await req
             .get(SETTINGS.PATH.BLOGS)
             .expect(200)
 
-        expect(blogsRes.body.length).toBe(1);
-        expect(blogsRes.body[0]).toEqual({
+        expect(blogsRes.body.items.length).toBe(1);
+        expect(blogsRes.body.items[0]).toEqual({
             ...newBlog,
-            id: createdBlogId,
+            id: createdBlog?.id,
             isMembership: false,
             createdAt: expect.any(String)
         });
@@ -32,18 +32,18 @@ describe("delete all data", () => {
             title: "test post title 1",
             shortDescription: "test post description 1",
             content: "test post content 1",
-            blogId: createdBlogId,
+            blogId: createdBlog?.id as string,
         }
-        const createdPostId = await postsRepository.addNewPost(newPost)
+        const createdPost = await postsService.addNewPost(newPost)
 
         const postsRes = await req
             .get(SETTINGS.PATH.POSTS)
             .expect(200)
 
-        expect(postsRes.body.length).toBe(1);
-        expect(postsRes.body[0]).toEqual({
+        expect(postsRes.body.items.length).toBe(1);
+        expect(postsRes.body.items[0]).toEqual({
             ...newPost,
-            id: createdPostId,
+            id: createdPost?.id,
             blogName: newBlog.name,
             createdAt: expect.any(String)
         });
@@ -58,12 +58,12 @@ describe("delete all data", () => {
             .get(SETTINGS.PATH.BLOGS)
             .expect(200)
 
-        expect(blogsRes.body.length).toBe(0);
+        expect(blogsRes.body.items.length).toBe(0);
 
         const postsRes = await req
             .get(SETTINGS.PATH.POSTS)
             .expect(200)
 
-        expect(postsRes.body.length).toBe(0);
+        expect(postsRes.body.items.length).toBe(0);
     })
 })

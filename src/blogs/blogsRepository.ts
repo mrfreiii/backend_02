@@ -1,15 +1,13 @@
 import { ObjectId, SortDirection } from "mongodb";
 
-import { BlogType } from "./types";
 import { blogCollection } from "../db/mongodb";
-import { replaceMongo_idByid } from "../utils/mapDbResult";
-import { QueryType } from "../types";
+import { BlogQueryType, BlogType } from "./types";
 
 export const blogsRepository = {
     _clearDB: async () => {
         return blogCollection.drop();
     },
-    _getAllBlogs: async (parsedQuery: QueryType) => {
+    _getAllBlogs: async (parsedQuery: BlogQueryType) => {
         const {searchNameTerm, sortBy, sortDirection, pageSize, pageNumber} = parsedQuery;
         const filter: any = {};
 
@@ -40,7 +38,7 @@ export const blogsRepository = {
                 return;
             }
 
-            return replaceMongo_idByid(result);
+            return result;
         } catch (e) {
             console.log(e);
             return;

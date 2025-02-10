@@ -1,10 +1,10 @@
-import { BlogType } from "./types";
+import { WithPagination } from "../types";
 import { blogsRepository } from "./blogsRepository";
-import { QueryType, WithPagination } from "../types";
+import { BlogQueryType, BlogType } from "./types";
 import { replaceMongo_idByid } from "../utils/mapDbResult";
 
 export const blogsService = {
-    getAllBlogs: async (parsedQuery: QueryType): Promise<WithPagination<BlogType>> => {
+    getAllBlogs: async (parsedQuery: BlogQueryType): Promise<WithPagination<BlogType>> => {
         const allBlogs = await blogsRepository._getAllBlogs(parsedQuery);
         const blogsCount = await blogsRepository._getBlogsCount(parsedQuery.searchNameTerm);
 
