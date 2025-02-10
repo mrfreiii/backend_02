@@ -3,7 +3,10 @@ import { Request, Router, Response } from "express";
 import {
     BlogsAvailableSortBy,
     BlogType,
-    CreateBlogReqType, GetAllBlogsReqType,
+    CreateBlogReqType,
+    CreatePostByBlogIdReqType,
+    GetAllBlogsReqType,
+    GetAllPostsByBlogIdReqType,
     UpdateBlogReqType
 } from "./types";
 import {
@@ -13,9 +16,16 @@ import {
 } from "./blogsValidators";
 import { WithPagination } from "../types";
 import { blogsService } from "./blogsService";
-import { parseBlogsQueryParams } from "../utils/parseQueryParams";
+import { parseBlogsQueryParams, parsePostsQueryParams } from "../utils/parseQueryParams";
 import { errorResultMiddleware } from "../middlewares/errorResultMiddleware";
 import { authorizationMiddleware } from "../middlewares/authorizationMiddleware";
+import { PostsAvailableSortBy, PostType } from "../posts/types";
+import {
+    contentValidator,
+    postTitleValidator,
+    shortDescriptionValidator
+} from "../posts/postsValidators";
+import { postsService } from "../posts/postsService";
 
 export const blogsRouter = Router();
 
@@ -43,6 +53,20 @@ const blogsController = {
             .status(200)
             .json(foundBlog);
     },
+    getPostsByBlogId: async (req: GetAllPostsByBlogIdReqType, res: Response<WithPagination<PostType>>) => {
+        const parsedQuery = parsePostsQueryParams({
+            queryParams: req.query,
+            availableFieldSortBy: PostsAvailableSortBy
+        })
+        const allPosts = await blogsService.getPostsByBlogId({
+            blogId: req.params.blogId,
+            parsedQuery
+        });
+
+        res
+            .status(200)
+            .json(allPosts);
+    },
     createBlog: async (req: CreateBlogReqType, res: Response<BlogType>) => {
         const createdBlog = await blogsService.addNewBlog({
             name: req.body.name,
@@ -59,6 +83,22 @@ const blogsController = {
         res
             .status(201)
             .json(createdBlog);
+    },
+    createPostByBlogId: async (req: CreatePostByBlogIdReqType, res: Response<PostType>) => {
+        const createdPost = await postsService.addNewPost({
+            title: req.body.title.trim(),
+            shortDescription: req.body.shortDescription.trim(),
+            content: req.body.content.trim(),
+            blogId: req.params.blogId,
+        });
+        if (!createdPost) {
+            res.sendStatus(599);
+            return;
+        }
+
+        res
+            .status(201)
+            .json(createdPost);
     },
     updateBlog: async (req: UpdateBlogReqType, res: Response) => {
         const isUpdated = await blogsService.updateBlog({
@@ -89,6 +129,8 @@ const blogsController = {
 
 blogsRouter.get("/", blogsController.getBlogs);
 blogsRouter.get("/:id", blogsController.getBlogById);
+blogsRouter.get("/:blogId/posts", blogsController.getPostsByBlogId);
+
 blogsRouter.post("/",
     authorizationMiddleware,
     blogNameValidator,
@@ -96,6 +138,15 @@ blogsRouter.post("/",
     blogWebsiteUrlValidator,
     errorResultMiddleware,
     blogsController.createBlog);
+
+blogsRouter.post("/:blogId/posts",
+    authorizationMiddleware,
+    postTitleValidator,
+    shortDescriptionValidator,
+    contentValidator,
+    errorResultMiddleware,
+    blogsController.createPostByBlogId);
+
 blogsRouter.put("/:id",
     authorizationMiddleware,
     blogNameValidator,
@@ -103,6 +154,7 @@ blogsRouter.put("/:id",
     blogWebsiteUrlValidator,
     errorResultMiddleware,
     blogsController.updateBlog);
+
 blogsRouter.delete("/:id",
     authorizationMiddleware,
     blogsController.deleteBlogById);

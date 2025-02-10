@@ -1,7 +1,8 @@
 import { ObjectId, SortDirection } from "mongodb";
 
-import { blogCollection } from "../db/mongodb";
+import { blogCollection, postCollection } from "../db/mongodb";
 import { BlogQueryType, BlogType } from "./types";
+import { PostQueryType } from "../posts/types";
 
 export const blogsRepository = {
     _clearDB: async () => {
@@ -43,6 +44,33 @@ export const blogsRepository = {
             console.log(e);
             return;
         }
+    },
+    _getPostsByBlogId: async (
+        {
+            blogId,
+            parsedQuery
+        }: {
+            blogId: string,
+            parsedQuery: PostQueryType
+        }) => {
+        const {sortBy, sortDirection, pageSize, pageNumber} = parsedQuery;
+        const filter = {
+            blogId,
+        };
+
+        return postCollection
+            .find(filter)
+            .sort({[sortBy as string]: sortDirection as SortDirection})
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .toArray();
+    },
+    _getPostsByBlogIdCount: async (blogId: string) => {
+        const filter = {
+            blogId,
+        };
+
+        return postCollection.countDocuments(filter);
     },
     _addNewBlog: async (newBlog: BlogType): Promise<string> => {
         try {

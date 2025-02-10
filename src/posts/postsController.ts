@@ -89,6 +89,7 @@ const postsController = {
 
 postsRouter.get("/", postsController.getPosts);
 postsRouter.get("/:id", postsController.getPostById);
+
 postsRouter.post("/",
     authorizationMiddleware,
     postTitleValidator,
@@ -97,6 +98,7 @@ postsRouter.post("/",
     blogIdValidator,
     errorResultMiddleware,
     postsController.createPost);
+
 postsRouter.put("/:id",
     authorizationMiddleware,
     postTitleValidator,
@@ -105,6 +107,7 @@ postsRouter.put("/:id",
     blogIdValidator,
     errorResultMiddleware,
     postsController.updatePost);
+
 postsRouter.delete("/:id",
     authorizationMiddleware,
     postsController.deletePostById);

@@ -1,5 +1,6 @@
 import { Request } from "express";
 import { ObjectId } from "mongodb";
+import { PostType } from "../posts/types";
 
 export type BlogType = {
     id?: string; // deprecated
@@ -23,7 +24,12 @@ export const BlogsAvailableSortBy = ["id", "createdAt", "name", "description", "
 
 export type GetAllBlogsReqType = Request<{}, {}, {}, BlogQueryType>;
 
+export type GetAllPostsByBlogIdReqType = Request<{ blogId: string }, {}, {}, Omit<BlogQueryType, "searchNameTerm">>;
+
 export type CreateBlogReqType = Request<{}, {}, Omit<BlogType, "id">>;
+
+export type CreatePostByBlogIdReqType = Request<{ blogId: string }, {}, Omit<PostType, "id" | "blogName" | "blogId">, {}>;
+
 export type UpdateBlogReqType = Request<{id: string}, {}, Omit<BlogType, "id">>;
 
 

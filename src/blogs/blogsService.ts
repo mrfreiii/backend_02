@@ -2,6 +2,7 @@ import { WithPagination } from "../types";
 import { blogsRepository } from "./blogsRepository";
 import { BlogQueryType, BlogType } from "./types";
 import { replaceMongo_idByid } from "../utils/mapDbResult";
+import { PostQueryType, PostType } from "../posts/types";
 
 export const blogsService = {
     getAllBlogs: async (parsedQuery: BlogQueryType): Promise<WithPagination<BlogType>> => {
@@ -23,6 +24,25 @@ export const blogsService = {
         }
 
         return replaceMongo_idByid(result);
+    },
+    getPostsByBlogId: async (
+        {
+            blogId,
+            parsedQuery
+        }: {
+            blogId: string,
+            parsedQuery: PostQueryType
+        }): Promise<WithPagination<PostType>> => {
+        const allPosts = await blogsRepository._getPostsByBlogId({blogId, parsedQuery});
+        const postsCount = await blogsRepository._getPostsByBlogIdCount(blogId);
+
+        return {
+            pagesCount: Math.ceil(postsCount / parsedQuery.pageSize),
+            page: parsedQuery.pageNumber,
+            pageSize: parsedQuery.pageSize,
+            totalCount: postsCount,
+            items: allPosts.map((post) => replaceMongo_idByid(post))
+        }
     },
     addNewBlog: async (
         {
