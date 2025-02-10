@@ -431,6 +431,20 @@ describe("create blog /blogs", () => {
 describe("create post by blogId /blogs", () => {
     connectToTestDBAndClearRepositories();
 
+    it("should return 404 for non existent blog", async () => {
+        const newPost: Omit<PostType, "blogName" | "blogId"> = {
+            title: "title1",
+            shortDescription: "shortDescription1",
+            content: "content1",
+        }
+
+        await req
+            .set("Authorization", validAuthHeader)
+            .post(`${SETTINGS.PATH.BLOGS}/123777/posts`)
+            .send(newPost)
+            .expect(404)
+    })
+
     it("should create a post", async () => {
         const newBlog: BlogType = {
             name: "new new new blog",

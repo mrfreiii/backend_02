@@ -97,7 +97,7 @@ const blogsController = {
             blogId: req.params.blogId,
         });
         if (!createdPost) {
-            res.sendStatus(599);
+            res.sendStatus(404);
             return;
         }
 
