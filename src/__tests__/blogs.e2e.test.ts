@@ -204,6 +204,12 @@ describe("get blog by id /blogs", () => {
 describe("get posts by blogId /blogs", () => {
     connectToTestDBAndClearRepositories();
 
+    it("should return error if blog does not exist", async () => {
+        await req
+            .get(`${SETTINGS.PATH.BLOGS}/123777/posts`)
+            .expect(404)
+    })
+
     it("should get not empty array", async () => {
         const newBlog: BlogType = {
             name: "new new new blog",

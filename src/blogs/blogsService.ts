@@ -32,7 +32,12 @@ export const blogsService = {
         }: {
             blogId: string,
             parsedQuery: PostQueryType
-        }): Promise<WithPagination<PostType>> => {
+        }): Promise<WithPagination<PostType> | undefined> => {
+        const blog = await blogsService.getBlogById(blogId);
+        if (!blog) {
+            return;
+        }
+
         const allPosts = await blogsRepository._getPostsByBlogId({blogId, parsedQuery});
         const postsCount = await blogsRepository._getPostsByBlogIdCount(blogId);
 

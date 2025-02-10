@@ -63,6 +63,11 @@ const blogsController = {
             parsedQuery
         });
 
+        if (!allPosts) {
+            res.sendStatus(404);
+            return;
+        }
+
         res
             .status(200)
             .json(allPosts);
