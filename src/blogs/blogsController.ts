@@ -44,13 +44,12 @@ const blogsController = {
             .json(foundBlog);
     },
     createBlog: async (req: CreateBlogReqType, res: Response<BlogType>) => {
-        const createdBlogId = await blogsService.addNewBlog({
+        const createdBlog = await blogsService.addNewBlog({
             name: req.body.name,
             description: req.body.description,
             websiteUrl: req.body.websiteUrl,
             isMembership: req.body.isMembership,
         });
-        const createdBlog = await blogsService.getBlogById(createdBlogId);
 
         if (!createdBlog) {
             res.sendStatus(599);
@@ -78,10 +77,7 @@ const blogsController = {
         res.sendStatus(204)
     },
     deleteBlogById: async (req: Request<{ id: string }>, res: Response) => {
-        console.log("here")
         const isDeleted = await blogsService.deleteBlogById(req.params.id);
-        console.log("isDeleted")
-        console.log(isDeleted)
         if (!isDeleted) {
             res.sendStatus(404);
             return;

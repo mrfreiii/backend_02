@@ -47,8 +47,12 @@ export const blogsRepository = {
         }
     },
     _addNewBlog: async (newBlog: BlogType): Promise<string> => {
-        const createdBlog = await blogCollection.insertOne(newBlog);
-        return createdBlog?.insertedId?.toString();
+        try {
+            const createdBlog = await blogCollection.insertOne(newBlog);
+            return createdBlog?.insertedId?.toString();
+        } catch {
+            return ""
+        }
     },
     _updateBlog: async (
         {

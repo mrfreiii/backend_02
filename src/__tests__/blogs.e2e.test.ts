@@ -25,8 +25,8 @@ describe("get all /blogs", () => {
         websiteUrl: "https://mynewblog1.con",
         isMembership: true,
     }
-    let createdBlog1Id = "";
-    let createdBlog2Id = "";
+    let createdBlog1: BlogType | undefined;
+    let createdBlog2: BlogType | undefined;
 
     it("should get empty array", async () => {
         const res = await req
@@ -41,8 +41,8 @@ describe("get all /blogs", () => {
     })
 
     it("should get not empty array without query params", async () => {
-        createdBlog1Id = await blogsService.addNewBlog(newBlog1)
-        createdBlog2Id = await blogsService.addNewBlog(newBlog2)
+        createdBlog1 = await blogsService.addNewBlog(newBlog1)
+        createdBlog2 = await blogsService.addNewBlog(newBlog2)
 
         const res = await req
             .get(SETTINGS.PATH.BLOGS)
@@ -56,12 +56,12 @@ describe("get all /blogs", () => {
 
         expect(res.body.items[0]).toEqual({
             ...newBlog2,
-            id: createdBlog2Id,
+            id: createdBlog2?.id,
             createdAt: expect.any(String),
         });
         expect(res.body.items[1]).toEqual({
             ...newBlog1,
-            id: createdBlog1Id,
+            id: createdBlog1?.id,
             createdAt: expect.any(String),
         });
     })
@@ -85,12 +85,12 @@ describe("get all /blogs", () => {
 
         expect(res.body.items[0]).toEqual({
             ...newBlog2,
-            id: createdBlog2Id,
+            id: createdBlog2?.id,
             createdAt: expect.any(String),
         });
         expect(res.body.items[1]).toEqual({
             ...newBlog1,
-            id: createdBlog1Id,
+            id: createdBlog1?.id,
             createdAt: expect.any(String),
         });
     })
@@ -113,12 +113,12 @@ describe("get all /blogs", () => {
 
         expect(res.body.items[0]).toEqual({
             ...newBlog1,
-            id: createdBlog1Id,
+            id: createdBlog1?.id,
             createdAt: expect.any(String),
         });
         expect(res.body.items[1]).toEqual({
             ...newBlog2,
-            id: createdBlog2Id,
+            id: createdBlog2?.id,
             createdAt: expect.any(String),
         });
     })
@@ -141,12 +141,12 @@ describe("get all /blogs", () => {
 
         expect(res.body.items[0]).toEqual({
             ...newBlog1,
-            id: createdBlog1Id,
+            id: createdBlog1?.id,
             createdAt: expect.any(String),
         });
         expect(res.body.items[1]).toEqual({
             ...newBlog2,
-            id: createdBlog2Id,
+            id: createdBlog2?.id,
             createdAt: expect.any(String),
         });
     })
@@ -157,8 +157,6 @@ describe("get all /blogs", () => {
             pageSize: 1,
         };
         const queryString = convertObjectToQueryString(query);
-        console.log("queryString")
-        console.log(queryString)
 
         const res = await req
             .get(`${SETTINGS.PATH.BLOGS}${queryString}`)
@@ -172,7 +170,7 @@ describe("get all /blogs", () => {
 
         expect(res.body.items[0]).toEqual({
             ...newBlog1,
-            id: createdBlog1Id,
+            id: createdBlog1?.id,
             createdAt: expect.any(String),
         });
     })
@@ -188,15 +186,15 @@ describe("get blog by id /blogs", () => {
             websiteUrl: "https://mynewblog.con",
             isMembership: true,
         }
-        const createdBlogId = await blogsService.addNewBlog(newBlog)
+        const createdBlog = await blogsService.addNewBlog(newBlog)
 
         const res = await req
-            .get(`${SETTINGS.PATH.BLOGS}/${createdBlogId}`)
+            .get(`${SETTINGS.PATH.BLOGS}/${createdBlog?.id}`)
             .expect(200)
 
         expect(res.body).toEqual({
             ...newBlog,
-            id: createdBlogId,
+            id: createdBlog?.id,
             createdAt: expect.any(String),
         });
     })
@@ -445,7 +443,7 @@ describe("update blog /blogs", () => {
 describe("delete blog by id /blogs", () => {
     connectToTestDBAndClearRepositories();
 
-    let blogIdForDeletion: string = "";
+    let blogForDeletion: BlogType | undefined;
 
     it("should return 401 for request without auth header", async () => {
         const res = await req
@@ -462,15 +460,15 @@ describe("delete blog by id /blogs", () => {
             websiteUrl: "https://mytestsite1.com",
             isMembership: true
         };
-        blogIdForDeletion = await blogsService.addNewBlog(blog);
+        blogForDeletion = await blogsService.addNewBlog(blog);
 
         const checkRes = await req
-            .get(`${SETTINGS.PATH.BLOGS}/${blogIdForDeletion}`)
+            .get(`${SETTINGS.PATH.BLOGS}/${blogForDeletion?.id}`)
             .expect(200)
 
         expect(checkRes.body).toEqual({
             ...blog,
-            id: blogIdForDeletion,
+            id: blogForDeletion?.id,
             createdAt: expect.any(String)
         });
     })
@@ -485,7 +483,7 @@ describe("delete blog by id /blogs", () => {
     it("should delete blog and get empty array", async () => {
         await req
             .set("Authorization", validAuthHeader)
-            .delete(`${SETTINGS.PATH.BLOGS}/${blogIdForDeletion}`)
+            .delete(`${SETTINGS.PATH.BLOGS}/${blogForDeletion?.id}`)
             .expect(204)
 
         const checkRes = await req

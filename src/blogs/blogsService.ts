@@ -36,7 +36,7 @@ export const blogsService = {
                 description: string;
                 websiteUrl: string;
                 isMembership?: boolean;
-            }): Promise<string> => {
+            }): Promise<BlogType | undefined> => {
         const newBlog: BlogType = {
             name: name.trim(),
             description: description.trim(),
@@ -45,7 +45,8 @@ export const blogsService = {
             createdAt: (new Date()).toISOString(),
         };
 
-        return blogsRepository._addNewBlog(newBlog);
+        const createdBlogId = await blogsRepository._addNewBlog(newBlog);
+        return blogsService.getBlogById(createdBlogId);
     },
     updateBlog: async (
         {
