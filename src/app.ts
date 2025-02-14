@@ -2,9 +2,9 @@ import express from 'express';
 import cors from 'cors';
 
 import { SETTINGS } from "./settings";
-import { blogsRouter } from "./blogs/blogsController";
-import { postsRouter } from "./posts/postsController";
-import { testingRouter } from "./__tests__/testingController";
+import { blogsRouter } from "./controllers/blogsController/blogsController";
+import { postsRouter } from "./controllers/postsController/postsController";
+import { testingRouter } from "./controllers/testsController/testingController";
 
 export const app = express();
 

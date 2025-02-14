@@ -1,14 +1,15 @@
 import { Router, Request,Response  } from "express";
-import { blogsRepository } from "../blogs/blogsRepository";
-import { postsRepository } from "../posts/postsRepository";
+
+import { blogsRepository } from "../../repositories/blogsRepositories/blogsRepository";
+import { postsRepository } from "../../repositories/postsRepositories/postsRepository";
 
 export const testingRouter = Router();
 
 const testingController = {
     deleteAllData: async (req: Request, res: Response) => {
         try{
-            const isBlogsDeleted = await blogsRepository._clearDB();
-            const isPostsDeleted = await postsRepository._clearDB();
+            const isBlogsDeleted = await blogsRepository.clearDB();
+            const isPostsDeleted = await postsRepository.clearDB();
 
 
             if(!isBlogsDeleted || !isPostsDeleted){

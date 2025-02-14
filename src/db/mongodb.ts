@@ -2,18 +2,18 @@ import { Collection, Db, MongoClient } from "mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server"
 
 import { SETTINGS } from "../settings";
-import { BlogType } from "../blogs/types";
-import { PostType } from "../posts/types";
+import { BlogDbType } from "../repositories/blogsRepositories/types";
+import { PostDbType } from "../repositories/postsRepositories/types";
 
-export let blogCollection: Collection<BlogType>;
-export let postCollection: Collection<PostType>;
+export let blogCollection: Collection<BlogDbType>;
+export let postCollection: Collection<PostDbType>;
 
 export const connectToDB = async ({ dbUrl, dbName }:{ dbUrl: string, dbName: string }): Promise<boolean> => {
     const client: MongoClient = new MongoClient(dbUrl);
     const db: Db = client.db(dbName);
 
-    blogCollection = db.collection<BlogType>(SETTINGS.PATH.BLOGS);
-    postCollection = db.collection<PostType>(SETTINGS.PATH.POSTS);
+    blogCollection = db.collection<BlogDbType>(SETTINGS.PATH.BLOGS);
+    postCollection = db.collection<PostDbType>(SETTINGS.PATH.POSTS);
 
     try {
         await client.connect();
@@ -37,8 +37,8 @@ export const connectToTestDB = async (): Promise<MongoMemoryServer> => {
 
     const db: Db = client.db("test");
 
-    blogCollection = db.collection<BlogType>(SETTINGS.PATH.BLOGS);
-    postCollection = db.collection<PostType>(SETTINGS.PATH.POSTS);
+    blogCollection = db.collection<BlogDbType>(SETTINGS.PATH.BLOGS);
+    postCollection = db.collection<PostDbType>(SETTINGS.PATH.POSTS);
 
     try {
         await client.connect();

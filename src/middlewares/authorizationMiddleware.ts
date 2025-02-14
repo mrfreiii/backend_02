@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+
 import { SETTINGS } from "../settings";
 
 export const AUTH_ERROR_MESSAGES = {

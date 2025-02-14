@@ -1,11 +1,14 @@
+import {config} from 'dotenv';
+
 import {app} from './app';
 import {SETTINGS} from './settings';
 import { connectToDB } from "./db/mongodb";
-import {config} from 'dotenv';
 
 config();
 
-const startApp = async () =>{
+const startApp = async () => {
+    console.log(Buffer.from("Thanks", "utf8").toString("base64"))
+
     const dbUrl = process.env?.MONGO_URL;
     if(!dbUrl) {
         console.log("db url is undefined");

@@ -1,52 +1,54 @@
 import { SETTINGS } from "../settings";
-import { BlogType } from "../blogs/types";
-import { PostType } from "../posts/types";
-import { blogsService } from "../blogs/blogsService";
-import { postsService } from "../posts/postsService";
-import { connectToTestDBAndClearRepositories, req } from "./test-helpers";
+import {
+    connectToTestDBAndClearRepositories,
+    req,
+    validAuthHeader
+} from "../utils/testHelpers";
+import { BlogViewType } from "../repositories/blogsRepositories/types";
+import { PostViewType } from "../repositories/postsRepositories/types";
 
 describe("delete all data", () => {
     connectToTestDBAndClearRepositories();
 
     it("should get default post and blog", async () => {
-        const newBlog: Omit<BlogType, "isMembership"> = {
-            name: "new new new blog",
+        const newBlog: Omit<BlogViewType, "id" | "createdAt"> = {
+            name: "new blog",
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con",
+            isMembership: true,
         }
-        const createdBlog = await blogsService.addNewBlog(newBlog);
+        const blogRes = await req
+            .set("Authorization", validAuthHeader)
+            .post(SETTINGS.PATH.BLOGS)
+            .send(newBlog)
+            .expect(201)
 
-        const blogsRes = await req
-            .get(SETTINGS.PATH.BLOGS)
-            .expect(200)
-
-        expect(blogsRes.body.items.length).toBe(1);
-        expect(blogsRes.body.items[0]).toEqual({
+        expect(blogRes.body).toEqual({
             ...newBlog,
-            id: createdBlog?.id,
-            isMembership: false,
+            id: blogRes?.body?.id,
             createdAt: expect.any(String)
         });
 
-        const newPost: Omit<PostType, "blogName"> = {
-            title: "test post title 1",
-            shortDescription: "test post description 1",
-            content: "test post content 1",
-            blogId: createdBlog?.id as string,
+        const newPost: Omit<PostViewType, "id" | "createdAt" | "blogName"> = {
+            title: "title1",
+            shortDescription: "shortDescription1",
+            content: "content1",
+            blogId: blogRes.body.id,
         }
-        const createdPost = await postsService.addNewPost(newPost)
+        const postRes = await req
+            .set("Authorization", validAuthHeader)
+            .post(SETTINGS.PATH.POSTS)
+            .send(newPost)
+            .expect(201)
 
-        const postsRes = await req
-            .get(SETTINGS.PATH.POSTS)
-            .expect(200)
-
-        expect(postsRes.body.items.length).toBe(1);
-        expect(postsRes.body.items[0]).toEqual({
-            ...newPost,
-            id: createdPost?.id,
-            blogName: newBlog.name,
-            createdAt: expect.any(String)
-        });
+        expect(postRes.body).toEqual(
+            {
+                ...newPost,
+                id: expect.any(String),
+                blogName: newBlog.name,
+                createdAt: expect.any(String)
+            }
+        );
     })
 
     it("should delete all data", async () => {

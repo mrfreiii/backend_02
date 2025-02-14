@@ -2,32 +2,31 @@ import {
     req,
     validAuthHeader,
     connectToTestDBAndClearRepositories
-} from "./test-helpers";
+} from "../utils/testHelpers";
 import { SETTINGS } from "../settings";
-import { blogsService } from "../blogs/blogsService";
-import { BlogQueryType, BlogType } from "../blogs/types";
+import { BlogQueryType } from "../controllers/blogsController/types";
+import { BlogViewType } from "../repositories/blogsRepositories/types";
+import { PostViewType } from "../repositories/postsRepositories/types";
 import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
 import { convertObjectToQueryString } from "../utils/convertObjectToQueryString";
-import { PostType } from "../posts/types";
-import { postsService } from "../posts/postsService";
 
 describe("get all /blogs", () => {
     connectToTestDBAndClearRepositories();
 
-    const newBlog1: BlogType = {
+    const newBlog1: Omit<BlogViewType, "id" | "createdAt"> = {
         name: "blog name 1",
         description: "apple phone",
         websiteUrl: "https://mynewblog2.con",
         isMembership: true,
     }
-    const newBlog2: BlogType = {
+    const newBlog2: Omit<BlogViewType, "id" | "createdAt"> = {
         name: "blOG name 2",
         description: "apple juice",
         websiteUrl: "https://mynewblog1.con",
         isMembership: true,
     }
-    let createdBlog1: BlogType | undefined;
-    let createdBlog2: BlogType | undefined;
+    let createdBlog1: BlogViewType | undefined;
+    let createdBlog2: BlogViewType | undefined;
 
     it("should get empty array", async () => {
         const res = await req
@@ -42,8 +41,19 @@ describe("get all /blogs", () => {
     })
 
     it("should get not empty array without query params", async () => {
-        createdBlog1 = await blogsService.addNewBlog(newBlog1)
-        createdBlog2 = await blogsService.addNewBlog(newBlog2)
+        const blog1Res = await req
+            .set("Authorization", validAuthHeader)
+            .post(SETTINGS.PATH.BLOGS)
+            .send(newBlog1)
+            .expect(201)
+        const blog2Res = await req
+            .set("Authorization", validAuthHeader)
+            .post(SETTINGS.PATH.BLOGS)
+            .send(newBlog2)
+            .expect(201)
+
+        createdBlog1 = blog1Res.body;
+        createdBlog2 = blog2Res.body;
 
         const res = await req
             .get(SETTINGS.PATH.BLOGS)
@@ -181,13 +191,19 @@ describe("get blog by id /blogs", () => {
     connectToTestDBAndClearRepositories();
 
     it("should get not empty array", async () => {
-        const newBlog: BlogType = {
-            name: "new new new blog",
+        const newBlog: Omit<BlogViewType, "id" | "createdAt"> = {
+            name: "new blog",
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con",
             isMembership: true,
         }
-        const createdBlog = await blogsService.addNewBlog(newBlog)
+        const blogRes = await req
+            .set("Authorization", validAuthHeader)
+            .post(SETTINGS.PATH.BLOGS)
+            .send(newBlog)
+            .expect(201)
+        const createdBlog = blogRes.body;
+
 
         const res = await req
             .get(`${SETTINGS.PATH.BLOGS}/${createdBlog?.id}`)
@@ -211,28 +227,45 @@ describe("get posts by blogId /blogs", () => {
     })
 
     it("should get not empty array", async () => {
-        const newBlog: BlogType = {
-            name: "new new new blog",
+        const newBlog: Omit<BlogViewType, "id" | "createdAt"> = {
+            name: "new blog",
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con",
             isMembership: true,
         }
-        const createdBlog = await blogsService.addNewBlog(newBlog)
+        const blogRes = await req
+            .set("Authorization", validAuthHeader)
+            .post(SETTINGS.PATH.BLOGS)
+            .send(newBlog)
+            .expect(201)
+        const createdBlog = blogRes.body;
 
-        const newPost1: Omit<PostType, "blogName"> = {
+        const newPost1: Omit<PostViewType, "id" | "createdAt" | "blogName"> = {
             title: "title1",
             shortDescription: "shortDescription1",
             content: "content1",
-            blogId: createdBlog?.id as string,
+            blogId: createdBlog?.id,
         }
-        const newPost2: Omit<PostType, "blogName"> = {
+        const newPost2: Omit<PostViewType, "id" | "createdAt" | "blogName"> = {
             title: "title2",
             shortDescription: "shortDescription2",
             content: "content2",
-            blogId: createdBlog?.id as string,
+            blogId: createdBlog?.id,
         }
-        const createdPost1 = await postsService.addNewPost(newPost1);
-        const createdPost2 = await postsService.addNewPost(newPost2);
+
+        const post1Res = await req
+            .set("Authorization", validAuthHeader)
+            .post(SETTINGS.PATH.POSTS)
+            .send(newPost1)
+            .expect(201)
+        const post2Res = await req
+            .set("Authorization", validAuthHeader)
+            .post(SETTINGS.PATH.POSTS)
+            .send(newPost2)
+            .expect(201)
+
+        const createdPost1 = post1Res.body;
+        const createdPost2 = post2Res.body;
 
         const res = await req
             .get(`${SETTINGS.PATH.BLOGS}/${createdBlog?.id}/posts`)
@@ -298,7 +331,7 @@ describe("create blog /blogs", () => {
     })
 
     it("should return 400 for name, description, and websiteUrl are not string", async () => {
-        const newBlog: Omit<BlogType, "isMembership"> = {
+        const newBlog: Omit<BlogViewType, "id" | "createdAt" | "isMembership"> = {
             name: null as unknown as string,
             description: null as unknown as string,
             websiteUrl: null as unknown as string
@@ -329,12 +362,11 @@ describe("create blog /blogs", () => {
     })
 
     it("should return 400 for name, description, websiteUrl and too short", async () => {
-        const newBlog: Omit<BlogType, "isMembership"> = {
+        const newBlog: Omit<BlogViewType, "id" | "createdAt" | "isMembership"> = {
             name: " ",
             description: " ",
             websiteUrl: " "
         }
-
 
         const res = await req
             .set("Authorization", validAuthHeader)
@@ -361,7 +393,7 @@ describe("create blog /blogs", () => {
     })
 
     it("should return 400 for name too long", async () => {
-        const newBlog: Omit<BlogType, "isMembership"> = {
+        const newBlog: Omit<BlogViewType, "id" | "createdAt" | "isMembership"> = {
             name: "1234567890123456",
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con"
@@ -383,7 +415,7 @@ describe("create blog /blogs", () => {
     })
 
     it("should return 400 for invalid websiteUrl", async () => {
-        const newBlog: Omit<BlogType, "isMembership"> = {
+        const newBlog: Omit<BlogViewType, "id" | "createdAt" | "isMembership"> = {
             name: "test name",
             description: "test description",
             websiteUrl: "invalid websiteUrl"
@@ -405,7 +437,7 @@ describe("create blog /blogs", () => {
     })
 
     it("should create a blog", async () => {
-        const newBlog: BlogType = {
+        const newBlog: Omit<BlogViewType, "id" | "createdAt"> = {
             name: "test name",
             description: "test description",
             websiteUrl: "https://mytestsite.com",
@@ -432,10 +464,11 @@ describe("create post by blogId /blogs", () => {
     connectToTestDBAndClearRepositories();
 
     it("should return 404 for non existent blog", async () => {
-        const newPost: Omit<PostType, "blogName" | "blogId"> = {
+        const newPost: Omit<PostViewType, "id" | "createdAt" | "blogId"> = {
             title: "title1",
             shortDescription: "shortDescription1",
             content: "content1",
+            blogName: "blogName"
         }
 
         await req
@@ -446,15 +479,20 @@ describe("create post by blogId /blogs", () => {
     })
 
     it("should create a post", async () => {
-        const newBlog: BlogType = {
-            name: "new new new blog",
+        const newBlog: Omit<BlogViewType, "id" | "createdAt"> = {
+            name: "new blog",
             description: "cannot create interesting description",
             websiteUrl: "https://mynewblog.con",
             isMembership: true,
         }
-        const createdBlog = await blogsService.addNewBlog(newBlog);
+        const blogRes = await req
+            .set("Authorization", validAuthHeader)
+            .post(SETTINGS.PATH.BLOGS)
+            .send(newBlog)
+            .expect(201)
+        const createdBlog = blogRes.body;
 
-        const newPost: Omit<PostType, "blogName" | "blogId"> = {
+        const newPost: Omit<PostViewType, "id" | "createdAt" | "blogName" | "blogId"> = {
             title: "title1",
             shortDescription: "shortDescription1",
             content: "content1",
@@ -491,10 +529,10 @@ describe("update blog /blogs", () => {
     })
 
     it("should return 404 for non existent blog", async () => {
-        const newBlog: BlogType = {
-            name: "test name",
-            description: "test description",
-            websiteUrl: "https://mytestsite.com",
+        const newBlog: Omit<BlogViewType, "id" | "createdAt"> = {
+            name: "test name 1",
+            description: "test description 1",
+            websiteUrl: "https://mytestsite1.com",
             isMembership: true
         }
 
@@ -506,7 +544,7 @@ describe("update blog /blogs", () => {
     })
 
     it("should update a blog", async () => {
-        const newBlog: BlogType = {
+        const newBlog: Omit<BlogViewType, "id" | "createdAt"> = {
             name: "test name 1",
             description: "test description 1",
             websiteUrl: "https://mytestsite1.com",
@@ -527,7 +565,7 @@ describe("update blog /blogs", () => {
             }
         );
 
-        const updatedBlog: BlogType = {
+        const updatedBlog: Omit<BlogViewType, "id" | "createdAt"> = {
             name: "test name 2",
             description: "test description 2",
             websiteUrl: "https://mytestsite2.com",
@@ -555,7 +593,7 @@ describe("update blog /blogs", () => {
 describe("delete blog by id /blogs", () => {
     connectToTestDBAndClearRepositories();
 
-    let blogForDeletion: BlogType | undefined;
+    let blogForDeletion: BlogViewType;
 
     it("should return 401 for request without auth header", async () => {
         const res = await req
@@ -566,22 +604,27 @@ describe("delete blog by id /blogs", () => {
     })
 
     it("should get not empty array", async () => {
-        const blog: BlogType = {
+        const newBlog: Omit<BlogViewType, "id" | "createdAt"> = {
             name: "test name 1",
             description: "test description 1",
             websiteUrl: "https://mytestsite1.com",
             isMembership: true
         };
-        blogForDeletion = await blogsService.addNewBlog(blog);
+        const blogRes = await req
+            .set("Authorization", validAuthHeader)
+            .post(SETTINGS.PATH.BLOGS)
+            .send(newBlog)
+            .expect(201)
+        blogForDeletion = blogRes.body;
 
         const checkRes = await req
             .get(`${SETTINGS.PATH.BLOGS}/${blogForDeletion?.id}`)
             .expect(200)
 
         expect(checkRes.body).toEqual({
-            ...blog,
+            ...newBlog,
             id: blogForDeletion?.id,
-            createdAt: expect.any(String)
+            createdAt: blogForDeletion.createdAt,
         });
     })
 

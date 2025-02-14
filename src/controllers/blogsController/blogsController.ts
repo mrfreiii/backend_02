@@ -1,48 +1,50 @@
-import { Request, Router, Response } from "express";
+import { Router, Response } from "express";
 
 import {
-    BlogsAvailableSortBy,
-    BlogType,
     CreateBlogReqType,
+    CreateBlogResType,
     CreatePostByBlogIdReqType,
+    CreatePostByBlogIdResType,
+    DeleteBlogReqType,
     GetAllBlogsReqType,
+    GetAllBlogsResType,
     GetAllPostsByBlogIdReqType,
+    GetAllPostsByBlogIdResType,
+    GetBlogByIdReqType,
+    GetBlogByIdResType,
     UpdateBlogReqType
-} from "./types";
+} from "./types"
 import {
     blogDescriptionValidator,
     blogNameValidator,
     blogWebsiteUrlValidator
-} from "./blogsValidators";
-import { WithPagination } from "../types";
-import { blogsService } from "./blogsService";
-import { parseBlogsQueryParams, parsePostsQueryParams } from "../utils/parseQueryParams";
-import { errorResultMiddleware } from "../middlewares/errorResultMiddleware";
-import { authorizationMiddleware } from "../middlewares/authorizationMiddleware";
-import { PostsAvailableSortBy, PostType } from "../posts/types";
+} from "./validators";
 import {
     contentValidator,
     postTitleValidator,
     shortDescriptionValidator
-} from "../posts/postsValidators";
-import { postsService } from "../posts/postsService";
+} from "../postsController/validators";
+import { blogsService } from "../../services/blogsService/blogsService";
+import { postsService } from "../../services/postsService/postsService";
+import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
+import { authorizationMiddleware } from "../../middlewares/authorizationMiddleware";
+import { parseBlogsQueryParams, parsePostsQueryParams } from "../../utils/parseQueryParams";
+import { blogsQueryRepository } from "../../repositories/blogsRepositories/blogsQueryRepository";
+import { postsQueryRepository } from "../../repositories/postsRepositories/postsQueryRepository";
 
 export const blogsRouter = Router();
 
 const blogsController = {
-    getBlogs: async (req: GetAllBlogsReqType, res: Response<WithPagination<BlogType>>) => {
-        const parsedQuery = parseBlogsQueryParams({
-            queryParams: req.query,
-            availableFieldSortBy: BlogsAvailableSortBy
-        })
-        const allBlogs = await blogsService.getAllBlogs(parsedQuery);
+    getBlogs: async (req: GetAllBlogsReqType, res: GetAllBlogsResType) => {
+        const parsedQuery = parseBlogsQueryParams(req.query);
+        const allBlogs = await blogsQueryRepository.getAllBlogs(parsedQuery);
 
         res
             .status(200)
             .json(allBlogs);
     },
-    getBlogById: async (req: Request<{ id: string }>, res: Response<BlogType>) => {
-        const foundBlog = await blogsService.getBlogById(req.params.id);
+    getBlogById: async (req: GetBlogByIdReqType, res: GetBlogByIdResType) => {
+        const foundBlog = await blogsQueryRepository.getBlogById(req.params.id);
 
         if (!foundBlog) {
             res.sendStatus(404);
@@ -53,14 +55,11 @@ const blogsController = {
             .status(200)
             .json(foundBlog);
     },
-    getPostsByBlogId: async (req: GetAllPostsByBlogIdReqType, res: Response<WithPagination<PostType>>) => {
-        const parsedQuery = parsePostsQueryParams({
-            queryParams: req.query,
-            availableFieldSortBy: PostsAvailableSortBy
-        })
-        const allPosts = await blogsService.getPostsByBlogId({
-            blogId: req.params.blogId,
-            parsedQuery
+    getPostsByBlogId: async (req: GetAllPostsByBlogIdReqType, res: GetAllPostsByBlogIdResType) => {
+        const parsedQuery = parsePostsQueryParams(req.query);
+        const allPosts = await postsQueryRepository.getAllPosts({
+            parsedQuery,
+            blogId: req.params.blogId
         });
 
         if (!allPosts) {
@@ -72,13 +71,14 @@ const blogsController = {
             .status(200)
             .json(allPosts);
     },
-    createBlog: async (req: CreateBlogReqType, res: Response<BlogType>) => {
-        const createdBlog = await blogsService.addNewBlog({
+    createBlog: async (req: CreateBlogReqType, res: CreateBlogResType) => {
+        const createdBlogId = await blogsService.addNewBlog({
             name: req.body.name,
             description: req.body.description,
             websiteUrl: req.body.websiteUrl,
             isMembership: req.body.isMembership,
         });
+        const createdBlog = await blogsQueryRepository.getBlogById(createdBlogId);
 
         if (!createdBlog) {
             res.sendStatus(599);
@@ -89,15 +89,21 @@ const blogsController = {
             .status(201)
             .json(createdBlog);
     },
-    createPostByBlogId: async (req: CreatePostByBlogIdReqType, res: Response<PostType>) => {
-        const createdPost = await postsService.addNewPost({
+    createPostByBlogId: async (req: CreatePostByBlogIdReqType, res: CreatePostByBlogIdResType) => {
+        const createdPostId = await postsService.addNewPost({
             title: req.body.title.trim(),
             shortDescription: req.body.shortDescription.trim(),
             content: req.body.content.trim(),
             blogId: req.params.blogId,
         });
-        if (!createdPost) {
+        if (!createdPostId) {
             res.sendStatus(404);
+            return;
+        }
+
+        const createdPost = await postsQueryRepository.getPostById(createdPostId);
+        if (!createdPost) {
+            res.sendStatus(599);
             return;
         }
 
@@ -121,7 +127,7 @@ const blogsController = {
 
         res.sendStatus(204)
     },
-    deleteBlogById: async (req: Request<{ id: string }>, res: Response) => {
+    deleteBlogById: async (req: DeleteBlogReqType, res: Response) => {
         const isDeleted = await blogsService.deleteBlogById(req.params.id);
         if (!isDeleted) {
             res.sendStatus(404);

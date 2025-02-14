@@ -1,39 +1,39 @@
-import { Request, Router, Response } from "express";
+import { Router, Response } from "express";
 
 import {
     blogIdValidator,
     contentValidator,
     postTitleValidator,
     shortDescriptionValidator
-} from "./postsValidators";
+} from "./validators";
 import {
     CreatePostReqType,
-    GetAllPostsReqType, PostsAvailableSortBy,
-    PostType,
-    UpdatePostReqType
+    CreatePostResType,
+    DeletePostByIdReqType,
+    GetAllPostsReqType,
+    GetAllPostsResType,
+    GetPostByIdReqType,
+    GetPostByIdResType, UpdatePostReqType
 } from "./types";
-import { WithPagination } from "../types";
-import { postsService } from "./postsService";
-import { parsePostsQueryParams } from "../utils/parseQueryParams";
-import { errorResultMiddleware } from "../middlewares/errorResultMiddleware";
-import { authorizationMiddleware } from "../middlewares/authorizationMiddleware";
+import { parsePostsQueryParams } from "../../utils/parseQueryParams";
+import { postsService } from "../../services/postsService/postsService";
+import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
+import { authorizationMiddleware } from "../../middlewares/authorizationMiddleware";
+import { postsQueryRepository } from "../../repositories/postsRepositories/postsQueryRepository";
 
 export const postsRouter = Router();
 
 const postsController = {
-    getPosts: async (req: GetAllPostsReqType, res: Response<WithPagination<PostType>>) => {
-        const parsedQuery = parsePostsQueryParams({
-            queryParams: req.query,
-            availableFieldSortBy: PostsAvailableSortBy
-        })
-        const allPosts = await postsService.getAllPosts(parsedQuery);
+    getPosts: async (req: GetAllPostsReqType, res: GetAllPostsResType) => {
+        const parsedQuery = parsePostsQueryParams(req.query)
+        const allPosts = await postsQueryRepository.getAllPosts({parsedQuery});
 
         res
             .status(200)
             .json(allPosts);
     },
-    getPostById: async (req: Request<{id: string}>, res: Response<PostType>) => {
-        const foundPost = await postsService.getPostById(req.params.id);
+    getPostById: async (req: GetPostByIdReqType, res: GetPostByIdResType) => {
+        const foundPost = await postsQueryRepository.getPostById(req.params.id);
 
         if (!foundPost) {
             res.sendStatus(404);
@@ -44,13 +44,19 @@ const postsController = {
             .status(200)
             .json(foundPost);
     },
-    createPost: async (req: CreatePostReqType, res: Response<PostType>) => {
-        const createdPost = await postsService.addNewPost({
+    createPost: async (req: CreatePostReqType, res: CreatePostResType) => {
+        const createdPostId = await postsService.addNewPost({
             title: req.body.title.trim(),
             shortDescription: req.body.shortDescription.trim(),
             content: req.body.content.trim(),
             blogId: req.body.blogId.trim(),
         });
+        if (!createdPostId) {
+            res.sendStatus(404);
+            return;
+        }
+
+        const createdPost = await postsQueryRepository.getPostById(createdPostId);
         if (!createdPost) {
             res.sendStatus(599);
             return;
@@ -76,7 +82,7 @@ const postsController = {
 
         res.sendStatus(204);
     },
-    deletePostById: async (req: Request<{id: string}>, res: Response<PostType>) => {
+    deletePostById: async (req: DeletePostByIdReqType, res: Response) => {
         const isDeleted = await postsService.deletePostById(req.params.id);
         if (!isDeleted) {
             res.sendStatus(404);
