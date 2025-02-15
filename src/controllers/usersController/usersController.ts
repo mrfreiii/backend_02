@@ -9,11 +9,17 @@ import {
     GetAllUsersResType
 } from "./types";
 import {
+    userEmailValidator,
+    userLoginValidator,
+    userPasswordValidator
+} from "./validators";
+import {
     usersQueryRepository
 } from "../../repositories/usersRepositories/usersQueryRepository";
 import { parseUsersQueryParams } from "../../utils/parseQueryParams";
 import { usersService } from "../../services/usersService/usersService";
 import { UserViewType } from "../../repositories/usersRepositories/types";
+import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 import { authorizationMiddleware } from "../../middlewares/authorizationMiddleware";
 
 export const usersRouter = Router();
@@ -77,7 +83,10 @@ usersRouter.get("/",
 
 usersRouter.post("/",
     authorizationMiddleware,
-    // @ts-ignore
+    userLoginValidator,
+    userPasswordValidator,
+    userEmailValidator,
+    errorResultMiddleware,
     usersController.createUser);
 
 usersRouter.delete("/:id",
