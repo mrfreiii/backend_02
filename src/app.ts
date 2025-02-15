@@ -4,6 +4,7 @@ import cors from 'cors';
 import { SETTINGS } from "./settings";
 import { blogsRouter } from "./controllers/blogsController/blogsController";
 import { postsRouter } from "./controllers/postsController/postsController";
+import { usersRouter } from "./controllers/usersController/usersController";
 import { testingRouter } from "./controllers/testsController/testingController";
 
 export const app = express();
@@ -13,4 +14,5 @@ app.use(cors());
 
 app.use(SETTINGS.PATH.BLOGS, blogsRouter);
 app.use(SETTINGS.PATH.POSTS, postsRouter);
+app.use(SETTINGS.PATH.USERS, usersRouter);
 app.use(SETTINGS.PATH.TESTING, testingRouter);

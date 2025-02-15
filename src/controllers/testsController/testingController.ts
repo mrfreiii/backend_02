@@ -2,6 +2,7 @@ import { Router, Request,Response  } from "express";
 
 import { blogsRepository } from "../../repositories/blogsRepositories/blogsRepository";
 import { postsRepository } from "../../repositories/postsRepositories/postsRepository";
+import { usersRepository } from "../../repositories/usersRepositories/usersRepository";
 
 export const testingRouter = Router();
 
@@ -10,9 +11,10 @@ const testingController = {
         try{
             const isBlogsDeleted = await blogsRepository.clearDB();
             const isPostsDeleted = await postsRepository.clearDB();
+            const isUsersDeleted = await usersRepository.clearDB();
 
 
-            if(!isBlogsDeleted || !isPostsDeleted){
+            if(!isBlogsDeleted || !isPostsDeleted || !isUsersDeleted){
                 res.sendStatus(599)
                 return;
             }

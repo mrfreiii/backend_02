@@ -4,9 +4,11 @@ import { MongoMemoryServer } from "mongodb-memory-server"
 import { SETTINGS } from "../settings";
 import { BlogDbType } from "../repositories/blogsRepositories/types";
 import { PostDbType } from "../repositories/postsRepositories/types";
+import { UserDbType } from "../repositories/usersRepositories/types";
 
 export let blogCollection: Collection<BlogDbType>;
 export let postCollection: Collection<PostDbType>;
+export let userCollection: Collection<UserDbType>;
 
 export const connectToDB = async ({ dbUrl, dbName }:{ dbUrl: string, dbName: string }): Promise<boolean> => {
     const client: MongoClient = new MongoClient(dbUrl);
@@ -14,6 +16,7 @@ export const connectToDB = async ({ dbUrl, dbName }:{ dbUrl: string, dbName: str
 
     blogCollection = db.collection<BlogDbType>(SETTINGS.PATH.BLOGS);
     postCollection = db.collection<PostDbType>(SETTINGS.PATH.POSTS);
+    userCollection = db.collection<UserDbType>(SETTINGS.PATH.USERS);
 
     try {
         await client.connect();
@@ -39,6 +42,7 @@ export const connectToTestDB = async (): Promise<MongoMemoryServer> => {
 
     blogCollection = db.collection<BlogDbType>(SETTINGS.PATH.BLOGS);
     postCollection = db.collection<PostDbType>(SETTINGS.PATH.POSTS);
+    userCollection = db.collection<UserDbType>(SETTINGS.PATH.USERS);
 
     try {
         await client.connect();
