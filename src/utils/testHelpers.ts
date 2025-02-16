@@ -6,6 +6,7 @@ import { connectToTestDB } from "../db/mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { postsRepository } from "../repositories/postsRepositories/postsRepository";
 import { blogsRepository } from "../repositories/blogsRepositories/blogsRepository";
+import { usersRepository } from "../repositories/usersRepositories/usersRepository";
 
 export const req = agent(app);
 
@@ -21,6 +22,7 @@ export const connectToTestDBAndClearRepositories = () => {
 
         await postsRepository.clearDB();
         await blogsRepository.clearDB();
+        await usersRepository.clearDB();
         req.set("Authorization", "");
     })
 
