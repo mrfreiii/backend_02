@@ -7,6 +7,7 @@ export const SETTINGS = {
         USERS: '/users',
         BLOGS: '/blogs',
         POSTS: '/posts',
+        AUTH: '/auth',
         TESTING: "/testing"
     },
     CREDENTIALS: {
