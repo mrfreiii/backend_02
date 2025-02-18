@@ -1,6 +1,7 @@
 import { Response, Request, Router } from "express";
 
 import { LoginUserReqType } from "./types";
+import { ResultStatus } from "../../services/types";
 import { jwtService } from "../../services/jwtService/jwtService";
 import { authService } from "../../services/authService/authService";
 import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
@@ -12,14 +13,14 @@ export const authRouter = Router();
 const authController = {
     getJwtToken: async (req: LoginUserReqType, res: Response) => {
         const {loginOrEmail, password} = req.body;
-        const user = await authService.checkCredentials({loginOrEmail, password});
+        const result = await authService.checkCredentials({loginOrEmail, password});
 
-        if(!user){
+        if(result.status !== ResultStatus.Success){
             res.sendStatus(401)
             return;
         }
 
-        const token = await jwtService.createJWT(user);
+        const token = await jwtService.createJWT(result.data!);
         res
             .status(200)
             .json({
