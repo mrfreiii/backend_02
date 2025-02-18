@@ -1,7 +1,9 @@
 import { Response, Request, Router } from "express";
 
+import { HttpStatuses } from "../types";
 import { LoginUserReqType } from "./types";
 import { ResultStatus } from "../../services/types";
+import { resultCodeToHttpException } from "../helpers";
 import { jwtService } from "../../services/jwtService/jwtService";
 import { authService } from "../../services/authService/authService";
 import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
@@ -11,18 +13,18 @@ import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 export const authRouter = Router();
 
 const authController = {
-    getJwtToken: async (req: LoginUserReqType, res: Response) => {
+    loginUser: async (req: LoginUserReqType, res: Response) => {
         const {loginOrEmail, password} = req.body;
         const result = await authService.checkCredentials({loginOrEmail, password});
 
         if(result.status !== ResultStatus.Success){
-            res.sendStatus(401)
+            res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
 
         const token = await jwtService.createJWT(result.data!);
         res
-            .status(200)
+            .status(HttpStatuses.Success_200)
             .json({
                 accessToken: token
             })
@@ -30,12 +32,12 @@ const authController = {
     getUserInfo: async (req: Request, res: Response) => {
         const user = req.user;
         if(!user){
-            res.sendStatus(401)
+            res.sendStatus(HttpStatuses.Unauthorized_401)
             return;
         }
 
         res
-            .status(200)
+            .status(HttpStatuses.Success_200)
             .json({
                 email: user.email,
                 login: user.login,
@@ -48,7 +50,7 @@ authRouter.post("/login",
     loginOrEmailValidator,
     passwordValidator,
     errorResultMiddleware,
-    authController.getJwtToken);
+    authController.loginUser);
 
 authRouter.get("/me",
     jwtAuthMiddleware,

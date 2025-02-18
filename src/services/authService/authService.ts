@@ -20,7 +20,7 @@ export const authService = {
         })
         if(!user){
             return {
-                status: ResultStatus.BadRequest,
+                status: ResultStatus.Unauthorized,
                 errorMessage: "неверный логин или пароль",
                 extensions: [],
                 data: null,
@@ -30,7 +30,7 @@ export const authService = {
         const hashForValidation = await bcryptService.generateHash({salt: user.passwordSalt, password});
         if(hashForValidation !== user.passwordHash){
             return {
-                status: ResultStatus.BadRequest,
+                status: ResultStatus.Unauthorized,
                 errorMessage: "неверный логин или пароль",
                 extensions: [],
                 data: null,
