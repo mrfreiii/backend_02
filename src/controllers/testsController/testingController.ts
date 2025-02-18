@@ -27,4 +27,6 @@ const testingController = {
     },
 }
 
-testingRouter.delete("/all-data", testingController.deleteAllData);
+testingRouter
+    .route("/all-data")
+    .delete(testingController.deleteAllData);

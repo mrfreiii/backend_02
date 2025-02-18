@@ -19,7 +19,9 @@ import { parsePostsQueryParams } from "../../utils/parseQueryParams";
 import { postsService } from "../../services/postsService/postsService";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
-import { postsQueryRepository } from "../../repositories/postsRepositories/postsQueryRepository";
+import {
+    postsQueryRepository
+} from "../../repositories/postsRepositories/postsQueryRepository";
 
 export const postsRouter = Router();
 
@@ -93,27 +95,29 @@ const postsController = {
     },
 }
 
-postsRouter.get("/", postsController.getPosts);
-postsRouter.get("/:id", postsController.getPostById);
+postsRouter
+    .route("/")
+    .get(postsController.getPosts)
+    .post(
+        basicAuthMiddleware,
+        postTitleValidator,
+        shortDescriptionValidator,
+        contentValidator,
+        blogIdValidator,
+        errorResultMiddleware,
+        postsController.createPost);
 
-postsRouter.post("/",
-    basicAuthMiddleware,
-    postTitleValidator,
-    shortDescriptionValidator,
-    contentValidator,
-    blogIdValidator,
-    errorResultMiddleware,
-    postsController.createPost);
-
-postsRouter.put("/:id",
-    basicAuthMiddleware,
-    postTitleValidator,
-    shortDescriptionValidator,
-    contentValidator,
-    blogIdValidator,
-    errorResultMiddleware,
-    postsController.updatePost);
-
-postsRouter.delete("/:id",
-    basicAuthMiddleware,
-    postsController.deletePostById);
+postsRouter
+    .route("/:id")
+    .get(postsController.getPostById)
+    .put(
+        basicAuthMiddleware,
+        postTitleValidator,
+        shortDescriptionValidator,
+        contentValidator,
+        blogIdValidator,
+        errorResultMiddleware,
+        postsController.updatePost)
+    .delete(
+        basicAuthMiddleware,
+        postsController.deletePostById);

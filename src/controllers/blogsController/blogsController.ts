@@ -28,9 +28,16 @@ import { blogsService } from "../../services/blogsService/blogsService";
 import { postsService } from "../../services/postsService/postsService";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
-import { parseBlogsQueryParams, parsePostsQueryParams } from "../../utils/parseQueryParams";
-import { blogsQueryRepository } from "../../repositories/blogsRepositories/blogsQueryRepository";
-import { postsQueryRepository } from "../../repositories/postsRepositories/postsQueryRepository";
+import {
+    parseBlogsQueryParams,
+    parsePostsQueryParams
+} from "../../utils/parseQueryParams";
+import {
+    blogsQueryRepository
+} from "../../repositories/blogsRepositories/blogsQueryRepository";
+import {
+    postsQueryRepository
+} from "../../repositories/postsRepositories/postsQueryRepository";
 
 export const blogsRouter = Router();
 
@@ -138,34 +145,40 @@ const blogsController = {
     },
 }
 
-blogsRouter.get("/", blogsController.getBlogs);
-blogsRouter.get("/:id", blogsController.getBlogById);
-blogsRouter.get("/:blogId/posts", blogsController.getPostsByBlogId);
+blogsRouter
+    .route("/")
+    .get(blogsController.getBlogs)
+    .post(
+        basicAuthMiddleware,
+        blogNameValidator,
+        blogDescriptionValidator,
+        blogWebsiteUrlValidator,
+        errorResultMiddleware,
+        blogsController.createBlog);
 
-blogsRouter.post("/",
-    basicAuthMiddleware,
-    blogNameValidator,
-    blogDescriptionValidator,
-    blogWebsiteUrlValidator,
-    errorResultMiddleware,
-    blogsController.createBlog);
+blogsRouter
+    .route("/:id")
+    .get(blogsController.getBlogById)
+    .put(
+        basicAuthMiddleware,
+        blogNameValidator,
+        blogDescriptionValidator,
+        blogWebsiteUrlValidator,
+        errorResultMiddleware,
+        blogsController.updateBlog)
+    .delete(
+        basicAuthMiddleware,
+        blogsController.deleteBlogById);
 
-blogsRouter.post("/:blogId/posts",
-    basicAuthMiddleware,
-    postTitleValidator,
-    shortDescriptionValidator,
-    contentValidator,
-    errorResultMiddleware,
-    blogsController.createPostByBlogId);
+blogsRouter
+    .route("/:blogId/posts")
+    .get(blogsController.getPostsByBlogId)
+    .post(
+        basicAuthMiddleware,
+        postTitleValidator,
+        shortDescriptionValidator,
+        contentValidator,
+        errorResultMiddleware,
+        blogsController.createPostByBlogId);
 
-blogsRouter.put("/:id",
-    basicAuthMiddleware,
-    blogNameValidator,
-    blogDescriptionValidator,
-    blogWebsiteUrlValidator,
-    errorResultMiddleware,
-    blogsController.updateBlog);
 
-blogsRouter.delete("/:id",
-    basicAuthMiddleware,
-    blogsController.deleteBlogById);

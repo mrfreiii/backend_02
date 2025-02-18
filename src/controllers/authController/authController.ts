@@ -46,12 +46,16 @@ const authController = {
     },
 }
 
-authRouter.post("/login",
+authRouter
+    .route("/login")
+    .post(
     loginOrEmailValidator,
     passwordValidator,
     errorResultMiddleware,
     authController.loginUser);
 
-authRouter.get("/me",
+authRouter
+    .route("/me")
+    .get(
     jwtAuthMiddleware,
     authController.getUserInfo);

@@ -45,7 +45,7 @@ const usersController = {
         if (errorsMessages.length) {
             res
                 .status(400)
-                .json({ errorsMessages });
+                .json({errorsMessages});
 
             return;
         }
@@ -76,19 +76,22 @@ const usersController = {
     },
 }
 
-usersRouter.get("/",
-    basicAuthMiddleware,
-    // @ts-ignore
-    usersController.getUsers);
+usersRouter
+    .route("/")
+    .get(
+        basicAuthMiddleware,
+        // @ts-ignore
+        usersController.getUsers)
+    .post(
+        basicAuthMiddleware,
+        userLoginValidator,
+        userPasswordValidator,
+        userEmailValidator,
+        errorResultMiddleware,
+        usersController.createUser);
 
-usersRouter.post("/",
-    basicAuthMiddleware,
-    userLoginValidator,
-    userPasswordValidator,
-    userEmailValidator,
-    errorResultMiddleware,
-    usersController.createUser);
-
-usersRouter.delete("/:id",
+usersRouter
+    .route("/:id")
+    .delete(
     basicAuthMiddleware,
     usersController.deleteUserById);
