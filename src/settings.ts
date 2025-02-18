@@ -13,5 +13,6 @@ export const SETTINGS = {
     CREDENTIALS: {
         LOGIN: "admin",
         PASSWORD: "qwerty",
-    }
+    },
+    JWT_SECRET: "some secret qwerty"
 };

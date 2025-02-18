@@ -18,7 +18,7 @@ import {
 import { parsePostsQueryParams } from "../../utils/parseQueryParams";
 import { postsService } from "../../services/postsService/postsService";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
-import { authorizationMiddleware } from "../../middlewares/authorizationMiddleware";
+import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
 import { postsQueryRepository } from "../../repositories/postsRepositories/postsQueryRepository";
 
 export const postsRouter = Router();
@@ -97,7 +97,7 @@ postsRouter.get("/", postsController.getPosts);
 postsRouter.get("/:id", postsController.getPostById);
 
 postsRouter.post("/",
-    authorizationMiddleware,
+    basicAuthMiddleware,
     postTitleValidator,
     shortDescriptionValidator,
     contentValidator,
@@ -106,7 +106,7 @@ postsRouter.post("/",
     postsController.createPost);
 
 postsRouter.put("/:id",
-    authorizationMiddleware,
+    basicAuthMiddleware,
     postTitleValidator,
     shortDescriptionValidator,
     contentValidator,
@@ -115,5 +115,5 @@ postsRouter.put("/:id",
     postsController.updatePost);
 
 postsRouter.delete("/:id",
-    authorizationMiddleware,
+    basicAuthMiddleware,
     postsController.deletePostById);

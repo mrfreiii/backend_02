@@ -1,23 +1,45 @@
-import { Response, Router } from "express";
+import { Response, Request, Router } from "express";
 
 import { LoginUserReqType } from "./types";
+import { jwtService } from "../../services/jwtService/jwtService";
 import { authService } from "../../services/authService/authService";
+import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
 import { loginOrEmailValidator, passwordValidator } from "./validators";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
 export const authRouter = Router();
 
 const authController = {
-    loginUser: async (req: LoginUserReqType, res: Response) => {
+    getJwtToken: async (req: LoginUserReqType, res: Response) => {
         const {loginOrEmail, password} = req.body;
-        const isCredentialValid = await authService.loginUser({loginOrEmail, password});
+        const user = await authService.checkCredentials({loginOrEmail, password});
 
-        if(!isCredentialValid){
+        if(!user){
             res.sendStatus(401)
             return;
         }
 
-        res.sendStatus(204)
+        const token = await jwtService.createJWT(user);
+        res
+            .status(200)
+            .json({
+                accessToken: token
+            })
+    },
+    getUserInfo: async (req: Request, res: Response) => {
+        const user = req.user;
+        if(!user){
+            res.sendStatus(401)
+            return;
+        }
+
+        res
+            .status(200)
+            .json({
+                email: user.email,
+                login: user.login,
+                userId: user.id,
+            })
     },
 }
 
@@ -25,4 +47,8 @@ authRouter.post("/login",
     loginOrEmailValidator,
     passwordValidator,
     errorResultMiddleware,
-    authController.loginUser);
+    authController.getJwtToken);
+
+authRouter.get("/me",
+    jwtAuthMiddleware,
+    authController.getUserInfo);

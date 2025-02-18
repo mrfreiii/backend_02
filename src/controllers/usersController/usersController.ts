@@ -20,7 +20,7 @@ import { parseUsersQueryParams } from "../../utils/parseQueryParams";
 import { usersService } from "../../services/usersService/usersService";
 import { UserViewType } from "../../repositories/usersRepositories/types";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
-import { authorizationMiddleware } from "../../middlewares/authorizationMiddleware";
+import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
 
 export const usersRouter = Router();
 
@@ -77,12 +77,12 @@ const usersController = {
 }
 
 usersRouter.get("/",
-    authorizationMiddleware,
+    basicAuthMiddleware,
     // @ts-ignore
     usersController.getUsers);
 
 usersRouter.post("/",
-    authorizationMiddleware,
+    basicAuthMiddleware,
     userLoginValidator,
     userPasswordValidator,
     userEmailValidator,
@@ -90,5 +90,5 @@ usersRouter.post("/",
     usersController.createUser);
 
 usersRouter.delete("/:id",
-    authorizationMiddleware,
+    basicAuthMiddleware,
     usersController.deleteUserById);

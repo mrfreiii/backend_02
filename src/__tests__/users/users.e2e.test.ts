@@ -2,12 +2,13 @@ import {
     req,
     validAuthHeader,
     connectToTestDBAndClearRepositories
-} from "../utils/testHelpers";
-import { SETTINGS } from "../settings";
-import { UserQueryType } from "../controllers/usersController/types";
-import { UserViewType } from "../repositories/usersRepositories/types";
-import { AUTH_ERROR_MESSAGES } from "../middlewares/authorizationMiddleware";
-import { convertObjectToQueryString } from "../utils/convertObjectToQueryString";
+} from "../../utils/testHelpers";
+import { SETTINGS } from "../../settings";
+import { createTestUsers } from "./helpers";
+import { UserQueryType } from "../../controllers/usersController/types";
+import { UserViewType } from "../../repositories/usersRepositories/types";
+import { AUTH_ERROR_MESSAGES } from "../../middlewares/basicAuthMiddleware";
+import { convertObjectToQueryString } from "../../utils/convertObjectToQueryString";
 
 describe("create user /users", () => {
     connectToTestDBAndClearRepositories();
@@ -228,18 +229,7 @@ describe("create user /users", () => {
 describe("get all /users", () => {
     connectToTestDBAndClearRepositories();
 
-    const newUser1: Omit<UserViewType, "id" | "createdAt"> & {password: string} = {
-        login: "login1",
-        password: "password1",
-        email: "user1@email.com"
-    }
-    const newUser2: Omit<UserViewType, "id" | "createdAt"> & {password: string} = {
-        login: "login2",
-        password: "password2",
-        email: "user2@email.com"
-    }
-    let createdUser1: UserViewType | undefined;
-    let createdUser2: UserViewType | undefined;
+    let createdUsers: UserViewType[] = []
 
     it("should return 401 for request without auth header", async () => {
         const res = await req
@@ -263,19 +253,7 @@ describe("get all /users", () => {
     })
 
     it("should get not empty array without query params", async () => {
-        const user1Res = await req
-            .set("Authorization", validAuthHeader)
-            .post(SETTINGS.PATH.USERS)
-            .send(newUser1)
-            .expect(201)
-        const user2Res = await req
-            .set("Authorization", validAuthHeader)
-            .post(SETTINGS.PATH.USERS)
-            .send(newUser2)
-            .expect(201)
-
-        createdUser1 = user1Res.body;
-        createdUser2 = user2Res.body;
+        createdUsers = await createTestUsers({count: 2});
 
         const res = await req
             .set("Authorization", validAuthHeader)
@@ -288,18 +266,10 @@ describe("get all /users", () => {
         expect(res.body.totalCount).toBe(2);
         expect(res.body.items.length).toBe(2);
 
-        expect(res.body.items[0]).toEqual({
-            login: newUser2.login,
-            email: newUser2.email,
-            id: createdUser2?.id,
-            createdAt: createdUser2?.createdAt
-        });
-        expect(res.body.items[1]).toEqual({
-            login: newUser1.login,
-            email: newUser1.email,
-            id: createdUser1?.id,
-            createdAt: createdUser1?.createdAt
-        });
+        expect(res.body.items).toEqual([
+            createdUsers[1],
+            createdUsers[0],
+        ])
     })
 
 
@@ -320,12 +290,7 @@ describe("get all /users", () => {
         expect(res.body.totalCount).toBe(1);
         expect(res.body.items.length).toBe(1);
 
-        expect(res.body.items[0]).toEqual({
-            login: newUser1.login,
-            email: newUser1.email,
-            id: createdUser1?.id,
-            createdAt: createdUser1?.createdAt
-        });
+        expect(res.body.items[0]).toEqual(createdUsers[0]);
     })
 })
 
@@ -343,31 +308,14 @@ describe("delete user by id /users", () => {
     })
 
     it("should get not empty array", async () => {
-        const newUser: Omit<UserViewType, "id" | "createdAt"> & {password: string} = {
-            login: "userLogin",
-            password: "userPassword",
-            email: "user@email.com"
-        }
-
-        const userRes = await req
-            .set("Authorization", validAuthHeader)
-            .post(SETTINGS.PATH.USERS)
-            .send(newUser)
-            .expect(201)
-
-        userForDeletion = userRes.body;
+        userForDeletion = (await createTestUsers({}))[0];
 
         const checkRes = await req
             .set("Authorization", validAuthHeader)
             .get(SETTINGS.PATH.USERS)
             .expect(200)
 
-        expect(checkRes.body.items[0]).toEqual({
-            login: userForDeletion?.login,
-            email: userForDeletion?.email,
-            id: userForDeletion?.id,
-            createdAt: userForDeletion?.createdAt
-        });
+        expect(checkRes.body.items[0]).toEqual(userForDeletion);
     })
 
     it("should return 404 for non existent user", async () => {

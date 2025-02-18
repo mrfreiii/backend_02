@@ -8,7 +8,7 @@ export const AUTH_ERROR_MESSAGES = {
     InvalidLoginOrPassword: "invalid login or password",
 }
 
-export const authorizationMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const basicAuthMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         res

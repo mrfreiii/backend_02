@@ -1,24 +1,30 @@
+import { WithId } from "mongodb";
 import { bcryptService } from "../bcryptService/bcryptService";
+import { UserDbType } from "../../repositories/usersRepositories/types";
 import { usersRepository } from "../../repositories/usersRepositories/usersRepository";
 
 export const authService = {
-    loginUser: async (
+    checkCredentials: async (
         {
             loginOrEmail,
             password
         }: {
             loginOrEmail: string,
             password: string
-        }): Promise<boolean> => {
+        }): Promise<WithId<UserDbType> | undefined> => {
         const user = await usersRepository.getUsersByEmailOrLogin({
             login: loginOrEmail,
             email: loginOrEmail
         })
         if(!user){
-            return false;
+            return;
         }
 
         const hashForValidation = await bcryptService.generateHash({salt: user.passwordSalt, password});
-        return hashForValidation === user.passwordHash;
+        if(hashForValidation !== user.passwordHash){
+            return;
+        }
+
+        return user;
     },
 }

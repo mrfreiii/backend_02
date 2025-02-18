@@ -27,7 +27,7 @@ import {
 import { blogsService } from "../../services/blogsService/blogsService";
 import { postsService } from "../../services/postsService/postsService";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
-import { authorizationMiddleware } from "../../middlewares/authorizationMiddleware";
+import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
 import { parseBlogsQueryParams, parsePostsQueryParams } from "../../utils/parseQueryParams";
 import { blogsQueryRepository } from "../../repositories/blogsRepositories/blogsQueryRepository";
 import { postsQueryRepository } from "../../repositories/postsRepositories/postsQueryRepository";
@@ -143,7 +143,7 @@ blogsRouter.get("/:id", blogsController.getBlogById);
 blogsRouter.get("/:blogId/posts", blogsController.getPostsByBlogId);
 
 blogsRouter.post("/",
-    authorizationMiddleware,
+    basicAuthMiddleware,
     blogNameValidator,
     blogDescriptionValidator,
     blogWebsiteUrlValidator,
@@ -151,7 +151,7 @@ blogsRouter.post("/",
     blogsController.createBlog);
 
 blogsRouter.post("/:blogId/posts",
-    authorizationMiddleware,
+    basicAuthMiddleware,
     postTitleValidator,
     shortDescriptionValidator,
     contentValidator,
@@ -159,7 +159,7 @@ blogsRouter.post("/:blogId/posts",
     blogsController.createPostByBlogId);
 
 blogsRouter.put("/:id",
-    authorizationMiddleware,
+    basicAuthMiddleware,
     blogNameValidator,
     blogDescriptionValidator,
     blogWebsiteUrlValidator,
@@ -167,5 +167,5 @@ blogsRouter.put("/:id",
     blogsController.updateBlog);
 
 blogsRouter.delete("/:id",
-    authorizationMiddleware,
+    basicAuthMiddleware,
     blogsController.deleteBlogById);
