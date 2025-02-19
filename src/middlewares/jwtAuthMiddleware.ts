@@ -1,9 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
-import {
-    usersQueryRepository
-} from "../repositories/usersRepositories/usersQueryRepository";
 import { jwtService } from "../services/jwtService/jwtService";
+import { usersQueryRepository } from "../repositories/usersRepositories";
 
 export const AUTH_ERROR_MESSAGES = {
     NoHeader: "there is no authorization header",
@@ -33,7 +31,7 @@ export const jwtAuthMiddleware = async (req: Request, res: Response, next: NextF
 
     const jwtToken = authData[1];
     const userId = jwtService.getUserIdByJwtToken(jwtToken);
-    if(!userId){
+    if (!userId) {
         res
             .status(401)
             .json({error: AUTH_ERROR_MESSAGES.InvalidJwtToken});
@@ -42,7 +40,7 @@ export const jwtAuthMiddleware = async (req: Request, res: Response, next: NextF
     }
 
     const user = await usersQueryRepository.getUserById(userId);
-    if(!user){
+    if (!user) {
         res
             .status(401)
             .json({error: AUTH_ERROR_MESSAGES.UserNotFound});

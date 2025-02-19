@@ -19,15 +19,15 @@ import {
 import { HttpStatuses } from "../types";
 import { resultCodeToHttpException } from "../helpers";
 import { commentContentValidator } from "../commentsController/validators";
-import { ResultStatus } from "services/types";
-import { postsService } from "services/postsService/postsService";
-import { commentsService } from "services/commentsService/commentsService";
-import { jwtAuthMiddleware } from "middlewares/jwtAuthMiddleware";
-import { basicAuthMiddleware } from "middlewares/basicAuthMiddleware";
-import { errorResultMiddleware } from "middlewares/errorResultMiddleware";
-import { postsQueryRepository } from "repositories/postsRepositories";
-import { commentsQueryRepository } from "repositories/commentsRepositories";
-import { parseCommentsQueryParams, parsePostsQueryParams } from "utils";
+import { ResultStatus } from "../../services/types";
+import { postsService } from "../../services/postsService/postsService";
+import { commentsService } from "../../services/commentsService/commentsService";
+import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
+import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
+import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
+import { postsQueryRepository } from "../../repositories/postsRepositories";
+import { commentsQueryRepository } from "../../repositories/commentsRepositories";
+import { parseCommentsQueryParams, parsePostsQueryParams } from "../../utils";
 
 export const postsRouter = Router();
 

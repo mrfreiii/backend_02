@@ -1,6 +1,6 @@
-import { postsRepository } from "repositories/postsRepositories";
-import { blogsQueryRepository } from "repositories/blogsRepositories";
-import { PostDbType, PostViewType } from "repositories/postsRepositories/types";
+import { postsRepository } from "../../repositories/postsRepositories";
+import { blogsQueryRepository } from "../../repositories/blogsRepositories";
+import { PostDbType, PostViewType } from "../../repositories/postsRepositories/types";
 
 export const postsService = {
     addNewPost: async (

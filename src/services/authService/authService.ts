@@ -2,8 +2,8 @@ import { WithId } from "mongodb";
 
 import { ResultStatus, ResultType } from "../types";
 import { bcryptService } from "../bcryptService/bcryptService";
+import { usersRepository } from "../../repositories/usersRepositories";
 import { UserDbType } from "../../repositories/usersRepositories/types";
-import { usersRepository } from "../../repositories/usersRepositories/usersRepository";
 
 export const authService = {
     checkCredentials: async (

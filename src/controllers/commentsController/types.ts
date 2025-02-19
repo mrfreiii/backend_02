@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { CommentViewType } from "repositories/commentsRepositories/types";
+import { CommentViewType } from "../../repositories/commentsRepositories/types";
 
 export type CommentQueryType = {
     sortBy: string;

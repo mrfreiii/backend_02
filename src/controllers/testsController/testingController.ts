@@ -1,11 +1,9 @@
 import { Router, Request,Response  } from "express";
 
-import { blogsRepository } from "../../repositories/blogsRepositories/blogsRepository";
-import { postsRepository } from "../../repositories/postsRepositories/postsRepository";
-import { usersRepository } from "../../repositories/usersRepositories/usersRepository";
-import {
-    commentsRepository
-} from "../../repositories/commentsRepositories/commentsRepository";
+import { blogsRepository } from "../../repositories/blogsRepositories";
+import { postsRepository } from "../../repositories/postsRepositories";
+import { usersRepository } from "../../repositories/usersRepositories";
+import { commentsRepository } from "../../repositories/commentsRepositories";
 
 export const testingRouter = Router();
 

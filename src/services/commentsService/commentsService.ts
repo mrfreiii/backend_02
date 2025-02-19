@@ -1,10 +1,10 @@
 import {
     CommentDbType,
     CommentViewType
-} from "repositories/commentsRepositories/types";
+} from "../../repositories/commentsRepositories/types";
 import {
     commentsRepository
-} from "repositories/commentsRepositories";
+} from "../../repositories/commentsRepositories";
 import { ResultStatus, ResultType } from "../types";
 
 export const commentsService = {

@@ -1,8 +1,8 @@
 import bcrypt from "bcrypt";
 
 import { bcryptService } from "../bcryptService/bcryptService";
+import { usersRepository } from "../../repositories/usersRepositories";
 import { UserDbType, UserViewType } from "../../repositories/usersRepositories/types";
-import { usersRepository } from "../../repositories/usersRepositories/usersRepository";
 
 export const usersService = {
     addNewUser: async (

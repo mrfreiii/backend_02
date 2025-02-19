@@ -4,12 +4,10 @@ import { app } from "../app";
 import { SETTINGS } from "../settings";
 import { connectToTestDB } from "../db/mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { postsRepository } from "../repositories/postsRepositories/postsRepository";
-import { blogsRepository } from "../repositories/blogsRepositories/blogsRepository";
-import { usersRepository } from "../repositories/usersRepositories/usersRepository";
-import {
-    commentsRepository
-} from "../repositories/commentsRepositories/commentsRepository";
+import { postsRepository } from "../repositories/postsRepositories";
+import { blogsRepository } from "../repositories/blogsRepositories";
+import { usersRepository } from "../repositories/usersRepositories";
+import { commentsRepository } from "../repositories/commentsRepositories";
 
 export const req = agent(app);
 

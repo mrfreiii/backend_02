@@ -13,14 +13,12 @@ import {
     userLoginValidator,
     userPasswordValidator
 } from "./validators";
-import {
-    usersQueryRepository
-} from "../../repositories/usersRepositories/usersQueryRepository";
-import { parseUsersQueryParams } from "../../utils/parseQueryParams";
+import { parseUsersQueryParams } from "../../utils";
 import { usersService } from "../../services/usersService/usersService";
 import { UserViewType } from "../../repositories/usersRepositories/types";
-import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
+import { usersQueryRepository } from "../../repositories/usersRepositories";
 import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
+import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
 export const usersRouter = Router();
 

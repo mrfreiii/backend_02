@@ -24,7 +24,7 @@ import {
     postTitleValidator,
     shortDescriptionValidator
 } from "../postsController/validators";
-import { HttpStatuses } from "controllers/types";
+import { HttpStatuses } from "../types";
 import { blogsService } from "../../services/blogsService/blogsService";
 import { postsService } from "../../services/postsService/postsService";
 import { parseBlogsQueryParams, parsePostsQueryParams } from "../../utils";

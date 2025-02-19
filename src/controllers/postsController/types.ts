@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 
 import { WithPaginationType } from "../../types";
+import { CommentQueryType } from "../commentsController/types";
 import { PostViewType } from "../../repositories/postsRepositories/types";
 import { CommentViewType } from "../../repositories/commentsRepositories/types";
-import { CommentQueryType } from "../commentsController/types";
 
 export type PostQueryType = {
     sortBy: string;

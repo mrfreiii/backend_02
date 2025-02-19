@@ -1,5 +1,5 @@
+import { blogsRepository } from "../../repositories/blogsRepositories";
 import { BlogDbType, BlogViewType } from "../../repositories/blogsRepositories/types";
-import { blogsRepository } from "../../repositories/blogsRepositories/blogsRepository";
 
 export const blogsService = {
     addNewBlog: async ( dto: Omit<BlogViewType, "id" | "createdAt">): Promise<string> => {

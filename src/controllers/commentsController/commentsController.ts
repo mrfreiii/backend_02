@@ -9,11 +9,11 @@ import {
 import { HttpStatuses } from "../types";
 import { resultCodeToHttpException } from "../helpers";
 import { commentContentValidator } from "./validators";
-import { ResultStatus } from "services/types";
-import { commentsService } from "services/commentsService/commentsService";
-import { jwtAuthMiddleware } from "middlewares/jwtAuthMiddleware";
-import { errorResultMiddleware } from "middlewares/errorResultMiddleware";
-import { commentsQueryRepository } from "repositories/commentsRepositories";
+import { ResultStatus } from "../../services/types";
+import { commentsService } from "../../services/commentsService/commentsService";
+import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
+import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
+import { commentsQueryRepository } from "../../repositories/commentsRepositories";
 
 export const commentsRouter = Router();
 
