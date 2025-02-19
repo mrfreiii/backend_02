@@ -1,7 +1,7 @@
 import {
     req,
     connectToTestDBAndClearRepositories
-} from "../../utils/testHelpers";
+} from "../helpers";
 import { SETTINGS } from "../../settings";
 import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
 import { UserViewType } from "../../repositories/usersRepositories/types";

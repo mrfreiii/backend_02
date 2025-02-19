@@ -7,21 +7,34 @@ import {
     shortDescriptionValidator
 } from "./validators";
 import {
+    AddCommentByPostIdReqType, AddCommentByPostIdResType,
     CreatePostReqType,
     CreatePostResType,
     DeletePostByIdReqType,
     GetAllPostsReqType,
-    GetAllPostsResType,
+    GetAllPostsResType, GetCommentsByPostIdReqType, GetCommentsByPostIdResType,
     GetPostByIdReqType,
     GetPostByIdResType, UpdatePostReqType
 } from "./types";
-import { parsePostsQueryParams } from "../../utils/parseQueryParams";
+import {
+    parseCommentsQueryParams,
+    parsePostsQueryParams
+} from "../../utils/parseQueryParams";
+import { HttpStatuses } from "../types";
+import { ResultStatus } from "../../services/types";
+import { resultCodeToHttpException } from "../helpers";
 import { postsService } from "../../services/postsService/postsService";
-import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
+import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
+import { commentContentValidator } from "../commentsController/validators";
 import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
+import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
+import { commentsService } from "../../services/commentsService/commentsService";
 import {
     postsQueryRepository
 } from "../../repositories/postsRepositories/postsQueryRepository";
+import {
+    commentsQueryRepository
+} from "../../repositories/commentsRepositories/commentsQueryRepository";
 
 export const postsRouter = Router();
 
@@ -93,6 +106,52 @@ const postsController = {
 
         res.sendStatus(204);
     },
+    createCommentByPostId: async (req: AddCommentByPostIdReqType, res: AddCommentByPostIdResType) => {
+        const result = await commentsService.addNewComment({
+            content: req.body.content.trim(),
+            commentatorInfo: {
+                userId: req.user?.id!,
+                userLogin: req.user?.login!,
+            },
+            postId: req.params.postId,
+        });
+        if (result.status !== ResultStatus.Success) {
+            res.sendStatus(resultCodeToHttpException(result.status))
+            return;
+        }
+
+        const createdComment = await commentsQueryRepository.getCommentById(result.data!);
+        if (!createdComment) {
+            res.sendStatus(HttpStatuses.ServerError_500);
+            return;
+        }
+
+        res
+            .status(HttpStatuses.Created_201)
+            .json(createdComment);
+    },
+    getCommentsByPostId: async (req: GetCommentsByPostIdReqType, res: GetCommentsByPostIdResType) => {
+        const post = await postsQueryRepository.getPostById(req.params.postId);
+        if (!post) {
+            res.sendStatus(HttpStatuses.NotFound_404);
+            return;
+        }
+
+        const parsedQuery = parseCommentsQueryParams(req.query)
+        const allComments = await commentsQueryRepository.getAllComments({
+            parsedQuery,
+            postId: req.params.postId
+        });
+
+        if (!allComments) {
+            res.sendStatus(HttpStatuses.ServerError_500);
+            return;
+        }
+
+        res
+            .status(HttpStatuses.Success_200)
+            .json(allComments);
+    },
 }
 
 postsRouter
@@ -121,3 +180,13 @@ postsRouter
     .delete(
         basicAuthMiddleware,
         postsController.deletePostById);
+
+postsRouter
+    .route("/:postId/comments")
+    .get(postsController.getCommentsByPostId)
+    .post(
+        jwtAuthMiddleware,
+        commentContentValidator,
+        errorResultMiddleware,
+        postsController.createCommentByPostId,
+    )

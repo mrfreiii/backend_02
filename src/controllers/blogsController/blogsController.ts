@@ -38,6 +38,7 @@ import {
 import {
     postsQueryRepository
 } from "../../repositories/postsRepositories/postsQueryRepository";
+import { HttpStatuses } from "../types";
 
 export const blogsRouter = Router();
 
@@ -63,19 +64,22 @@ const blogsController = {
             .json(foundBlog);
     },
     getPostsByBlogId: async (req: GetAllPostsByBlogIdReqType, res: GetAllPostsByBlogIdResType) => {
+        const blog = await blogsQueryRepository.getBlogById(req.params.blogId);
+        if (!blog) {
+            res.sendStatus(HttpStatuses.NotFound_404);
+            return;
+        }
+
         const parsedQuery = parsePostsQueryParams(req.query);
-        const allPosts = await postsQueryRepository.getAllPosts({
-            parsedQuery,
-            blogId: req.params.blogId
-        });
+        const allPosts = await postsQueryRepository.getAllPosts({parsedQuery, blogId: req.params.blogId});
 
         if (!allPosts) {
-            res.sendStatus(404);
+            res.sendStatus(HttpStatuses.ServerError_500);
             return;
         }
 
         res
-            .status(200)
+            .status(HttpStatuses.Success_200)
             .json(allPosts);
     },
     createBlog: async (req: CreateBlogReqType, res: CreateBlogResType) => {

@@ -1,5 +1,5 @@
 import { SETTINGS } from "../../settings";
-import { req, validAuthHeader } from "../../utils/testHelpers";
+import { req, validAuthHeader } from "../helpers";
 import { BlogViewType } from "../../repositories/blogsRepositories/types";
 
 export const createTestBlogs = async (count: number = 1): Promise<BlogViewType[]> => {

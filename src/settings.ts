@@ -8,6 +8,7 @@ export const SETTINGS = {
         BLOGS: '/blogs',
         POSTS: '/posts',
         AUTH: '/auth',
+        COMMENTS: '/comments',
         TESTING: "/testing"
     },
     CREDENTIALS: {

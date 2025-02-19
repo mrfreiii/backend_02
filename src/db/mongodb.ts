@@ -5,10 +5,12 @@ import { SETTINGS } from "../settings";
 import { BlogDbType } from "../repositories/blogsRepositories/types";
 import { PostDbType } from "../repositories/postsRepositories/types";
 import { UserDbType } from "../repositories/usersRepositories/types";
+import { CommentDbType } from "../repositories/commentsRepositories/types";
 
 export let blogCollection: Collection<BlogDbType>;
 export let postCollection: Collection<PostDbType>;
 export let userCollection: Collection<UserDbType>;
+export let commentCollection: Collection<CommentDbType>;
 
 export const connectToDB = async ({ dbUrl, dbName }:{ dbUrl: string, dbName: string }): Promise<boolean> => {
     const client: MongoClient = new MongoClient(dbUrl);
@@ -17,6 +19,7 @@ export const connectToDB = async ({ dbUrl, dbName }:{ dbUrl: string, dbName: str
     blogCollection = db.collection<BlogDbType>(SETTINGS.PATH.BLOGS);
     postCollection = db.collection<PostDbType>(SETTINGS.PATH.POSTS);
     userCollection = db.collection<UserDbType>(SETTINGS.PATH.USERS);
+    commentCollection = db.collection<CommentDbType>(SETTINGS.PATH.COMMENTS);
 
     try {
         await client.connect();
@@ -43,6 +46,7 @@ export const connectToTestDB = async (): Promise<MongoMemoryServer> => {
     blogCollection = db.collection<BlogDbType>(SETTINGS.PATH.BLOGS);
     postCollection = db.collection<PostDbType>(SETTINGS.PATH.POSTS);
     userCollection = db.collection<UserDbType>(SETTINGS.PATH.USERS);
+    commentCollection = db.collection<CommentDbType>(SETTINGS.PATH.COMMENTS);
 
     try {
         await client.connect();

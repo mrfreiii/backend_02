@@ -1,5 +1,5 @@
 import { SETTINGS } from "../../settings";
-import { req, validAuthHeader } from "../../utils/testHelpers";
+import { req, validAuthHeader } from "../helpers";
 import { UserViewType } from "../../repositories/usersRepositories/types";
 
 const DEFAULT_USER_PASSWORD = "qwerty12345";

@@ -2,7 +2,7 @@ import {
     req,
     validAuthHeader,
     connectToTestDBAndClearRepositories
-} from "../../utils/testHelpers";
+} from "../helpers";
 import { SETTINGS } from "../../settings";
 import { createTestBlogs } from "./helpers";
 import { createTestPosts } from "../posts/helpers";

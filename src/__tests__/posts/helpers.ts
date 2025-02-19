@@ -1,5 +1,5 @@
 import { SETTINGS } from "../../settings";
-import { req, validAuthHeader } from "../../utils/testHelpers";
+import { req, validAuthHeader } from "../helpers";
 import { PostViewType } from "../../repositories/postsRepositories/types";
 
 export const createTestPosts = async ({blogId, count = 1}:{blogId: string; count?: number}): Promise<PostViewType[]> => {

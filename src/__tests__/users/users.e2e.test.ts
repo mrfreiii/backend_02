@@ -2,7 +2,7 @@ import {
     req,
     validAuthHeader,
     connectToTestDBAndClearRepositories
-} from "../../utils/testHelpers";
+} from "../helpers";
 import { SETTINGS } from "../../settings";
 import { createTestUsers } from "./helpers";
 import { UserQueryType } from "../../controllers/usersController/types";

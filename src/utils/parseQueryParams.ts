@@ -2,6 +2,7 @@ import { AvailableSortDirections } from "../types";
 import { BlogQueryType } from "../controllers/blogsController/types";
 import { PostQueryType } from "../controllers/postsController/types";
 import { UserQueryType } from "../controllers/usersController/types";
+import { CommentQueryType } from "../controllers/commentsController/types";
 
 export const parseUsersQueryParams = (queryParams: UserQueryType): UserQueryType => {
     const {
@@ -49,6 +50,18 @@ export const parsePostsQueryParams = (queryParams: PostQueryType): PostQueryType
 
     return {
         sortBy: postsAvailableSortBy.includes(sortBy as string) ? sortBy : "createdAt",
+        sortDirection: AvailableSortDirections.includes(sortDirection as string) ? sortDirection : "desc",
+        pageNumber: Number(pageNumber) && Number(pageNumber) > 0 ? Number(pageNumber) : 1,
+        pageSize: Number(pageSize) && Number(pageSize) > 0 ? Number(pageSize) : 10,
+    }
+}
+
+export const parseCommentsQueryParams = (queryParams: CommentQueryType): CommentQueryType => {
+    const {sortBy, sortDirection, pageSize, pageNumber} = queryParams || {};
+    const commentsAvailableSortBy = ["id", "content", "commentatorInfo", "userId", "userLogin", "createdAt"]
+
+    return {
+        sortBy: commentsAvailableSortBy.includes(sortBy as string) ? sortBy : "createdAt",
         sortDirection: AvailableSortDirections.includes(sortDirection as string) ? sortDirection : "desc",
         pageNumber: Number(pageNumber) && Number(pageNumber) > 0 ? Number(pageNumber) : 1,
         pageSize: Number(pageSize) && Number(pageSize) > 0 ? Number(pageSize) : 10,

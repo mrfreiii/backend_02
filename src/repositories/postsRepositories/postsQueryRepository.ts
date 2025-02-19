@@ -4,17 +4,9 @@ import { WithPaginationType } from "../../types";
 import { postCollection } from "../../db/mongodb";
 import { PostDbType, PostViewType } from "./types";
 import { PostQueryType } from "../../controllers/postsController/types";
-import { blogsQueryRepository } from "../blogsRepositories/blogsQueryRepository";
 
 export const postsQueryRepository = {
     getAllPosts: async ({parsedQuery, blogId}: { parsedQuery: PostQueryType, blogId?: string }): Promise<WithPaginationType<PostViewType> | undefined> => {
-        if(blogId){
-            const blog = await blogsQueryRepository.getBlogById(blogId);
-            if (!blog) {
-                return;
-            }
-        }
-
         const {sortBy, sortDirection, pageSize, pageNumber} = parsedQuery;
         const filter: any = {};
 

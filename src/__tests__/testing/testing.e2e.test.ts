@@ -2,7 +2,7 @@ import { SETTINGS } from "../../settings";
 import {
     connectToTestDBAndClearRepositories,
     req,
-} from "../../utils/testHelpers";
+} from "../helpers";
 import { createTestBlogs } from "../blogs/helpers";
 import { createTestPosts } from "../posts/helpers";
 

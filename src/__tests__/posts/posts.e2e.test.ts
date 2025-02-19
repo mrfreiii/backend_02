@@ -1,13 +1,12 @@
-import {
-    req,
-    validAuthHeader,
-    connectToTestDBAndClearRepositories,
-} from "../../utils/testHelpers";
 import { SETTINGS } from "../../settings";
 import { createTestPosts } from "./helpers";
 import { createTestBlogs } from "../blogs/helpers";
+import { createTestComments } from "../comments/helpers";
+import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
+import { UserViewType } from "../../repositories/usersRepositories/types";
 import { PostViewType } from "../../repositories/postsRepositories/types";
 import { AUTH_ERROR_MESSAGES } from "../../middlewares/basicAuthMiddleware";
+import { connectToTestDBAndClearRepositories, req, validAuthHeader, } from "../helpers";
 
 describe("get all /posts", () => {
     connectToTestDBAndClearRepositories();
@@ -326,5 +325,140 @@ describe("delete post by id /posts", () => {
             .expect(200)
 
         expect(checkRes.body.items.length).toBe(0);
+    })
+})
+
+describe("create comment by post id /posts", () => {
+    connectToTestDBAndClearRepositories();
+
+    let createdUser: UserViewType;
+    let userToken: string;
+    let createdPost: PostViewType;
+
+    beforeAll(async ()=>{
+        createdUser = (await createTestUsers({}))[0];
+        userToken = (await getUsersJwtTokens([createdUser]))[0];
+
+        const createdBlog = (await createTestBlogs())[0];
+        createdPost = (await createTestPosts({blogId: createdBlog.id}))[0];
+
+        req.set("Authorization", "");
+    })
+
+
+    it("should return 401 for request without auth header", async () => {
+        const res = await req
+            .post(`${SETTINGS.PATH.POSTS}/777777/comments`)
+            .send({})
+            .expect(401)
+
+        expect(res.body.error).toBe(AUTH_ERROR_MESSAGES.NoHeader);
+    })
+
+    it("should return 400 for content is not string", async () => {
+        const newComment: { content: null } = {
+            content: null,
+        }
+
+        const res = await req
+            .set("Authorization", `Bearer ${userToken}`)
+            .post(`${SETTINGS.PATH.POSTS}/777777/comments`)
+            .send(newComment)
+            .expect(400)
+
+        expect(res.body.errorsMessages.length).toBe(1);
+        expect(res.body.errorsMessages).toEqual([
+                {
+                    field: "content",
+                    message: "value must be a string"
+                },
+            ]
+        );
+    })
+
+    it("should return 400 for content is too short", async () => {
+        const newComment: { content: string } = {
+            content: "qwerty",
+        }
+
+        const res = await req
+            .set("Authorization", `Bearer ${userToken}`)
+            .post(`${SETTINGS.PATH.POSTS}/777777/comments`)
+            .send(newComment)
+            .expect(400)
+
+        expect(res.body.errorsMessages.length).toBe(1);
+        expect(res.body.errorsMessages).toEqual([
+                {
+                    field: "content",
+                    message: "length must be: min 20, max 300"
+                },
+            ]
+        );
+    })
+
+    it("should return 404 for non existent post", async () => {
+        const newComment: { content: string } = {
+            content: "12345678901234567890",
+        }
+
+        await req
+            .set("Authorization", `Bearer ${userToken}`)
+            .post(`${SETTINGS.PATH.POSTS}/777777/comments`)
+            .send(newComment)
+            .expect(404)
+    })
+
+
+    it("should create a comment", async () => {
+        const newComment: { content: string } = {
+            content: "12345678901234567890",
+        }
+
+        const res = await req
+            .set("Authorization", `Bearer ${userToken}`)
+            .post(`${SETTINGS.PATH.POSTS}/${createdPost.id}/comments`)
+            .send(newComment)
+            .expect(201)
+
+        expect(res.body).toEqual(
+            {
+                ...newComment,
+                commentatorInfo: {
+                    userId: createdUser?.id,
+                    userLogin: createdUser?.login
+                },
+                id: expect.any(String),
+                createdAt: expect.any(String),
+            }
+        );
+    })
+})
+
+describe("get comments by postId /posts", () => {
+    connectToTestDBAndClearRepositories();
+
+    it("should return 404 if post does not exist", async () => {
+        await req
+            .get(`${SETTINGS.PATH.POSTS}/777777/comments`)
+            .expect(404)
+    })
+
+    it("should get not empty array", async () => {
+        const createdCommentsData = await createTestComments();
+
+        const res = await req
+            .get(`${SETTINGS.PATH.POSTS}/${createdCommentsData.createdPostId}/comments`)
+            .expect(200)
+
+        expect(res.body.pagesCount).toBe(1);
+        expect(res.body.page).toBe(1);
+        expect(res.body.pageSize).toBe(10);
+        expect(res.body.totalCount).toBe(1);
+        expect(res.body.items.length).toBe(1);
+
+        expect(res.body.items).toEqual([
+            createdCommentsData.comments[0],
+        ])
     })
 })

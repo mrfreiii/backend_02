@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 
 import { WithPaginationType } from "../../types";
 import { PostViewType } from "../../repositories/postsRepositories/types";
+import { CommentViewType } from "../../repositories/commentsRepositories/types";
+import { CommentQueryType } from "../commentsController/types";
 
 export type PostQueryType = {
     sortBy: string;
@@ -23,6 +25,8 @@ export type UpdatePostReqType = Request<{id: string}, {}, Omit<PostViewType, "id
 
 export type DeletePostByIdReqType = Request<{ id: string }>;
 
+export type AddCommentByPostIdReqType = Request<{ postId: string }, {}, {content: string}>;
+export type AddCommentByPostIdResType = Response<CommentViewType>;
 
-
-
+export type GetCommentsByPostIdReqType = Request<{ postId: string }, {}, {}, CommentQueryType>;
+export type GetCommentsByPostIdResType = Response<WithPaginationType<CommentViewType>>;
