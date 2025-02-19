@@ -48,8 +48,7 @@ export const blogsQueryRepository = {
             }
 
             return blogsQueryRepository._mapBlogDbTypeToBlogViewType(blog);
-        } catch (e) {
-            console.log(e);
+        } catch {
             return;
         }
     },

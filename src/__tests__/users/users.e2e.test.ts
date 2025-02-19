@@ -8,7 +8,7 @@ import { createTestUsers } from "./helpers";
 import { UserQueryType } from "../../controllers/usersController/types";
 import { UserViewType } from "../../repositories/usersRepositories/types";
 import { AUTH_ERROR_MESSAGES } from "../../middlewares/basicAuthMiddleware";
-import { convertObjectToQueryString } from "../../utils/convertObjectToQueryString";
+import { convertObjectToQueryString } from "../../utils";
 
 describe("create user /users", () => {
     connectToTestDBAndClearRepositories();
@@ -275,7 +275,7 @@ describe("get all /users", () => {
 
     it("should get 1 user with searchName query", async () => {
         const query: Pick<UserQueryType, "searchLoginTerm"> = {
-            searchLoginTerm: "in1"
+            searchLoginTerm: "user1"
         };
         const queryString = convertObjectToQueryString(query);
 

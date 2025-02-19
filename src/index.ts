@@ -7,8 +7,6 @@ import { connectToDB } from "./db/mongodb";
 config();
 
 const startApp = async () => {
-    console.log(Buffer.from("Thanks", "utf8").toString("base64"))
-
     const dbUrl = process.env?.MONGO_URL;
     if(!dbUrl) {
         console.log("db url is undefined");

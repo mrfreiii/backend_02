@@ -53,8 +53,7 @@ export const usersQueryRepository = {
             }
 
             return usersQueryRepository._mapUserDbTypeToUserViewType(user);
-        } catch (e) {
-            console.log(e);
+        } catch {
             return;
         }
     },

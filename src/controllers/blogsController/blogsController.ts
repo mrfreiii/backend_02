@@ -24,21 +24,14 @@ import {
     postTitleValidator,
     shortDescriptionValidator
 } from "../postsController/validators";
+import { HttpStatuses } from "controllers/types";
 import { blogsService } from "../../services/blogsService/blogsService";
 import { postsService } from "../../services/postsService/postsService";
-import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
+import { parseBlogsQueryParams, parsePostsQueryParams } from "../../utils";
 import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
-import {
-    parseBlogsQueryParams,
-    parsePostsQueryParams
-} from "../../utils/parseQueryParams";
-import {
-    blogsQueryRepository
-} from "../../repositories/blogsRepositories/blogsQueryRepository";
-import {
-    postsQueryRepository
-} from "../../repositories/postsRepositories/postsQueryRepository";
-import { HttpStatuses } from "../types";
+import { blogsQueryRepository } from "../../repositories/blogsRepositories";
+import { postsQueryRepository } from "../../repositories/postsRepositories";
+import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
 export const blogsRouter = Router();
 

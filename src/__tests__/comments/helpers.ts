@@ -2,11 +2,11 @@ import { req } from "../helpers";
 import { SETTINGS } from "../../settings";
 import { createTestPosts } from "../posts/helpers";
 import { createTestBlogs } from "../blogs/helpers";
-import { CommentViewType } from "../../repositories/commentsRepositories/types";
 import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
+import { CommentViewType } from "../../repositories/commentsRepositories/types";
 
 
-export const createTestComments = async (count: number = 1): Promise<{ comments: CommentViewType[], createdPostId: string }> => {
+export const createTestComments = async (count: number = 1): Promise<{ comments: CommentViewType[], createdPostId: string, userToken: string }> => {
     const commentsList: CommentViewType[] = [];
 
     const createdUser = (await createTestUsers({}))[0];
@@ -33,8 +33,11 @@ export const createTestComments = async (count: number = 1): Promise<{ comments:
         commentsList.push(res.body);
     }
 
+    req.set("Authorization", "");
+
     return {
         comments: commentsList,
-        createdPostId: createdPost.id
+        createdPostId: createdPost.id,
+        userToken,
     }
 }

@@ -40,8 +40,7 @@ export const usersRepository = {
         try{
             const result = await userCollection.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
-        } catch (e){
-            console.log(e);
+        } catch {
             return false;
         }
     },

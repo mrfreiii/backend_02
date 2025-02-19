@@ -6,8 +6,8 @@ import { ResultStatus } from "../../services/types";
 import { resultCodeToHttpException } from "../helpers";
 import { jwtService } from "../../services/jwtService/jwtService";
 import { authService } from "../../services/authService/authService";
-import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
 import { loginOrEmailValidator, passwordValidator } from "./validators";
+import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
 export const authRouter = Router();

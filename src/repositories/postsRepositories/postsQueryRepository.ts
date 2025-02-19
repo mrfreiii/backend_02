@@ -41,8 +41,7 @@ export const postsQueryRepository = {
             }
 
             return postsQueryRepository._mapPostDbTypeToPostViewType(post);
-        } catch (e) {
-            console.log(e);
+        } catch {
             return;
         }
     },

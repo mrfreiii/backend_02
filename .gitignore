@@ -4,6 +4,7 @@
 # production
 /dist
 /build
+/reports
 
 # other
 .idea/*

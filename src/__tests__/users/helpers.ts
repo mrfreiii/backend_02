@@ -4,15 +4,23 @@ import { UserViewType } from "../../repositories/usersRepositories/types";
 
 const DEFAULT_USER_PASSWORD = "qwerty12345";
 
-export const createTestUsers = async ({password, count = 1}:{password?: string; count?: number}): Promise<UserViewType[]> => {
+export const createTestUsers = async (
+    {
+        password,
+        count = 1
+    }: {
+        password?: string;
+        count?: number
+    }): Promise<UserViewType[]> => {
     const result: UserViewType[] = [];
 
+    for (let i = 0; i < count; i++) {
+        const uniqueId = Number(Date.now()).toString().substring(8);
 
-    for(let i = 0; i < count; i++){
-        const user: Omit<UserViewType, "id" | "createdAt"> & {password: string} = {
-            login: `login${i+1}`,
+        const user: Omit<UserViewType, "id" | "createdAt"> & { password: string } = {
+            login: `user${i+1}${uniqueId}`,
             password: password ?? DEFAULT_USER_PASSWORD,
-            email: `email${i+1}@test.com`
+            email: `email${uniqueId}@test.com`
         }
 
         const res = await req
@@ -24,14 +32,15 @@ export const createTestUsers = async ({password, count = 1}:{password?: string; 
         result.push(res.body);
     }
 
+    req.set("Authorization", "")
     return result;
 }
 
 export const getUsersJwtTokens = async (users: UserViewType[]): Promise<string[]> => {
     const result: string[] = [];
 
-    for(let i = 0; i < users.length; i++){
-        const authData: {loginOrEmail: string, password: string} = {
+    for (let i = 0; i < users.length; i++) {
+        const authData: { loginOrEmail: string, password: string } = {
             loginOrEmail: users[i].login,
             password: DEFAULT_USER_PASSWORD,
         }

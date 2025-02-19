@@ -16,25 +16,18 @@ import {
     GetPostByIdReqType,
     GetPostByIdResType, UpdatePostReqType
 } from "./types";
-import {
-    parseCommentsQueryParams,
-    parsePostsQueryParams
-} from "../../utils/parseQueryParams";
 import { HttpStatuses } from "../types";
-import { ResultStatus } from "../../services/types";
 import { resultCodeToHttpException } from "../helpers";
-import { postsService } from "../../services/postsService/postsService";
-import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
 import { commentContentValidator } from "../commentsController/validators";
-import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
-import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
-import { commentsService } from "../../services/commentsService/commentsService";
-import {
-    postsQueryRepository
-} from "../../repositories/postsRepositories/postsQueryRepository";
-import {
-    commentsQueryRepository
-} from "../../repositories/commentsRepositories/commentsQueryRepository";
+import { ResultStatus } from "services/types";
+import { postsService } from "services/postsService/postsService";
+import { commentsService } from "services/commentsService/commentsService";
+import { jwtAuthMiddleware } from "middlewares/jwtAuthMiddleware";
+import { basicAuthMiddleware } from "middlewares/basicAuthMiddleware";
+import { errorResultMiddleware } from "middlewares/errorResultMiddleware";
+import { postsQueryRepository } from "repositories/postsRepositories";
+import { commentsQueryRepository } from "repositories/commentsRepositories";
+import { parseCommentsQueryParams, parsePostsQueryParams } from "utils";
 
 export const postsRouter = Router();
 
@@ -107,6 +100,12 @@ const postsController = {
         res.sendStatus(204);
     },
     createCommentByPostId: async (req: AddCommentByPostIdReqType, res: AddCommentByPostIdResType) => {
+        const post = await postsQueryRepository.getPostById(req.params.postId);
+        if (!post) {
+            res.sendStatus(HttpStatuses.NotFound_404)
+            return;
+        }
+
         const result = await commentsService.addNewComment({
             content: req.body.content.trim(),
             commentatorInfo: {

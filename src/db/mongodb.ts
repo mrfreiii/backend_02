@@ -51,7 +51,6 @@ export const connectToTestDB = async (): Promise<MongoMemoryServer> => {
     try {
         await client.connect();
         await db.command({ping: 1});
-        console.log("connected to test db");
     } catch (e) {
         console.log(e);
         await server.stop();

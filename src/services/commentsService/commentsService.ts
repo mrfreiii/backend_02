@@ -1,30 +1,17 @@
 import {
     CommentDbType,
     CommentViewType
-} from "../../repositories/commentsRepositories/types";
-import { ResultStatus, ResultType } from "../types";
+} from "repositories/commentsRepositories/types";
 import {
     commentsRepository
-} from "../../repositories/commentsRepositories/commentsRepository";
-import {
-    postsQueryRepository
-} from "../../repositories/postsRepositories/postsQueryRepository";
+} from "repositories/commentsRepositories";
+import { ResultStatus, ResultType } from "../types";
 
 export const commentsService = {
     addNewComment: async (
         dto: Omit<CommentViewType, "id" | "createdAt"> & { postId: string }
     ): Promise<ResultType<string | null>> => {
         const {content, commentatorInfo, postId} = dto;
-
-        const post = await postsQueryRepository.getPostById(postId);
-        if (!post) {
-            return {
-                status: ResultStatus.NotFound,
-                errorMessage: "пост не найден",
-                extensions: [],
-                data: null,
-            }
-        }
 
         const newComment: CommentDbType = {
             postId,
@@ -51,24 +38,41 @@ export const commentsService = {
             extensions: [],
             data: createdCommentId,
         }
-    }
-    ,
-//     updateBlog: async (dto: Omit<BlogViewType, "createdAt">): Promise<boolean> => {
-//         const {id, name, description, websiteUrl, isMembership} = dto;
-//
-//         const updatedBlog: Omit<BlogViewType, "createdAt"> = {
-//             id,
-//             name: name.trim(),
-//             description: description.trim(),
-//             websiteUrl: websiteUrl.trim(),
-//             isMembership: typeof isMembership === "boolean" ? isMembership : false,
-//         }
-//
-//         return blogsRepository.updateBlog(updatedBlog);
-//     },
-//     deleteBlogById
-// :
-// async (id: string): Promise<boolean> => {
-//     return blogsRepository.deleteBlogById(id);
-// },
+    },
+    updateComment: async (dto: { id: string; content: string }): Promise<ResultType<boolean | null>> => {
+        const isUpdated = commentsRepository.updateComment(dto);
+
+        if (!isUpdated) {
+            return {
+                status: ResultStatus.ServerError,
+                errorMessage: "не удалось обновить комментарий",
+                extensions: [],
+                data: null,
+            }
+        }
+
+        return {
+            status: ResultStatus.Success,
+            extensions: [],
+            data: true,
+        }
+    },
+    deleteComment: async (id: string): Promise<ResultType<boolean | null>> => {
+        const isDeleted = commentsRepository.deleteComment(id);
+
+        if (!isDeleted) {
+            return {
+                status: ResultStatus.ServerError,
+                errorMessage: "не удалось удалить комментарий",
+                extensions: [],
+                data: null,
+            }
+        }
+
+        return {
+            status: ResultStatus.Success,
+            extensions: [],
+            data: true,
+        }
+    },
 }

@@ -25,8 +25,7 @@ export const blogsRepository = {
             );
 
             return result.matchedCount === 1;
-        } catch (e) {
-            console.log(e);
+        } catch {
             return false;
         }
     },
@@ -34,8 +33,7 @@ export const blogsRepository = {
         try {
             const result = await blogCollection.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
-        } catch (e) {
-            console.log(e);
+        } catch {
             return false;
         }
     },

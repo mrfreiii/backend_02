@@ -27,8 +27,7 @@ export const postsRepository = {
             );
 
             return result.matchedCount === 1;
-        } catch (e) {
-            console.log(e);
+        } catch {
             return false;
         }
     },
@@ -36,8 +35,7 @@ export const postsRepository = {
         try{
             const result = await postCollection.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
-        } catch (e){
-            console.log(e);
+        } catch {
             return false;
         }
     },

@@ -41,8 +41,7 @@ export const commentsQueryRepository = {
             }
 
             return commentsQueryRepository._mapCommentDbTypeToCommentViewType(comment);
-        } catch (e) {
-            console.log(e);
+        } catch {
             return;
         }
     },

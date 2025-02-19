@@ -1,5 +1,5 @@
 import {body} from 'express-validator';
-import { blogsQueryRepository } from "../../repositories/blogsRepositories/blogsQueryRepository";
+import { blogsQueryRepository } from "repositories/blogsRepositories";
 
 export const postTitleValidator = body('title')
     .isString().withMessage("value must be a string")
@@ -22,8 +22,7 @@ export const blogIdValidator = body('blogId')
             if(!blog){
                 return Promise.reject();
             }
-        } catch (e){
-            console.log(e)
+        } catch {
             return Promise.reject();
         }
     }).withMessage("blog not found")
