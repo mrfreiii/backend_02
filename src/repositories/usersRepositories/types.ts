@@ -6,9 +6,15 @@ export type UserViewType = {
 }
 
 export type UserDbType = {
-    login: string;
-    email: string;
-    createdAt: string;
-    passwordHash: string;
-    passwordSalt: string;
+    accountData: {
+        login: string;
+        email: string;
+        createdAt: string;
+        passwordHash: string;
+    }
+    emailConfirmation: {
+        confirmationCode: string | null;
+        expirationDate: Date | null;
+        confirmationStatus: "confirmed" | "notConfirmed";
+    }
 }

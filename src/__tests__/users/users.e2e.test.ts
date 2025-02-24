@@ -185,7 +185,7 @@ describe("create user /users", () => {
         expect(res.body.errorsMessages).toEqual([
                 {
                     field: "login",
-                    message: "login should be unique"
+                    message: "login already exist"
                 },
             ]
         );
@@ -219,7 +219,7 @@ describe("create user /users", () => {
         expect(res.body.errorsMessages).toEqual([
                 {
                     field: "email",
-                    message: "email should be unique"
+                    message: "email already exist"
                 },
             ]
         );
@@ -267,8 +267,8 @@ describe("get all /users", () => {
         expect(res.body.items.length).toBe(2);
 
         expect(res.body.items).toEqual([
-            createdUsers[1],
             createdUsers[0],
+            createdUsers[1],
         ])
     })
 

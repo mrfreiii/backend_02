@@ -1,13 +1,19 @@
 import { Response, Request, Router } from "express";
 
+import {
+    userEmailValidator,
+    userLoginValidator,
+    userPasswordValidator
+} from "../validators";
 import { HttpStatuses } from "../types";
-import { LoginUserReqType } from "./types";
 import { ResultStatus } from "../../services/types";
 import { resultCodeToHttpException } from "../helpers";
+import { LoginUserReqType, RegisterUserReqType } from "./types";
 import { jwtService } from "../../services/jwtService/jwtService";
 import { authService } from "../../services/authService/authService";
 import { loginOrEmailValidator, passwordValidator } from "./validators";
 import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
+import { usersService } from "../../services/usersService/usersService";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
 export const authRouter = Router();
@@ -17,7 +23,7 @@ const authController = {
         const {loginOrEmail, password} = req.body;
         const result = await authService.checkCredentials({loginOrEmail, password});
 
-        if(result.status !== ResultStatus.Success){
+        if (result.status !== ResultStatus.Success) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
@@ -31,7 +37,7 @@ const authController = {
     },
     getUserInfo: async (req: Request, res: Response) => {
         const user = req.user;
-        if(!user){
+        if (!user) {
             res.sendStatus(HttpStatuses.Unauthorized_401)
             return;
         }
@@ -44,18 +50,47 @@ const authController = {
                 userId: user.id,
             })
     },
+    registerUser: async (req: RegisterUserReqType, res: Response) => {
+        const result = await usersService.addNewUser({
+            login: req.body.login.trim(),
+            password: req.body.password,
+            email: req.body.email.trim(),
+            needEmailConfirmation: true,
+            confirmationURL: `${req.protocol + '://' + req.get('host')}`
+        });
+
+        if (result.status !== ResultStatus.Success) {
+            res
+                .status(resultCodeToHttpException(result.status))
+                .json({
+                    errorsMessages: result.extensions
+                })
+            return;
+        }
+
+        res.sendStatus(204)
+    },
 }
 
 authRouter
     .route("/login")
     .post(
-    loginOrEmailValidator,
-    passwordValidator,
-    errorResultMiddleware,
-    authController.loginUser);
+        loginOrEmailValidator,
+        passwordValidator,
+        errorResultMiddleware,
+        authController.loginUser);
 
 authRouter
     .route("/me")
     .get(
-    jwtAuthMiddleware,
-    authController.getUserInfo);
+        jwtAuthMiddleware,
+        authController.getUserInfo);
+
+authRouter
+    .route("/registration")
+    .post(
+        userLoginValidator,
+        userPasswordValidator,
+        userEmailValidator,
+        errorResultMiddleware,
+        authController.registerUser);

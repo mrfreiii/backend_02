@@ -1,11 +1,9 @@
-import {
-    req,
-    connectToTestDBAndClearRepositories
-} from "../helpers";
 import { SETTINGS } from "../../settings";
 import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
+import { req, connectToTestDBAndClearRepositories } from "../helpers";
 import { UserViewType } from "../../repositories/usersRepositories/types";
 import { AUTH_ERROR_MESSAGES } from "../../middlewares/jwtAuthMiddleware";
+import { nodemailerService } from "../../services/nodemailerService/nodemailerService";
 
 describe("login user /login", () => {
     connectToTestDBAndClearRepositories();
@@ -134,5 +132,61 @@ describe("check user /me", () => {
             login: createdUser.login,
             userId: createdUser.id,
         });
+    })
+})
+
+describe("register user /registration", () => {
+    connectToTestDBAndClearRepositories();
+
+    nodemailerService.sendEmailWithConfirmationCode = jest
+        .fn()
+        .mockImplementation(
+            () => Promise.resolve()
+        )
+
+    it("should return 400 for login, password, and email are not string", async () => {
+        const newUser: Omit<UserViewType, "id" | "createdAt"> & {password: string} = {
+            login: null as unknown as string,
+            password: null as unknown as string,
+            email: null as unknown as string
+        }
+
+        const res = await req
+            .post(`${SETTINGS.PATH.AUTH}/registration`)
+            .send(newUser)
+            .expect(400)
+
+        expect(res.body.errorsMessages.length).toBe(3);
+        expect(res.body.errorsMessages).toEqual([
+                {
+                    field: "login",
+                    message: "value must be a string"
+                },
+                {
+                    field: "password",
+                    message: "value must be a string"
+                },
+                {
+                    field: "email",
+                    message: "value must be a string"
+                },
+            ]
+        );
+    })
+
+    it("should register a user", async () => {
+        const newUser: Omit<UserViewType, "id" | "createdAt"> & {password: string} = {
+            login: "userLogin",
+            password: "userPassword",
+            email: "user@email.com"
+        }
+
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration`)
+            .send(newUser)
+            .expect(204)
+
+        expect(nodemailerService.sendEmailWithConfirmationCode).toBeCalled();
+        expect(nodemailerService.sendEmailWithConfirmationCode).toBeCalledTimes(1);
     })
 })

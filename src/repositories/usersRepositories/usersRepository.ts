@@ -19,8 +19,8 @@ export const usersRepository = {
             return null
         }
 
-        const emailTerm = email ? [{ email: { $regex: email, $options: "i" }}] : [];
-        const loginTerm = login ? [{ login: { $regex: login, $options: "i" }}] : [];
+        const emailTerm = email ? [{ "accountData.email": { $regex: email, $options: "i" }}] : [];
+        const loginTerm = login ? [{ "accountData.login": { $regex: login, $options: "i" }}] : [];
 
         const filter = { $or: [...loginTerm, ...emailTerm] }
 

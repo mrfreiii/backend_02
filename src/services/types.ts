@@ -8,7 +8,7 @@ export enum ResultStatus {
 }
 
 type ExtensionType = {
-    field: string | null;
+    field: string;
     message: string;
 };
 

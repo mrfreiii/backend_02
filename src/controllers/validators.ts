@@ -12,7 +12,6 @@ export const userPasswordValidator = body('password')
 export const userEmailValidator = body('email')
     .isString().withMessage("value must be a string")
     .isEmail().withMessage("value must be email")
-    // .matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/).withMessage("value must be email")
 
 
 

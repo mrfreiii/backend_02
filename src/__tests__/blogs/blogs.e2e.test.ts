@@ -6,11 +6,11 @@ import {
 import { SETTINGS } from "../../settings";
 import { createTestBlogs } from "./helpers";
 import { createTestPosts } from "../posts/helpers";
+import { convertObjectToQueryString } from "../../utils";
 import { BlogQueryType } from "../../controllers/blogsController/types";
 import { BlogViewType } from "../../repositories/blogsRepositories/types";
 import { PostViewType } from "../../repositories/postsRepositories/types";
 import { AUTH_ERROR_MESSAGES } from "../../middlewares/basicAuthMiddleware";
-import { convertObjectToQueryString } from "../../utils";
 
 describe("get all /blogs", () => {
     connectToTestDBAndClearRepositories();

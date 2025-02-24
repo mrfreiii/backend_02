@@ -12,10 +12,11 @@ import {
     userEmailValidator,
     userLoginValidator,
     userPasswordValidator
-} from "./validators";
+} from "../validators";
 import { parseUsersQueryParams } from "../../utils";
+import { ResultStatus } from "../../services/types";
+import { resultCodeToHttpException } from "../helpers";
 import { usersService } from "../../services/usersService/usersService";
-import { UserViewType } from "../../repositories/usersRepositories/types";
 import { usersQueryRepository } from "../../repositories/usersRepositories";
 import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
@@ -32,28 +33,22 @@ const usersController = {
             .json(allUsers);
     },
     createUser: async (req: CreateUserReqType, res: CreateUserResType) => {
-        const errorsMessages: { field: keyof UserViewType, message: string }[] = [];
-        const createdUserId = await usersService.addNewUser({
+        const result = await usersService.addNewUser({
             login: req.body.login.trim(),
             password: req.body.password,
             email: req.body.email.trim(),
-            errorsMessages,
         });
 
-        if (errorsMessages.length) {
+        if (result.status !== ResultStatus.Success) {
             res
-                .status(400)
-                .json({errorsMessages});
-
+                .status(resultCodeToHttpException(result.status))
+                .json({
+                    errorsMessages: result.extensions
+                })
             return;
         }
 
-        if (!createdUserId) {
-            res.sendStatus(599);
-            return;
-        }
-
-        const createdUser = await usersQueryRepository.getUserById(createdUserId);
+        const createdUser = await usersQueryRepository.getUserById(result.data!);
         if (!createdUser) {
             res.sendStatus(599);
             return;

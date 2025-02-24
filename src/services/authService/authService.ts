@@ -27,8 +27,10 @@ export const authService = {
             }
         }
 
-        const hashForValidation = await bcryptService.generateHash({salt: user.passwordSalt, password});
-        if(hashForValidation !== user.passwordHash){
+        const userPasswordSalt = user.accountData.passwordHash.substring(0, 29);
+        const hashForValidation = await bcryptService.generateHash({salt: userPasswordSalt, password});
+
+        if(hashForValidation !== user.accountData.passwordHash){
             return {
                 status: ResultStatus.Unauthorized,
                 errorMessage: "неверный логин или пароль",

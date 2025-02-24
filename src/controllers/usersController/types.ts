@@ -16,6 +16,6 @@ export type GetAllUsersReqType = Request<{}, {}, {}, UserQueryType>;
 export type GetAllUsersResType = Response<WithPaginationType<UserViewType>>;
 
 export type CreateUserReqType = Request<{}, {}, {login: string; email: string; password: string}>;
-export type CreateUserResType = Response<UserViewType | {errorsMessages: {field: keyof UserViewType, message: string}[]}>;
+export type CreateUserResType = Response<UserViewType | {errorsMessages: {field: string, message: string}[]}>;
 
 export type DeleteUserByIdReqType = Request<{ id: string }>;

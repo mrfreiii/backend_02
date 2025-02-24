@@ -18,8 +18,8 @@ export const usersQueryRepository = {
         let filter: any = {};
 
         if (searchLoginTerm || searchEmailTerm) {
-            const loginTerm = searchLoginTerm ? [{login: {$regex: searchLoginTerm, $options: "i"}}] : [];
-            const emailTerm = searchEmailTerm ? [{email: {$regex: searchEmailTerm, $options: "i"}}] : [];
+            const loginTerm = searchLoginTerm ? [{"accountData.login": {$regex: searchLoginTerm, $options: "i"}}] : [];
+            const emailTerm = searchEmailTerm ? [{"accountData.email": {$regex: searchEmailTerm, $options: "i"}}] : [];
 
             filter = {
                 $or: [ ...loginTerm, ...emailTerm ]
@@ -58,13 +58,13 @@ export const usersQueryRepository = {
         }
     },
     _mapUserDbTypeToUserViewType: (user: WithId<UserDbType>): UserViewType => {
-        const {_id, email, login, createdAt} = user;
+        const {_id, accountData} = user;
 
         return {
             id: _id.toString(),
-            email,
-            login,
-            createdAt
+            email: accountData.email,
+            login: accountData.login,
+            createdAt: accountData.createdAt,
         }
     }
 }

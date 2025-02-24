@@ -1,39 +1,85 @@
 import bcrypt from "bcrypt";
+import { add } from "date-fns";
+import { v4 as uuidv4 } from 'uuid';
 
+import { ResultStatus, ResultType } from "../types";
 import { bcryptService } from "../bcryptService/bcryptService";
 import { usersRepository } from "../../repositories/usersRepositories";
-import { UserDbType, UserViewType } from "../../repositories/usersRepositories/types";
+import { UserDbType } from "../../repositories/usersRepositories/types";
+import { nodemailerService } from "../nodemailerService/nodemailerService";
 
 export const usersService = {
     addNewUser: async (
-        dto: { login: string; email: string; password: string, errorsMessages: { field: keyof UserViewType, message: string }[] }
-    ): Promise<string | undefined> => {
-        const {login, email, password, errorsMessages} = dto;
+        dto: {
+            login: string;
+            email: string;
+            password: string;
+            needEmailConfirmation?: boolean;
+            confirmationURL?: string
+        }
+    ): Promise<ResultType<string | null>> => {
+        const {login, email, password, needEmailConfirmation, confirmationURL} = dto;
 
         const anotherUserWithSameLogin = await usersRepository.getUsersByEmailOrLogin({login});
         if (anotherUserWithSameLogin) {
-            errorsMessages.push({field: "login", message: "login should be unique"})
-            return;
+            return {
+                status: ResultStatus.BadRequest,
+                errorMessage: "пользователь с таких логином уже существует",
+                extensions: [
+                    {field: "login", message: "login already exist"}
+                ],
+                data: null,
+            }
         }
 
         const anotherUserWithSameEmail = await usersRepository.getUsersByEmailOrLogin({email});
         if (anotherUserWithSameEmail) {
-            errorsMessages.push({field: "email", message: "email should be unique"})
-            return;
+            return {
+                status: ResultStatus.BadRequest,
+                errorMessage: "пользователь с такой почтой уже существует",
+                extensions: [
+                    {field: "email", message: "email already exist"}
+                ],
+                data: null,
+            }
         }
 
         const passwordSalt = await bcrypt.genSalt(10);
         const passwordHash = await bcryptService.generateHash({password, salt: passwordSalt});
 
         const newUser: UserDbType = {
-            email,
-            login,
-            passwordSalt,
-            passwordHash,
-            createdAt: (new Date()).toISOString(),
+            accountData: {
+                email,
+                login,
+                passwordHash,
+                createdAt: (new Date()).toISOString(),
+            },
+            emailConfirmation: {
+                confirmationCode: needEmailConfirmation ? uuidv4() : null,
+                expirationDate: needEmailConfirmation ? add(new Date(),{
+                    minutes: 1,
+                }) : null,
+                confirmationStatus: needEmailConfirmation ? "notConfirmed" : "confirmed"
+            }
         };
 
-        return usersRepository.addNewUser(newUser);
+        const createdUserId = await usersRepository.addNewUser(newUser);
+
+        if(needEmailConfirmation && confirmationURL){
+            nodemailerService.sendEmailWithConfirmationCode({
+                email: newUser.accountData.email,
+                confirmationCode: newUser.emailConfirmation.confirmationCode!,
+                confirmationURL,
+            }).catch((err: any) => {
+                console.log(`Sending registration email error: ${err}`)
+            })
+        }
+
+        return {
+            status: ResultStatus.Success,
+            extensions: [],
+            data: createdUserId,
+        };
     },
     deleteUserById: async (id: string): Promise<boolean> => {
         return usersRepository.deleteUserById(id);
