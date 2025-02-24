@@ -8,6 +8,7 @@
   "scripts": {
     "watch": "tsc -w",
     "dev": "nodemon --inspect dist/index.js",
+    "renderCom": "tsc && node dist/index.js",
     "jest": "jest --config jest.config.ts --detectOpenHandles"
   },
   "dependencies": {
