@@ -8,6 +8,7 @@ import { postsRepository } from "../repositories/postsRepositories";
 import { blogsRepository } from "../repositories/blogsRepositories";
 import { usersRepository } from "../repositories/usersRepositories";
 import { commentsRepository } from "../repositories/commentsRepositories";
+import { nodemailerService } from "../services/nodemailerService/nodemailerService";
 
 export const req = agent(app);
 
@@ -26,9 +27,26 @@ export const connectToTestDBAndClearRepositories = () => {
         await usersRepository.clearDB();
         await commentsRepository.clearDB();
         req.set("Authorization", "");
+
+        nodemailerService.sendEmailWithConfirmationCode = jest
+            .fn()
+            .mockImplementation(
+                () => Promise.resolve()
+            )
     })
 
     afterAll(async () => {
         await server.stop();
     })
+}
+
+export const RealDate = Date;
+export const mockDate = (isoDate: string) => {
+    // @ts-ignore
+    global.Date = class extends RealDate {
+        constructor () {
+            super();
+            return new RealDate(isoDate)
+        }
+    }
 }

@@ -4,3 +4,5 @@ export type LoginUserReqType = Request<{}, {}, { loginOrEmail: string; password:
 
 export type RegisterUserReqType = Request<{}, {}, { login: string; password: string; email: string }>;
 
+export type ConfirmRegistrationReqType = Request<{}, {}, { code: string; }>;
+

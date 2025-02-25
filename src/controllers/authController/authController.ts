@@ -5,13 +5,21 @@ import {
     userLoginValidator,
     userPasswordValidator
 } from "../validators";
+import {
+    ConfirmRegistrationReqType,
+    LoginUserReqType,
+    RegisterUserReqType
+} from "./types";
+import {
+    confirmationCodeValidator,
+    loginOrEmailValidator,
+    passwordValidator
+} from "./validators";
 import { HttpStatuses } from "../types";
 import { ResultStatus } from "../../services/types";
 import { resultCodeToHttpException } from "../helpers";
-import { LoginUserReqType, RegisterUserReqType } from "./types";
 import { jwtService } from "../../services/jwtService/jwtService";
 import { authService } from "../../services/authService/authService";
-import { loginOrEmailValidator, passwordValidator } from "./validators";
 import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
 import { usersService } from "../../services/usersService/usersService";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
@@ -70,6 +78,20 @@ const authController = {
 
         res.sendStatus(204)
     },
+    confirmRegistration: async (req: ConfirmRegistrationReqType, res: Response) => {
+        const result = await usersService.confirmRegistration(req.body.code);
+
+        if (result.status !== ResultStatus.Success) {
+            res
+                .status(resultCodeToHttpException(result.status))
+                .json({
+                    errorsMessages: result.extensions
+                })
+            return;
+        }
+
+        res.sendStatus(204)
+    },
 }
 
 authRouter
@@ -94,3 +116,10 @@ authRouter
         userEmailValidator,
         errorResultMiddleware,
         authController.registerUser);
+
+authRouter
+    .route("/registration-confirmation")
+    .post(
+        confirmationCodeValidator,
+        errorResultMiddleware,
+        authController.confirmRegistration);

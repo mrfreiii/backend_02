@@ -44,4 +44,21 @@ export const usersRepository = {
             return false;
         }
     },
+    getUserByConfirmationCode: async (code: string): Promise<WithId<UserDbType> | null > => {
+        const filter = { "emailConfirmation.confirmationCode": code }
+
+        return userCollection.findOne(filter)
+    },
+    updateUserConfirmationStatus: async (userId:ObjectId): Promise<boolean> => {
+        try {
+            const result = await userCollection.updateOne(
+                {_id: userId},
+                {$set: {"emailConfirmation.confirmationStatus": "confirmed"}}
+            );
+
+            return result.matchedCount === 1;
+        } catch {
+            return false;
+        }
+    }
 }

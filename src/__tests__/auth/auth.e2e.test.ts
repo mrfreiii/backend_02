@@ -1,9 +1,19 @@
+import {
+    req,
+    connectToTestDBAndClearRepositories,
+    RealDate, mockDate
+} from "../helpers";
+import { registerUser } from "./helpers";
 import { SETTINGS } from "../../settings";
 import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
-import { req, connectToTestDBAndClearRepositories } from "../helpers";
 import { UserViewType } from "../../repositories/usersRepositories/types";
 import { AUTH_ERROR_MESSAGES } from "../../middlewares/jwtAuthMiddleware";
 import { nodemailerService } from "../../services/nodemailerService/nodemailerService";
+
+const validRegistrationConfirmationCode = "123456789";
+jest.mock("uuid", () => ({
+    v4: () => validRegistrationConfirmationCode
+}));
 
 describe("login user /login", () => {
     connectToTestDBAndClearRepositories();
@@ -12,7 +22,7 @@ describe("login user /login", () => {
     let createdUser: UserViewType;
 
     it("should return 400 for loginOrEmail and password are not string", async () => {
-        const authData: {loginOrEmail: null, password: null} = {
+        const authData: { loginOrEmail: null, password: null } = {
             loginOrEmail: null,
             password: null,
         }
@@ -39,7 +49,7 @@ describe("login user /login", () => {
     it("should login user by login", async () => {
         createdUser = (await createTestUsers({password: userPassword}))[0];
 
-        const authData: {loginOrEmail: string, password: string} = {
+        const authData: { loginOrEmail: string, password: string } = {
             loginOrEmail: createdUser.login,
             password: userPassword,
         }
@@ -52,7 +62,7 @@ describe("login user /login", () => {
     })
 
     it("should login user by email", async () => {
-        const authData: {loginOrEmail: string, password: string} = {
+        const authData: { loginOrEmail: string, password: string } = {
             loginOrEmail: createdUser.email,
             password: userPassword,
         }
@@ -65,7 +75,7 @@ describe("login user /login", () => {
     })
 
     it("should return 401 for invalid password", async () => {
-        const authData: {loginOrEmail: string, password: string} = {
+        const authData: { loginOrEmail: string, password: string } = {
             loginOrEmail: createdUser.email,
             password: "invalid password",
         }
@@ -77,7 +87,7 @@ describe("login user /login", () => {
     })
 
     it("should return 401 for non existent user", async () => {
-        const authData: {loginOrEmail: string, password: string} = {
+        const authData: { loginOrEmail: string, password: string } = {
             loginOrEmail: "noExist",
             password: userPassword,
         }
@@ -138,14 +148,8 @@ describe("check user /me", () => {
 describe("register user /registration", () => {
     connectToTestDBAndClearRepositories();
 
-    nodemailerService.sendEmailWithConfirmationCode = jest
-        .fn()
-        .mockImplementation(
-            () => Promise.resolve()
-        )
-
     it("should return 400 for login, password, and email are not string", async () => {
-        const newUser: Omit<UserViewType, "id" | "createdAt"> & {password: string} = {
+        const newUser: Omit<UserViewType, "id" | "createdAt"> & { password: string } = {
             login: null as unknown as string,
             password: null as unknown as string,
             email: null as unknown as string
@@ -175,7 +179,7 @@ describe("register user /registration", () => {
     })
 
     it("should register a user", async () => {
-        const newUser: Omit<UserViewType, "id" | "createdAt"> & {password: string} = {
+        const newUser: Omit<UserViewType, "id" | "createdAt"> & { password: string } = {
             login: "userLogin",
             password: "userPassword",
             email: "user@email.com"
@@ -188,5 +192,58 @@ describe("register user /registration", () => {
 
         expect(nodemailerService.sendEmailWithConfirmationCode).toBeCalled();
         expect(nodemailerService.sendEmailWithConfirmationCode).toBeCalledTimes(1);
+    })
+})
+
+describe("confirm user registration /registration-confirmation", () => {
+    connectToTestDBAndClearRepositories();
+
+    beforeAll(async () => {
+        await registerUser();
+    })
+
+    afterEach(() => {
+        global.Date = RealDate;
+    })
+
+    it("should return 400 for invalid confirmation code", async () => {
+        const res = await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+            .send({code: "12345"})
+            .expect(400)
+
+        expect(res.body.errorsMessages.length).toBe(1);
+        expect(res.body.errorsMessages).toEqual([
+                {
+                    field: "code",
+                    message: "invalid confirmation code"
+                },
+            ]
+        );
+    })
+
+    it("should return 400 for code expiration", async () => {
+        mockDate("2098-11-25T12:34:56z")
+
+        const res = await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+            .send({code: validRegistrationConfirmationCode})
+            .expect(400)
+
+        expect(res.body.errorsMessages.length).toBe(1);
+        expect(res.body.errorsMessages).toEqual([
+                {
+                    field: "code",
+                    message: "code expired"
+                },
+            ]
+        );
+    })
+
+    it("should return 204 for correct confirmation code", async () => {
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+            .send({code: validRegistrationConfirmationCode})
+            .expect(204)
     })
 })

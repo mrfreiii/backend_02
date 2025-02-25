@@ -14,7 +14,7 @@ export type UserDbType = {
     }
     emailConfirmation: {
         confirmationCode: string | null;
-        expirationDate: Date | null;
+        expirationDate: number | null;
         confirmationStatus: "confirmed" | "notConfirmed";
     }
 }

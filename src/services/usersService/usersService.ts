@@ -57,8 +57,8 @@ export const usersService = {
             emailConfirmation: {
                 confirmationCode: needEmailConfirmation ? uuidv4() : null,
                 expirationDate: needEmailConfirmation ? add(new Date(),{
-                    minutes: 1,
-                }) : null,
+                    minutes: 2,
+                }).getTime() : null,
                 confirmationStatus: needEmailConfirmation ? "notConfirmed" : "confirmed"
             }
         };
@@ -84,4 +84,48 @@ export const usersService = {
     deleteUserById: async (id: string): Promise<boolean> => {
         return usersRepository.deleteUserById(id);
     },
+    confirmRegistration: async (code: string): Promise<ResultType<null>> => {
+        const user = await usersRepository.getUserByConfirmationCode(code);
+        if(!user){
+            return {
+                status: ResultStatus.BadRequest,
+                errorMessage: "неверный код",
+                extensions: [
+                    {field: "code", message: "invalid confirmation code"}
+                ],
+                data: null,
+            }
+        }
+
+        if(user.emailConfirmation.expirationDate! < new Date().getTime()){
+            return {
+                status: ResultStatus.BadRequest,
+                errorMessage: "время жизни кода истекло",
+                extensions: [
+                    {field: "code", message: "code expired"}
+                ],
+                data: null,
+            }
+        }
+
+        if(user.emailConfirmation.confirmationStatus === "notConfirmed"){
+            const isStatusUpdated = usersRepository.updateUserConfirmationStatus(user._id);
+            if(!isStatusUpdated){
+                return {
+                    status: ResultStatus.BadRequest,
+                    errorMessage: "не удалось обновить статус регистрации",
+                    extensions: [
+                        {field: "code", message: "failed updating confirmation status"}
+                    ],
+                    data: null,
+                }
+            }
+        }
+
+        return {
+            status: ResultStatus.Success,
+            extensions: [],
+            data: null,
+        };
+    }
 }
