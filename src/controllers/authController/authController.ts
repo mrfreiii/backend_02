@@ -80,7 +80,7 @@ const authController = {
         res.sendStatus(204)
     },
     confirmRegistration: async (req: ConfirmRegistrationReqType, res: Response) => {
-        const result = await usersService.confirmRegistration(req.body.code);
+        const result = await authService.confirmRegistration(req.body.code);
 
         if (result.status !== ResultStatus.Success) {
             res

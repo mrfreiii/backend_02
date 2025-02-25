@@ -51,6 +51,59 @@ export const authService = {
             data: user,
         }
     },
+    confirmRegistration: async (code: string): Promise<ResultType<null>> => {
+        const user = await usersRepository.getUserByConfirmationCode(code);
+        if(!user){
+            return {
+                status: ResultStatus.BadRequest,
+                errorMessage: "неверный код",
+                extensions: [
+                    {field: "code", message: "invalid confirmation code"}
+                ],
+                data: null,
+            }
+        }
+
+        if(user.emailConfirmation.expirationDate! < new Date().getTime()){
+            return {
+                status: ResultStatus.BadRequest,
+                errorMessage: "время жизни кода истекло",
+                extensions: [
+                    {field: "code", message: "code expired"}
+                ],
+                data: null,
+            }
+        }
+
+        if(user.emailConfirmation.confirmationStatus === "confirmed"){
+            return {
+                status: ResultStatus.BadRequest,
+                errorMessage: "пользователь уже подтвержден",
+                extensions: [
+                    {field: "code", message: "code already confirmed"}
+                ],
+                data: null,
+            }
+        }
+
+        const isStatusUpdated = usersRepository.updateUserConfirmationStatus(user._id);
+        if(!isStatusUpdated){
+            return {
+                status: ResultStatus.ServerError,
+                errorMessage: "не удалось обновить статус регистрации",
+                extensions: [
+                    {field: "code", message: "failed updating confirmation status"}
+                ],
+                data: null,
+            }
+        }
+
+        return {
+            status: ResultStatus.Success,
+            extensions: [],
+            data: null,
+        };
+    },
     resendRegistrationEmail: async (
         {
             email,
