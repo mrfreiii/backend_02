@@ -3,16 +3,22 @@ import {
     connectToTestDBAndClearRepositories,
     RealDate, mockDate
 } from "../helpers";
-import { registerUser } from "./helpers";
 import { SETTINGS } from "../../settings";
+import { registerTestUser } from "./helpers";
 import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
 import { UserViewType } from "../../repositories/usersRepositories/types";
 import { AUTH_ERROR_MESSAGES } from "../../middlewares/jwtAuthMiddleware";
 import { nodemailerService } from "../../services/nodemailerService/nodemailerService";
 
+let confirmationCodeCount = 1;
 const validRegistrationConfirmationCode = "123456789";
 jest.mock("uuid", () => ({
-    v4: () => validRegistrationConfirmationCode
+    v4: () => {
+        const code = validRegistrationConfirmationCode + confirmationCodeCount;
+        confirmationCodeCount++
+
+        return code;
+    }
 }));
 
 describe("login user /login", () => {
@@ -199,7 +205,7 @@ describe("confirm user registration /registration-confirmation", () => {
     connectToTestDBAndClearRepositories();
 
     beforeAll(async () => {
-        await registerUser();
+        await registerTestUser();
     })
 
     afterEach(() => {
@@ -227,7 +233,7 @@ describe("confirm user registration /registration-confirmation", () => {
 
         const res = await req
             .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
-            .send({code: validRegistrationConfirmationCode})
+            .send({code: validRegistrationConfirmationCode + 1})
             .expect(400)
 
         expect(res.body.errorsMessages.length).toBe(1);
@@ -243,7 +249,78 @@ describe("confirm user registration /registration-confirmation", () => {
     it("should return 204 for correct confirmation code", async () => {
         await req
             .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
-            .send({code: validRegistrationConfirmationCode})
+            .send({code: validRegistrationConfirmationCode + 1})
+            .expect(204)
+    })
+})
+
+describe("resend registration email /registration-email-resending", () => {
+    connectToTestDBAndClearRepositories();
+
+    const user1Email = "user1@email.com";
+    const user2Email = "user2@email.com";
+
+    beforeAll(async () => {
+        await registerTestUser([user1Email, user2Email]);
+    })
+
+    it("should return 400 for invalid email format", async () => {
+        const res = await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
+            .send({email: "qwerty"})
+            .expect(400)
+
+        expect(res.body.errorsMessages.length).toBe(1);
+        expect(res.body.errorsMessages).toEqual([
+                {
+                    field: "email",
+                    message: "value must be email"
+                },
+            ]
+        );
+    })
+
+    it("should return 400 for unregistered email", async () => {
+        const res = await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
+            .send({email: "qwerty@test.com"})
+            .expect(400)
+
+        expect(res.body.errorsMessages.length).toBe(1);
+        expect(res.body.errorsMessages).toEqual([
+                {
+                    field: "email",
+                    message: "user not found"
+                },
+            ]
+        );
+    })
+
+    it("should return 400 for already confirmed email", async () => {
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+            .send({code: validRegistrationConfirmationCode + 1})
+            .expect(204)
+
+        const res = await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
+            .send({email: user1Email})
+            .expect(400)
+
+        expect(res.body.errorsMessages.length).toBe(1);
+        expect(res.body.errorsMessages).toEqual([
+                {
+                    field: "email",
+                    message: "user already confirmed"
+                },
+            ]
+        );
+    })
+
+    it("should resend email", async () => {
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
+            .send({email: user2Email})
             .expect(204)
     })
 })

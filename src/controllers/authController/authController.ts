@@ -8,7 +8,8 @@ import {
 import {
     ConfirmRegistrationReqType,
     LoginUserReqType,
-    RegisterUserReqType
+    RegisterUserReqType,
+    ResendRegistrationEmailReqType
 } from "./types";
 import {
     confirmationCodeValidator,
@@ -64,7 +65,7 @@ const authController = {
             password: req.body.password,
             email: req.body.email.trim(),
             needEmailConfirmation: true,
-            confirmationURL: `${req.protocol + '://' + req.get('host')}`
+            confirmationURL: `${req.protocol + "://" + req.get("host")}`
         });
 
         if (result.status !== ResultStatus.Success) {
@@ -80,6 +81,23 @@ const authController = {
     },
     confirmRegistration: async (req: ConfirmRegistrationReqType, res: Response) => {
         const result = await usersService.confirmRegistration(req.body.code);
+
+        if (result.status !== ResultStatus.Success) {
+            res
+                .status(resultCodeToHttpException(result.status))
+                .json({
+                    errorsMessages: result.extensions
+                })
+            return;
+        }
+
+        res.sendStatus(204)
+    },
+    resendRegistrationEmail: async (req: ResendRegistrationEmailReqType, res: Response) => {
+        const result = await authService.resendRegistrationEmail({
+            email: req.body.email,
+            confirmationURL: `${req.protocol + "://" + req.get("host")}`
+        });
 
         if (result.status !== ResultStatus.Success) {
             res
@@ -123,3 +141,10 @@ authRouter
         confirmationCodeValidator,
         errorResultMiddleware,
         authController.confirmRegistration);
+
+authRouter
+    .route("/registration-email-resending")
+    .post(
+        userEmailValidator,
+        errorResultMiddleware,
+        authController.resendRegistrationEmail);

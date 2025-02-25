@@ -14,15 +14,25 @@ export const usersRepository = {
         }: {
             email?: string,
             login?: string
-        }): Promise<WithId<UserDbType> | null > => {
+        }): Promise<WithId<UserDbType> | null> => {
         if (!email && !login) {
             return null
         }
 
-        const emailTerm = email ? [{ "accountData.email": { $regex: email, $options: "i" }}] : [];
-        const loginTerm = login ? [{ "accountData.login": { $regex: login, $options: "i" }}] : [];
+        const emailTerm = email ? [{
+            "accountData.email": {
+                $regex: email,
+                $options: "i"
+            }
+        }] : [];
+        const loginTerm = login ? [{
+            "accountData.login": {
+                $regex: login,
+                $options: "i"
+            }
+        }] : [];
 
-        const filter = { $or: [...loginTerm, ...emailTerm] }
+        const filter = {$or: [...loginTerm, ...emailTerm]}
 
         return userCollection.findOne(filter)
     },
@@ -37,23 +47,43 @@ export const usersRepository = {
         }
     },
     deleteUserById: async (id: string): Promise<boolean> => {
-        try{
+        try {
             const result = await userCollection.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
         } catch {
             return false;
         }
     },
-    getUserByConfirmationCode: async (code: string): Promise<WithId<UserDbType> | null > => {
-        const filter = { "emailConfirmation.confirmationCode": code }
+    getUserByConfirmationCode: async (code: string): Promise<WithId<UserDbType> | null> => {
+        const filter = {"emailConfirmation.confirmationCode": code}
 
         return userCollection.findOne(filter)
     },
-    updateUserConfirmationStatus: async (userId:ObjectId): Promise<boolean> => {
+    updateUserConfirmationStatus: async (userId: ObjectId): Promise<boolean> => {
         try {
             const result = await userCollection.updateOne(
                 {_id: userId},
                 {$set: {"emailConfirmation.confirmationStatus": "confirmed"}}
+            );
+
+            return result.matchedCount === 1;
+        } catch {
+            return false;
+        }
+    },
+    updateUserConfirmationCodeAndExpirationDate: async (
+        {
+            userId,
+            updatedUserConfirmation
+        }: {
+            userId: ObjectId,
+            updatedUserConfirmation: {confirmationCode: string, expirationDate: number, confirmationStatus: "notConfirmed" | "confirmed"}
+        }
+    ): Promise<boolean> => {
+        try {
+            const result = await userCollection.updateOne(
+                {_id: userId},
+                {$set: {emailConfirmation: updatedUserConfirmation}}
             );
 
             return result.matchedCount === 1;
