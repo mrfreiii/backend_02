@@ -10,12 +10,14 @@ import { UserViewType } from "../../repositories/usersRepositories/types";
 import { AUTH_ERROR_MESSAGES } from "../../middlewares/jwtAuthMiddleware";
 import { nodemailerService } from "../../services/nodemailerService/nodemailerService";
 
-let confirmationCodeCount = 1;
+let confirmationCodeCount = 0;
 const validRegistrationConfirmationCode = "123456789";
 jest.mock("uuid", () => ({
     v4: () => {
         const code = validRegistrationConfirmationCode + confirmationCodeCount;
-        confirmationCodeCount++
+        if(confirmationCodeCount === 0){
+            confirmationCodeCount++
+        }
 
         return code;
     }

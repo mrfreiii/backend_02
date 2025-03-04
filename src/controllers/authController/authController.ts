@@ -37,11 +37,14 @@ const authController = {
             return;
         }
 
-        const token = await jwtService.createJWT(result.data!);
+        const tokensResult = await jwtService.createJWT(result.data!);
+        const {accessToken, refreshToken} = tokensResult.data;
+
         res
             .status(HttpStatuses.Success_200)
+            .cookie("refreshToken", refreshToken, {httpOnly: true, secure: true})
             .json({
-                accessToken: token
+                accessToken,
             })
     },
     getUserInfo: async (req: Request, res: Response) => {
