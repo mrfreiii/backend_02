@@ -90,5 +90,24 @@ export const usersRepository = {
         } catch {
             return false;
         }
-    }
+    },
+    getUserById: async (id: string): Promise<WithId<UserDbType> | null> => {
+        try {
+            return userCollection.findOne({_id: new ObjectId(id)});
+        } catch {
+            return null;
+        }
+    },
+    updateRefreshTokensBlackList: async ({userId, updatedBlackList}:{userId: string; updatedBlackList: string[]}): Promise<boolean> => {
+        try {
+            const result = await userCollection.updateOne(
+                {_id: new ObjectId(userId)},
+                {$set: {"tokens.refreshTokenBlackList": updatedBlackList}}
+            );
+
+            return result.matchedCount === 1;
+        } catch {
+            return false;
+        }
+    },
 }

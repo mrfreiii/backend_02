@@ -17,4 +17,7 @@ export type UserDbType = {
         expirationDate: number | null;
         confirmationStatus: "confirmed" | "notConfirmed";
     }
+    tokens?: {
+        refreshTokenBlackList: string[];
+    }
 }

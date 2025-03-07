@@ -15,7 +15,7 @@ const validRegistrationConfirmationCode = "123456789";
 jest.mock("uuid", () => ({
     v4: () => {
         const code = validRegistrationConfirmationCode + confirmationCodeCount;
-        if(confirmationCodeCount === 0){
+        if (confirmationCodeCount === 0) {
             confirmationCodeCount++
         }
 
@@ -324,5 +324,22 @@ describe("resend registration email /registration-email-resending", () => {
             .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
             .send({email: user2Email})
             .expect(204)
+    })
+})
+
+describe("refresh token /refresh-token", () => {
+    connectToTestDBAndClearRepositories();
+
+    it("should return 401 for no refresh token in cookie", async () => {
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/refresh-token`)
+            .expect(401)
+    })
+
+    it("should return 401 for invalid refresh token", async () => {
+        await req
+            .set("Cookie", ["refreshToken=12345667"])
+            .post(`${SETTINGS.PATH.AUTH}/refresh-token`)
+            .expect(401)
     })
 })

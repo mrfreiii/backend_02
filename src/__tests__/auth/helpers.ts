@@ -3,8 +3,9 @@ import { SETTINGS } from "../../settings";
 import { UserViewType } from "../../repositories/usersRepositories/types";
 
 const DEFAULT_USER_PASSWORD = "qwerty12345";
+const DEFAULT_USER_EMAIL = "test@test.com";
 
-export const registerTestUser = async (emails: string[] = ["test@test.com"]) => {
+export const registerTestUser = async (emails: string[] = [DEFAULT_USER_EMAIL]) => {
     for (let i = 0; i < emails.length; i++) {
         const uniqueId = Number(Date.now()).toString().substring(8);
 

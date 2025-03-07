@@ -8,6 +8,8 @@ import {
 import {
     ConfirmRegistrationReqType,
     LoginUserReqType,
+    LogoutUserReqType,
+    RefreshTokenReqType,
     RegisterUserReqType,
     ResendRegistrationEmailReqType
 } from "./types";
@@ -37,7 +39,8 @@ const authController = {
             return;
         }
 
-        const tokensResult = await jwtService.createJWT(result.data!);
+        const userId = result.data!._id.toString();
+        const tokensResult = await jwtService.createJWT(userId);
         const {accessToken, refreshToken} = tokensResult.data;
 
         res
@@ -46,6 +49,43 @@ const authController = {
             .json({
                 accessToken,
             })
+    },
+    refreshToken: async (req: RefreshTokenReqType, res: Response) => {
+        const refreshToken = req.cookies.refreshToken;
+        if (!refreshToken) {
+            res.sendStatus(HttpStatuses.Unauthorized_401)
+            return;
+        }
+
+        const tokensResult = await jwtService.updateJWT(refreshToken);
+
+        if (tokensResult.status !== ResultStatus.Success) {
+            res.sendStatus(resultCodeToHttpException(tokensResult.status))
+            return;
+        }
+
+        res
+            .status(HttpStatuses.Success_200)
+            .cookie("refreshToken", tokensResult.data!.refreshToken, {httpOnly: true, secure: true})
+            .json({
+                accessToken: tokensResult.data!.accessToken,
+            })
+    },
+    logoutUser: async (req: LogoutUserReqType, res: Response) => {
+        const refreshToken = req.cookies.refreshToken;
+        if (!refreshToken) {
+            res.sendStatus(HttpStatuses.Unauthorized_401)
+            return;
+        }
+
+        const result = await jwtService.revokeRefreshToken(refreshToken);
+
+        if (result.status !== ResultStatus.Success) {
+            res.sendStatus(resultCodeToHttpException(result.status))
+            return;
+        }
+
+        res.sendStatus(HttpStatuses.NoContent_204);
     },
     getUserInfo: async (req: Request, res: Response) => {
         const user = req.user;
@@ -122,6 +162,16 @@ authRouter
         passwordValidator,
         errorResultMiddleware,
         authController.loginUser);
+
+authRouter
+    .route("/refresh-token")
+    .post(
+        authController.refreshToken);
+
+authRouter
+    .route("/logout")
+    .post(
+        authController.logoutUser);
 
 authRouter
     .route("/me")
