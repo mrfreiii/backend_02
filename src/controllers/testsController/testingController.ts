@@ -1,28 +1,30 @@
-import { Router, Request,Response  } from "express";
+import { Router, Request, Response } from "express";
 
 import { blogsRepository } from "../../repositories/blogsRepositories";
 import { postsRepository } from "../../repositories/postsRepositories";
 import { usersRepository } from "../../repositories/usersRepositories";
 import { commentsRepository } from "../../repositories/commentsRepositories";
+import { rateLimitRepository } from "../../repositories/rateLimitsRepositories";
 
 export const testingRouter = Router();
 
 const testingController = {
     deleteAllData: async (req: Request, res: Response) => {
-        try{
+        try {
             const isBlogsDeleted = await blogsRepository.clearDB();
             const isPostsDeleted = await postsRepository.clearDB();
             const isUsersDeleted = await usersRepository.clearDB();
             const isCommentsDeleted = await commentsRepository.clearDB();
+            const isRateLimitDeleted = await rateLimitRepository.clearDB();
 
 
-            if(!isBlogsDeleted || !isPostsDeleted || !isUsersDeleted || !isCommentsDeleted){
+            if (!isBlogsDeleted || !isPostsDeleted || !isUsersDeleted || !isCommentsDeleted || !isRateLimitDeleted) {
                 res.sendStatus(599)
                 return;
             }
 
             res.sendStatus(204)
-        } catch(e) {
+        } catch (e) {
             console.log(e);
             res.sendStatus(599);
         }

@@ -9,6 +9,9 @@ import { blogsRepository } from "../repositories/blogsRepositories";
 import { usersRepository } from "../repositories/usersRepositories";
 import { commentsRepository } from "../repositories/commentsRepositories";
 import { nodemailerService } from "../services/nodemailerService/nodemailerService";
+import {
+    rateLimitRepository
+} from "../repositories/rateLimitsRepositories/rateLimitRepository";
 
 export const req = agent(app);
 
@@ -26,6 +29,7 @@ export const connectToTestDBAndClearRepositories = () => {
         await blogsRepository.clearDB();
         await usersRepository.clearDB();
         await commentsRepository.clearDB();
+        await rateLimitRepository.clearDB();
         req.set("Authorization", "");
 
         nodemailerService.sendEmailWithConfirmationCode = jest
@@ -42,11 +46,17 @@ export const connectToTestDBAndClearRepositories = () => {
 
 export const RealDate = Date;
 export const mockDate = (isoDate: string) => {
-    // @ts-ignore
-    global.Date = class extends RealDate {
-        constructor () {
+    class MockDate extends RealDate {
+        constructor() {
             super();
             return new RealDate(isoDate)
         }
+
+        static now() {
+            return new RealDate(isoDate).getTime();
+        }
     }
+
+    // @ts-ignore
+    global.Date = MockDate;
 }

@@ -9,7 +9,8 @@ export const SETTINGS = {
         POSTS: '/posts',
         AUTH: '/auth',
         COMMENTS: '/comments',
-        TESTING: "/testing"
+        TESTING: "/testing",
+        RATE_LIMIT: "/rate-limit",
     },
     CREDENTIALS: {
         LOGIN: "admin",

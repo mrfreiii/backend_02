@@ -23,6 +23,8 @@ app.use(SETTINGS.PATH.AUTH, authRouter);
 app.use(SETTINGS.PATH.COMMENTS, commentsRouter);
 app.use(SETTINGS.PATH.TESTING, testingRouter);
 
+app.set('trust proxy', true);
+
 app.use("/", (req, res)=>{
     res.json("server is available")
 })

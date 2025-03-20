@@ -25,6 +25,7 @@ import { jwtService } from "../../services/jwtService/jwtService";
 import { authService } from "../../services/authService/authService";
 import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
 import { usersService } from "../../services/usersService/usersService";
+import { rateLimitMiddleware } from "../../middlewares/rateLimitMiddleware";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
 export const authRouter = Router();
@@ -158,6 +159,7 @@ const authController = {
 authRouter
     .route("/login")
     .post(
+        rateLimitMiddleware({maxAttempts: 5, periodInSec: 10}),
         loginOrEmailValidator,
         passwordValidator,
         errorResultMiddleware,
@@ -182,6 +184,7 @@ authRouter
 authRouter
     .route("/registration")
     .post(
+        rateLimitMiddleware({maxAttempts: 5, periodInSec: 10}),
         userLoginValidator,
         userPasswordValidator,
         userEmailValidator,
@@ -191,6 +194,7 @@ authRouter
 authRouter
     .route("/registration-confirmation")
     .post(
+        rateLimitMiddleware({maxAttempts: 5, periodInSec: 10}),
         confirmationCodeValidator,
         errorResultMiddleware,
         authController.confirmRegistration);
@@ -198,6 +202,7 @@ authRouter
 authRouter
     .route("/registration-email-resending")
     .post(
+        rateLimitMiddleware({maxAttempts: 5, periodInSec: 10}),
         userEmailValidator,
         errorResultMiddleware,
         authController.resendRegistrationEmail);
