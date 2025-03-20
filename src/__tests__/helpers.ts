@@ -8,10 +8,8 @@ import { postsRepository } from "../repositories/postsRepositories";
 import { blogsRepository } from "../repositories/blogsRepositories";
 import { usersRepository } from "../repositories/usersRepositories";
 import { commentsRepository } from "../repositories/commentsRepositories";
+import { rateLimitRepository } from "../repositories/rateLimitsRepositories";
 import { nodemailerService } from "../services/nodemailerService/nodemailerService";
-import {
-    rateLimitRepository
-} from "../repositories/rateLimitsRepositories/rateLimitRepository";
 
 export const req = agent(app);
 
