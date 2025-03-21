@@ -6,3 +6,10 @@ export type SessionDbType = {
     issuedAt: string;
     expirationTime: string;
 }
+
+export type SessionViewType = {
+    ip: string;
+    title: string;
+    lastActiveDate: string;
+    deviceId: string;
+}

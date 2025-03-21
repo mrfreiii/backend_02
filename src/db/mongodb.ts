@@ -61,5 +61,5 @@ const initializeDbCollections = (db: Db) => {
     userCollection = db.collection<UserDbType>(SETTINGS.PATH.USERS);
     commentCollection = db.collection<CommentDbType>(SETTINGS.PATH.COMMENTS);
     rateLimitCollection = db.collection<RateLimitDbType>(SETTINGS.PATH.RATE_LIMIT);
-    sessionCollection = db.collection<SessionDbType>(SETTINGS.PATH.SESSIONS);
+    sessionCollection = db.collection<SessionDbType>(SETTINGS.PATH.SECURITY);
 }

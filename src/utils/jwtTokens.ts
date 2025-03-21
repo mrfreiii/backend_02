@@ -1,10 +1,13 @@
-export const getDatesFromToken = (token: string): {issuedAt: string; expirationTime: string} => {
-    const splitToken = token.split(".");
-    const tokenPayload = splitToken[1];
-    const decodedPayload = Buffer.from(tokenPayload, 'base64') as unknown as {iat: Date; exp: Date};
+import { jwtDecode } from "jwt-decode";
+
+export const getDatesFromToken = (token: string): {
+    issuedAt: string;
+    expirationTime: string
+} => {
+    const decodedToken = jwtDecode(token);
 
     return {
-        issuedAt: decodedPayload?.iat?.toISOString() || "",
-        expirationTime: decodedPayload?.exp?.toISOString() || "",
+        issuedAt: decodedToken?.iat ? new Date(decodedToken?.iat * 1000).toISOString() : "",
+        expirationTime: decodedToken?.exp ? new Date(decodedToken?.exp * 1000).toISOString() : "",
     }
 }
