@@ -41,8 +41,16 @@ const authController = {
         }
 
         const userId = result.data!._id.toString();
-        const tokensResult = await jwtService.createJWT(userId);
-        const {accessToken, refreshToken} = tokensResult.data;
+        const userAgent = req.headers["user-agent"];
+        const ip = req.ip;
+
+        const tokensResult = await jwtService.createJWT({userId, userAgent, ip});
+        if (tokensResult.status !== ResultStatus.Success) {
+            res.sendStatus(resultCodeToHttpException(result.status))
+            return;
+        }
+
+        const {accessToken, refreshToken} = tokensResult.data!;
 
         res
             .status(HttpStatuses.Success_200)
@@ -58,7 +66,10 @@ const authController = {
             return;
         }
 
-        const tokensResult = await jwtService.updateJWT(refreshToken);
+        const userAgent = req.headers["user-agent"];
+        const ip = req.ip;
+
+        const tokensResult = await jwtService.updateJWT({refreshToken, userAgent, ip});
 
         if (tokensResult.status !== ResultStatus.Success) {
             res.sendStatus(resultCodeToHttpException(tokensResult.status))
@@ -67,7 +78,10 @@ const authController = {
 
         res
             .status(HttpStatuses.Success_200)
-            .cookie("refreshToken", tokensResult.data!.refreshToken, {httpOnly: true, secure: true})
+            .cookie("refreshToken", tokensResult.data!.refreshToken, {
+                httpOnly: true,
+                secure: true
+            })
             .json({
                 accessToken: tokensResult.data!.accessToken,
             })

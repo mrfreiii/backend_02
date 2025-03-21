@@ -1,21 +1,53 @@
 import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
 
-import { JwtPayloadType } from "./types";
 import { SETTINGS } from "../../settings";
+import { RefreshJwtPayloadType } from "./types";
 import { ResultStatus, ResultType } from "../types";
-import { usersRepository } from "../../repositories/usersRepositories";
+import { getDatesFromToken } from "../../utils/jwtTokens";
+import { sessionsRepository } from "../../repositories/sessionsRepositories";
+import { SessionDbType } from "../../repositories/sessionsRepositories/types";
+import { createAccessToken, createRefreshToken, getDeviceTitle } from "./helpers";
 
 export const jwtService = {
-    createJWT: async (userId: string): Promise<ResultType<{
+    createJWT: async (
+        {
+            userId,
+            userAgent,
+            ip,
+        }: {
+            userId: string;
+            userAgent: string | undefined;
+            ip: string | undefined;
+        }): Promise<ResultType<{
         accessToken: string;
         refreshToken: string
-    }>> => {
-        const payload: JwtPayloadType = {
+    } | null>> => {
+        const deviceId = uuidv4();
+
+        const accessToken = createAccessToken(userId);
+        const refreshToken = createRefreshToken({userId, deviceId});
+
+        const deviceTitle = getDeviceTitle(userAgent);
+        const {issuedAt, expirationTime} = getDatesFromToken(refreshToken);
+
+        const deviceData: SessionDbType = {
             userId,
+            deviceId,
+            ip: ip || "unknown",
+            title: deviceTitle,
+            issuedAt,
+            expirationTime,
         }
 
-        const accessToken = jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "10s"});
-        const refreshToken = jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "20s"});
+        const sessionId = sessionsRepository.addNewSession(deviceData);
+        if (!sessionId) {
+            return {
+                status: ResultStatus.ServerError,
+                extensions: [],
+                data: null,
+            }
+        }
 
         return {
             status: ResultStatus.Success,
@@ -26,12 +58,24 @@ export const jwtService = {
             }
         }
     },
-    updateJWT: async (refreshToken: string): Promise<ResultType<{
+    updateJWT: async (
+        {
+            refreshToken,
+            userAgent,
+            ip,
+        }: {
+            refreshToken: string;
+            userAgent: string | undefined;
+            ip: string | undefined;
+        }): Promise<ResultType<{
         accessToken: string;
         refreshToken: string
     } | null>> => {
-        const userId = jwtService.getUserIdByJwtToken(refreshToken);
-        if (!userId) {
+        const {
+            userId,
+            deviceId
+        } = jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        if (!userId || !deviceId) {
             return {
                 status: ResultStatus.Unauthorized,
                 extensions: [],
@@ -39,8 +83,14 @@ export const jwtService = {
             }
         }
 
-        const user = await usersRepository.getUserById(userId);
-        if (!user) {
+        const {issuedAt} = getDatesFromToken(refreshToken);
+
+        const currentSession = await sessionsRepository.checkSession({
+            userId,
+            deviceId,
+            issuedAt
+        })
+        if (!currentSession) {
             return {
                 status: ResultStatus.Unauthorized,
                 extensions: [],
@@ -48,34 +98,48 @@ export const jwtService = {
             }
         }
 
-        const isRefreshTokenInBlackList = user.tokens?.refreshTokenBlackList?.includes(refreshToken);
-        if(isRefreshTokenInBlackList){
+        const newAccessToken = createAccessToken(userId);
+        const newRefreshToken = createRefreshToken({userId, deviceId});
+
+        const deviceTitle = getDeviceTitle(userAgent);
+        const {
+            issuedAt: newIssuedAt,
+            expirationTime: newExpirationTime
+        } = getDatesFromToken(newRefreshToken);
+
+        const updatedDeviceData: SessionDbType = {
+            userId,
+            deviceId,
+            ip: ip || "unknown",
+            title: deviceTitle,
+            issuedAt: newIssuedAt,
+            expirationTime: newExpirationTime,
+        }
+
+        const isSessionUpdated = await sessionsRepository.updateSession({
+            _id: currentSession._id,
+            updatedSession: updatedDeviceData
+        })
+        if (!isSessionUpdated) {
             return {
-                status: ResultStatus.Unauthorized,
+                status: ResultStatus.ServerError,
                 extensions: [],
                 data: null,
             }
         }
 
-        const newTokensResult = await jwtService.createJWT(userId);
-
-        const currentBlackList = user.tokens?.refreshTokenBlackList || [];
-        const updatedBlackList = [...currentBlackList, refreshToken];
-
-        const isBlackListUpdated = await usersRepository.updateRefreshTokensBlackList({userId, updatedBlackList})
-        if(!isBlackListUpdated){
-            return {
-                status: ResultStatus.Unauthorized,
-                extensions: [],
-                data: null,
+        return {
+            status: ResultStatus.Success,
+            extensions: [],
+            data: {
+                accessToken: newAccessToken,
+                refreshToken: newRefreshToken,
             }
         }
-
-        return newTokensResult;
     },
     revokeRefreshToken: async (refreshToken: string): Promise<ResultType> => {
-        const userId = jwtService.getUserIdByJwtToken(refreshToken);
-        if (!userId) {
+        const {userId, deviceId} = jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        if (!userId || !deviceId) {
             return {
                 status: ResultStatus.Unauthorized,
                 extensions: [],
@@ -83,8 +147,11 @@ export const jwtService = {
             }
         }
 
-        const user = await usersRepository.getUserById(userId);
-        if (!user) {
+        const isSessionDeleted = await sessionsRepository.deleteSession({
+            userId,
+            deviceId
+        })
+        if (!isSessionDeleted) {
             return {
                 status: ResultStatus.Unauthorized,
                 extensions: [],
@@ -92,37 +159,15 @@ export const jwtService = {
             }
         }
 
-        const isRefreshTokenInBlackList = user.tokens?.refreshTokenBlackList?.includes(refreshToken);
-        if(isRefreshTokenInBlackList){
-            return {
-                status: ResultStatus.Unauthorized,
-                extensions: [],
-                data: null,
-            }
-        }
-
-        const currentBlackList = user.tokens?.refreshTokenBlackList || [];
-        const updatedBlackList = [...currentBlackList, refreshToken];
-
-        const isBlackListUpdated = await usersRepository.updateRefreshTokensBlackList({userId, updatedBlackList})
-        if(!isBlackListUpdated){
-            return {
-                status: ResultStatus.Unauthorized,
-                extensions: [],
-                data: null,
-            }
-        }
-
-        return  {
+        return {
             status: ResultStatus.Success,
             extensions: [],
             data: null,
         };
     },
-    getUserIdByJwtToken: (token: string): string | null => {
+    verifyRefreshTokenAndParseIt: (token: string): RefreshJwtPayloadType | null => {
         try {
-            const result = jwt.verify(token, SETTINGS.JWT_SECRET) as JwtPayloadType;
-            return result?.userId;
+            return jwt.verify(token, SETTINGS.JWT_SECRET) as RefreshJwtPayloadType;
         } catch {
             return null;
         }

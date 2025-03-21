@@ -3,6 +3,7 @@ import { Router, Request, Response } from "express";
 import { blogsRepository } from "../../repositories/blogsRepositories";
 import { postsRepository } from "../../repositories/postsRepositories";
 import { usersRepository } from "../../repositories/usersRepositories";
+import { sessionsRepository } from "../../repositories/sessionsRepositories";
 import { commentsRepository } from "../../repositories/commentsRepositories";
 import { rateLimitRepository } from "../../repositories/rateLimitsRepositories";
 
@@ -16,9 +17,10 @@ const testingController = {
             const isUsersDeleted = await usersRepository.clearDB();
             const isCommentsDeleted = await commentsRepository.clearDB();
             const isRateLimitDeleted = await rateLimitRepository.clearDB();
+            const isSessionsDeleted = await sessionsRepository.clearDB();
 
 
-            if (!isBlogsDeleted || !isPostsDeleted || !isUsersDeleted || !isCommentsDeleted || !isRateLimitDeleted) {
+            if (!isBlogsDeleted || !isPostsDeleted || !isUsersDeleted || !isCommentsDeleted || !isRateLimitDeleted || !isSessionsDeleted) {
                 res.sendStatus(599)
                 return;
             }

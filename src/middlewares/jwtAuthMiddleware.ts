@@ -30,7 +30,7 @@ export const jwtAuthMiddleware = async (req: Request, res: Response, next: NextF
     }
 
     const jwtToken = authData[1];
-    const userId = jwtService.getUserIdByJwtToken(jwtToken);
+    const { userId } = jwtService.verifyRefreshTokenAndParseIt(jwtToken) || {};
     if (!userId) {
         res
             .status(401)

@@ -11,6 +11,7 @@ export const SETTINGS = {
         COMMENTS: '/comments',
         TESTING: "/testing",
         RATE_LIMIT: "/rate-limit",
+        SESSIONS: "/sessions",
     },
     CREDENTIALS: {
         LOGIN: "admin",

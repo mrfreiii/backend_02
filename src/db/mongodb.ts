@@ -6,6 +6,7 @@ import { BlogDbType } from "../repositories/blogsRepositories/types";
 import { PostDbType } from "../repositories/postsRepositories/types";
 import { UserDbType } from "../repositories/usersRepositories/types";
 import { CommentDbType } from "../repositories/commentsRepositories/types";
+import { SessionDbType } from "../repositories/sessionsRepositories/types";
 import { RateLimitDbType } from "../repositories/rateLimitsRepositories/types";
 
 export let blogCollection: Collection<BlogDbType>;
@@ -13,6 +14,7 @@ export let postCollection: Collection<PostDbType>;
 export let userCollection: Collection<UserDbType>;
 export let commentCollection: Collection<CommentDbType>;
 export let rateLimitCollection: Collection<RateLimitDbType>;
+export let sessionCollection: Collection<SessionDbType>;
 
 export const connectToDB = async ({ dbUrl, dbName }:{ dbUrl: string, dbName: string }): Promise<boolean> => {
     const client: MongoClient = new MongoClient(dbUrl);
@@ -59,4 +61,5 @@ const initializeDbCollections = (db: Db) => {
     userCollection = db.collection<UserDbType>(SETTINGS.PATH.USERS);
     commentCollection = db.collection<CommentDbType>(SETTINGS.PATH.COMMENTS);
     rateLimitCollection = db.collection<RateLimitDbType>(SETTINGS.PATH.RATE_LIMIT);
+    sessionCollection = db.collection<SessionDbType>(SETTINGS.PATH.SESSIONS);
 }
