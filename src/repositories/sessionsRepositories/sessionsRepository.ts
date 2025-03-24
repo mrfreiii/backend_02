@@ -50,7 +50,7 @@ export const sessionsRepository = {
     deleteSession: async (
         {
             deviceId,
-            userId
+            userId,
         }: {
             deviceId: string;
             userId: string;

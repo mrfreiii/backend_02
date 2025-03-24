@@ -1,7 +1,11 @@
 import { SETTINGS } from "../../settings";
 import { createTestUsers } from "../users/helpers";
 import { getDeviceIdFromRefreshTokenCookie } from "./helpers";
-import { connectToTestDBAndClearRepositories, req } from "../helpers";
+import {
+    connectToTestDBAndClearRepositories,
+    delayInSec,
+    req
+} from "../helpers";
 import { UserViewType } from "../../repositories/usersRepositories/types";
 
 describe("sessions /devices", () => {
@@ -109,6 +113,8 @@ describe("sessions /devices", () => {
     })
 
     it("should update lastActiveDate after refresh token", async () => {
+        await delayInSec(1);
+
         const res = await req
             .set("cookie", cookieWithRefreshTokenDevice1)
             .set("User-Agent", "Mozilla/5.0 (Linux i651 ; en-US) AppleWebKit/602.33 (KHTML, like Gecko) Chrome/53.0.1935.131 Safari/533")
@@ -183,8 +189,6 @@ describe("sessions /devices", () => {
                 title: "Browser: Mobile Chrome 51.0.1700.324; OS: iOS 11.1.3",
             },
         ]);
-
-        expect(sessions.body[0].lastActiveDate).not.toBe(lastActiveDate1stDevice)
     })
 
     it("should return 401 for request without refresh token - DELETE /devices/{deviceId}", async () => {

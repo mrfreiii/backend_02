@@ -25,19 +25,11 @@ export const createRefreshToken = async (
         deviceId,
     }
 
-    // need using setTimeout for testing purpose
-    return new Promise((resolve)=>{
-        setTimeout(()=>{
-            const refreshToken = jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "20s"});
-            resolve(refreshToken)
-        },500)
-    })
-
-
+    return jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "20s"});
 }
 
-export const getDeviceTitle = (userAgent: string | undefined): string =>{
-    if(!userAgent){
+export const getDeviceTitle = (userAgent: string | undefined): string => {
+    if (!userAgent) {
         return "unknown device"
     }
 

@@ -1,5 +1,6 @@
 import { ResultStatus, ResultType } from "../types";
 import { jwtService } from "../jwtService/jwtService";
+import { getDatesFromToken } from "../../utils/jwtTokens";
 import { sessionsRepository } from "../../repositories/sessionsRepositories";
 
 export const sessionsService = {
@@ -32,7 +33,7 @@ export const sessionsService = {
             deviceId: string;
             refreshToken: string;
         }): Promise<ResultType> => {
-        const { userId} = jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        const { userId, deviceId: deviceIdFromToken} = jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId) {
             return {
                 status: ResultStatus.Unauthorized,
@@ -41,8 +42,22 @@ export const sessionsService = {
             }
         }
 
-        const deviceInfo = await sessionsRepository.getSession({deviceId});
-        if (!deviceInfo) {
+        const {issuedAt} = getDatesFromToken(refreshToken);
+        const isCurrentSessionValid = await sessionsRepository.getSession({
+            userId,
+            deviceId: deviceIdFromToken,
+            issuedAt,
+        })
+        if (!isCurrentSessionValid) {
+            return {
+                status: ResultStatus.Unauthorized,
+                extensions: [],
+                data: null,
+            }
+        }
+
+        const deviceForDeletionInfo = await sessionsRepository.getSession({deviceId});
+        if (!deviceForDeletionInfo) {
             return {
                 status: ResultStatus.NotFound,
                 extensions: [],
@@ -50,7 +65,7 @@ export const sessionsService = {
             }
         }
 
-        if(userId !== deviceInfo.userId){
+        if(userId !== deviceForDeletionInfo.userId){
             return {
                 status: ResultStatus.Forbidden,
                 extensions: [],
@@ -60,7 +75,7 @@ export const sessionsService = {
 
         const isSessionDeleted = await sessionsRepository.deleteSession({
             userId,
-            deviceId
+            deviceId,
         })
         if (!isSessionDeleted) {
             return {

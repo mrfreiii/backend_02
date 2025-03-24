@@ -60,3 +60,11 @@ export const mockDate = (isoDate: string) => {
     // @ts-ignore
     global.Date = MockDate;
 }
+
+export const delayInSec = (delay: number) =>{
+    return new Promise((resolve)=>{
+        setTimeout(()=>{
+            resolve({})
+        },delay * 1000)
+    })
+}

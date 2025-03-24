@@ -147,9 +147,23 @@ export const jwtService = {
             }
         }
 
+        const {issuedAt} = getDatesFromToken(refreshToken);
+        const isCurrentSessionValid = await sessionsRepository.getSession({
+            userId,
+            deviceId,
+            issuedAt,
+        })
+        if (!isCurrentSessionValid) {
+            return {
+                status: ResultStatus.Unauthorized,
+                extensions: [],
+                data: null,
+            }
+        }
+
         const isSessionDeleted = await sessionsRepository.deleteSession({
             userId,
-            deviceId
+            deviceId,
         })
         if (!isSessionDeleted) {
             return {

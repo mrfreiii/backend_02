@@ -1,7 +1,10 @@
+import { add } from "date-fns";
+
 import {
     req,
     connectToTestDBAndClearRepositories,
-    RealDate, mockDate
+    RealDate,
+    mockDate
 } from "../helpers";
 import { SETTINGS } from "../../settings";
 import { registerTestUser } from "./helpers";
@@ -485,6 +488,24 @@ describe("resend registration email /registration-email-resending", () => {
 describe("refresh token /refresh-token", () => {
     connectToTestDBAndClearRepositories();
 
+    const userPassword = "1234567890";
+    let createdUser: UserViewType;
+    let authData: { loginOrEmail: string, password: string };
+    let cookieWithRefreshToken: string;
+
+    beforeAll(async () => {
+        createdUser = (await createTestUsers({password: userPassword}))[0];
+
+        authData = {
+            loginOrEmail: createdUser.login,
+            password: userPassword,
+        }
+    })
+
+    afterEach(() => {
+        global.Date = RealDate;
+    })
+
     it("should return 401 for no refresh token in cookie", async () => {
         await req
             .post(`${SETTINGS.PATH.AUTH}/refresh-token`)
@@ -495,6 +516,82 @@ describe("refresh token /refresh-token", () => {
         await req
             .set("Cookie", ["refreshToken=12345667"])
             .post(`${SETTINGS.PATH.AUTH}/refresh-token`)
+            .expect(401)
+    })
+
+    it("should update refresh token", async () => {
+        const loginRes = await req
+            .post(`${SETTINGS.PATH.AUTH}/login`)
+            .send(authData)
+            .expect(200)
+        cookieWithRefreshToken = loginRes.headers["set-cookie"];
+
+        await req
+            .set("cookie", loginRes.headers["set-cookie"])
+            .post(`${SETTINGS.PATH.AUTH}/refresh-token`)
+            .expect(200)
+    })
+
+    it("should return 401 for outdated refresh token", async () => {
+        const dateInFuture = add(new Date(),{
+            seconds: 5,
+        })
+        mockDate(dateInFuture.toISOString());
+
+        await req
+            .set("cookie", cookieWithRefreshToken)
+            .post(`${SETTINGS.PATH.AUTH}/refresh-token`)
+            .expect(401)
+    })
+})
+
+describe("logout /logout", () => {
+    connectToTestDBAndClearRepositories();
+
+    const userPassword = "1234567890";
+    let createdUser: UserViewType;
+    let authData: { loginOrEmail: string, password: string };
+    let cookieWithRefreshToken: string;
+
+    beforeAll(async () => {
+        createdUser = (await createTestUsers({password: userPassword}))[0];
+
+        authData = {
+            loginOrEmail: createdUser.login,
+            password: userPassword,
+        }
+    })
+
+    it("should return 401 for no refresh token in cookie", async () => {
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/logout`)
+            .expect(401)
+    })
+
+    it("should return 401 for invalid refresh token", async () => {
+        await req
+            .set("cookie", ["refreshToken=12345667"])
+            .post(`${SETTINGS.PATH.AUTH}/logout`)
+            .expect(401)
+    })
+
+    it("should logout user", async () => {
+        const loginRes = await req
+            .post(`${SETTINGS.PATH.AUTH}/login`)
+            .send(authData)
+            .expect(200)
+        cookieWithRefreshToken = loginRes.headers["set-cookie"];
+
+        await req
+            .set("cookie", cookieWithRefreshToken)
+            .post(`${SETTINGS.PATH.AUTH}/logout`)
+            .expect(204)
+    })
+
+    it("should return 401 for outdated refresh token", async () => {
+        await req
+            .set("cookie", cookieWithRefreshToken)
+            .post(`${SETTINGS.PATH.AUTH}/logout`)
             .expect(401)
     })
 })
