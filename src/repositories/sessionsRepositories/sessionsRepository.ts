@@ -62,4 +62,17 @@ export const sessionsRepository = {
             return false;
         }
     },
+    deleteAllOtherSessions: async (
+        {
+            currentDeviceId,
+            userId
+        }: {
+            currentDeviceId: string;
+            userId: string;
+        }) => {
+        await sessionCollection.deleteMany({
+            deviceId: { $ne: currentDeviceId },
+            userId
+        });
+    },
 }

@@ -3,6 +3,27 @@ import { jwtService } from "../jwtService/jwtService";
 import { sessionsRepository } from "../../repositories/sessionsRepositories";
 
 export const sessionsService = {
+    deleteAllDevices: async (refreshToken: string): Promise<ResultType> => {
+        const { userId, deviceId} = jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        if (!userId || !deviceId) {
+            return {
+                status: ResultStatus.Unauthorized,
+                extensions: [],
+                data: null,
+            }
+        }
+
+        await sessionsRepository.deleteAllOtherSessions({
+            userId,
+            currentDeviceId: deviceId
+        })
+
+        return {
+            status: ResultStatus.Success,
+            extensions: [],
+            data: null,
+        }
+    },
     deleteDeviceById: async (
         {
             deviceId,

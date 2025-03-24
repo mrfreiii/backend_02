@@ -1,6 +1,7 @@
 import { Response, Router } from "express";
 
 import {
+    DeleteAllOtherDevicesReqType,
     DeleteDeviceByIdReqType,
     getActiveSessionsReqType,
     getActiveSessionsResType
@@ -33,6 +34,21 @@ const securityController = {
             .status(HttpStatuses.Success_200)
             .json(sessions)
     },
+    deleteAllOtherDevices: async (req: DeleteAllOtherDevicesReqType, res: Response) => {
+        const refreshToken = req.cookies.refreshToken;
+        if (!refreshToken) {
+            res.sendStatus(HttpStatuses.Unauthorized_401)
+            return;
+        }
+
+        const result = await sessionsService.deleteAllDevices(refreshToken);
+        if (result.status !== ResultStatus.Success) {
+            res.sendStatus(resultCodeToHttpException(result.status))
+            return;
+        }
+
+        res.sendStatus(204);
+    },
     deleteDeviceById: async (req: DeleteDeviceByIdReqType, res: Response) => {
         const refreshToken = req.cookies.refreshToken;
         if (!refreshToken) {
@@ -55,8 +71,9 @@ const securityController = {
 
 securityRouter
     .route("/devices")
-    .get(
-        securityController.getActiveSessions);
+    .get(securityController.getActiveSessions)
+    .delete(securityController.deleteAllOtherDevices);
+
 
 securityRouter
     .route("/devices/:deviceId")

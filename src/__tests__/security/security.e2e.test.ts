@@ -254,4 +254,25 @@ describe("sessions /devices", () => {
             },
         ]);
     })
+
+    it("should delete all other devices - DELETE /devices", async () => {
+        await req
+            .set("cookie", cookieWithRefreshTokenDevice1)
+            .delete(`${SETTINGS.PATH.SECURITY}/devices`)
+            .expect(204)
+
+        const sessions = await req
+            .get(`${SETTINGS.PATH.SECURITY}/devices`)
+            .set("cookie", cookieWithRefreshTokenDevice1)
+            .expect(200)
+
+        expect(sessions.body).toEqual([
+            {
+                deviceId: deviceId1,
+                ip: expect.any(String),
+                lastActiveDate: expect.any(String),
+                title: "Browser: Chrome 53.0.1935.131; OS: Linux i651",
+            },
+        ]);
+    })
 })
