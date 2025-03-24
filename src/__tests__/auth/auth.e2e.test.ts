@@ -4,7 +4,7 @@ import {
     req,
     connectToTestDBAndClearRepositories,
     RealDate,
-    mockDate
+    mockDate,
 } from "../helpers";
 import { SETTINGS } from "../../settings";
 import { registerTestUser } from "./helpers";
@@ -110,49 +110,60 @@ describe("login user /login", () => {
             .expect(401)
     })
 
-    it("should return 429 for 6th request during 10 seconds (rate limit)", async () => {
-        mockDate("2098-11-25T12:34:56z")
+    it("should return 429 for 6th request during 10 seconds (rate limit) and 401 after waiting", async () => {
+        await rateLimitRepository.clearDB();
 
-        const authData: { loginOrEmail: string, password: string } = {
-            loginOrEmail: createdUser.login,
+        const nonExistentUser: { loginOrEmail: string, password: string } = {
+            loginOrEmail: "noExist",
             password: userPassword,
         }
 
         // attempt #1
         await req
             .post(`${SETTINGS.PATH.AUTH}/login`)
-            .send(authData)
-            .expect(200)
+            .send(nonExistentUser)
+            .expect(401)
 
         // attempt #2
         await req
             .post(`${SETTINGS.PATH.AUTH}/login`)
-            .send(authData)
-            .expect(200)
+            .send(nonExistentUser)
+            .expect(401)
 
         // attempt #3
         await req
             .post(`${SETTINGS.PATH.AUTH}/login`)
-            .send(authData)
-            .expect(200)
+            .send(nonExistentUser)
+            .expect(401)
 
         // attempt #4
         await req
             .post(`${SETTINGS.PATH.AUTH}/login`)
-            .send(authData)
-            .expect(200)
+            .send(nonExistentUser)
+            .expect(401)
 
         // attempt #5
         await req
             .post(`${SETTINGS.PATH.AUTH}/login`)
-            .send(authData)
-            .expect(200)
+            .send(nonExistentUser)
+            .expect(401)
 
         // attempt #6
         await req
             .post(`${SETTINGS.PATH.AUTH}/login`)
-            .send(authData)
+            .send(nonExistentUser)
             .expect(429)
+
+        const dateInFuture = add(new Date(),{
+            seconds: 10,
+        })
+        mockDate(dateInFuture.toISOString())
+
+        // attempt #7
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/login`)
+            .send(nonExistentUser)
+            .expect(401)
     })
 })
 

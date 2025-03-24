@@ -7,7 +7,7 @@ export const rateLimitMiddleware = ({maxAttempts, periodInSec}: {
     maxAttempts: number,
     periodInSec: number
 }) => async (req: Request, res: Response, next: NextFunction) => {
-    const url = req.baseUrl || req.originalUrl;
+    const url = req.originalUrl;
     const ip = req.ip;
     const date = Date.now();
 
