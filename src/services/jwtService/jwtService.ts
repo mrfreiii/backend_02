@@ -26,7 +26,7 @@ export const jwtService = {
         const deviceId = uuidv4();
 
         const accessToken = createAccessToken(userId);
-        const refreshToken = createRefreshToken({userId, deviceId});
+        const refreshToken = await createRefreshToken({userId, deviceId});
 
         const deviceTitle = getDeviceTitle(userAgent);
         const {issuedAt, expirationTime} = getDatesFromToken(refreshToken);
@@ -85,7 +85,7 @@ export const jwtService = {
 
         const {issuedAt} = getDatesFromToken(refreshToken);
 
-        const currentSession = await sessionsRepository.checkSession({
+        const currentSession = await sessionsRepository.getSession({
             userId,
             deviceId,
             issuedAt
@@ -99,7 +99,7 @@ export const jwtService = {
         }
 
         const newAccessToken = createAccessToken(userId);
-        const newRefreshToken = createRefreshToken({userId, deviceId});
+        const newRefreshToken = await createRefreshToken({userId, deviceId});
 
         const deviceTitle = getDeviceTitle(userAgent);
         const {

@@ -1,9 +1,16 @@
-import { Router } from "express";
+import { Response, Router } from "express";
 
+import {
+    DeleteDeviceByIdReqType,
+    getActiveSessionsReqType,
+    getActiveSessionsResType
+} from "./types";
 import { HttpStatuses } from "../types";
+import { ResultStatus } from "../../services/types";
+import { resultCodeToHttpException } from "../helpers";
 import { jwtService } from "../../services/jwtService/jwtService";
-import { getActiveSessionsReqType, getActiveSessionsResType } from "./types";
 import { sessionQueryRepository } from "../../repositories/sessionsRepositories";
+import { sessionsService } from "../../services/sessionsService/sessionsService";
 
 export const securityRouter = Router();
 
@@ -26,10 +33,33 @@ const securityController = {
             .status(HttpStatuses.Success_200)
             .json(sessions)
     },
+    deleteDeviceById: async (req: DeleteDeviceByIdReqType, res: Response) => {
+        const refreshToken = req.cookies.refreshToken;
+        if (!refreshToken) {
+            res.sendStatus(HttpStatuses.Unauthorized_401)
+            return;
+        }
+
+        const result = await sessionsService.deleteDeviceById({
+            deviceId: req.params.deviceId,
+            refreshToken
+        });
+        if (result.status !== ResultStatus.Success) {
+            res.sendStatus(resultCodeToHttpException(result.status))
+            return;
+        }
+
+        res.sendStatus(204);
+    },
 }
 
 securityRouter
     .route("/devices")
     .get(
         securityController.getActiveSessions);
+
+securityRouter
+    .route("/devices/:deviceId")
+    .delete(
+        securityController.deleteDeviceById);
 

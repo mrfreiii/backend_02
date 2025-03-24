@@ -6,3 +6,6 @@ export interface getActiveSessionsReqType extends Request {
 }
 export type getActiveSessionsResType = Response<SessionViewType[]>;
 
+export interface DeleteDeviceByIdReqType extends Request<{ deviceId: string }> {
+    cookies: { refreshToken: string; };
+}

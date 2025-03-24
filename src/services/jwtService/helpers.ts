@@ -12,20 +12,28 @@ export const createAccessToken = (userId: string): string => {
     return jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "10s"});
 }
 
-export const createRefreshToken = (
+export const createRefreshToken = async (
     {
         userId,
         deviceId
     }: {
         userId: string;
         deviceId: string
-    }): string => {
+    }): Promise<string> => {
     const payload: RefreshJwtPayloadType = {
         userId,
         deviceId,
     }
 
-    return jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "20s"});
+    // need using setTimeout for testing purpose
+    return new Promise((resolve)=>{
+        setTimeout(()=>{
+            const refreshToken = jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "20s"});
+            resolve(refreshToken)
+        },500)
+    })
+
+
 }
 
 export const getDeviceTitle = (userAgent: string | undefined): string =>{

@@ -15,17 +15,22 @@ export const sessionsRepository = {
             return ""
         }
     },
-    checkSession: async (
+    getSession: async (
         {
             deviceId,
             userId,
             issuedAt
         }: {
-            deviceId: string;
-            userId: string;
-            issuedAt: string;
+            deviceId?: string;
+            userId?: string;
+            issuedAt?: string;
         }): Promise<WithId<SessionDbType> | null> => {
-        return sessionCollection.findOne({deviceId, userId, issuedAt});
+        const filter = {
+            ...(deviceId && {deviceId}),
+            ...(userId && {userId}),
+            ...(issuedAt && {issuedAt}),
+        }
+        return sessionCollection.findOne(filter);
     },
     updateSession: async ({_id, updatedSession}: {
         _id: ObjectId;
