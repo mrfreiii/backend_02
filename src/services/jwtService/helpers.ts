@@ -7,22 +7,24 @@ import { AccessJwtPayloadType, RefreshJwtPayloadType } from "./types";
 export const createAccessToken = (userId: string): string => {
     const payload: AccessJwtPayloadType = {
         userId,
+        iat: new Date().getTime(),
     }
 
     return jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "10s"});
 }
 
-export const createRefreshToken = async (
+export const createRefreshToken = (
     {
         userId,
         deviceId
     }: {
         userId: string;
         deviceId: string
-    }): Promise<string> => {
+    }): string => {
     const payload: RefreshJwtPayloadType = {
         userId,
         deviceId,
+        iat: new Date().getTime(),
     }
 
     return jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "20s"});

@@ -26,7 +26,7 @@ export const jwtService = {
         const deviceId = uuidv4();
 
         const accessToken = createAccessToken(userId);
-        const refreshToken = await createRefreshToken({userId, deviceId});
+        const refreshToken = createRefreshToken({userId, deviceId});
 
         const deviceTitle = getDeviceTitle(userAgent);
         const {issuedAt, expirationTime} = getDatesFromToken(refreshToken);

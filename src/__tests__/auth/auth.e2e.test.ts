@@ -371,6 +371,57 @@ describe("confirm user registration /registration-confirmation", () => {
             .send({code: validRegistrationConfirmationCode})
             .expect(204)
     })
+
+    it("should return 429 for 6th attempt and 400 after waiting 10sec", async () => {
+        await rateLimitRepository.clearDB();
+
+        // attempt #1
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+            .send({code: "00000"})
+            .expect(400)
+
+        // attempt #2
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+            .send({code: "00000"})
+            .expect(400)
+
+        // attempt #3
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+            .send({code: "00000"})
+            .expect(400)
+
+        // attempt #4
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+            .send({code: "00000"})
+            .expect(400)
+
+        // attempt #5
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+            .send({code: "00000"})
+            .expect(400)
+
+        // attempt #6
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+            .send({code: "00000"})
+            .expect(429)
+
+        const dateInFuture = add(new Date(),{
+            seconds: 10,
+        })
+        mockDate(dateInFuture.toISOString());
+
+        // attempt #7 after waiting
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-confirmation`)
+            .send({code: "00000"})
+            .expect(400)
+    })
 })
 
 describe("resend registration email /registration-email-resending", () => {
@@ -421,6 +472,56 @@ describe("resend registration email /registration-email-resending", () => {
                 },
             ]
         );
+    })
+
+
+    it("should return 429 for 6th request and 400 after waiting 10 sec", async () => {
+        // attempt #1
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
+            .send({email: "qwerty"})
+            .expect(400)
+
+        // attempt #2
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
+            .send({email: "qwerty"})
+            .expect(400)
+
+        // attempt #3
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
+            .send({email: "qwerty"})
+            .expect(400)
+
+        // attempt #4
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
+            .send({email: "qwerty"})
+            .expect(400)
+
+        // attempt #5
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
+            .send({email: "qwerty"})
+            .expect(400)
+
+        // attempt #6
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
+            .send({email: "qwerty"})
+            .expect(429)
+
+        const dateInFuture = add(new Date(),{
+            seconds: 10,
+        })
+        mockDate(dateInFuture.toISOString());
+
+        // attempt #7
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
+            .send({email: "qwerty"})
+            .expect(400)
     })
 
     it("should return 400 for already confirmed email", async () => {
@@ -551,7 +652,7 @@ describe("logout /logout", () => {
     const userPassword = "1234567890";
     let createdUser: UserViewType;
     let authData: { loginOrEmail: string, password: string };
-    let cookieWithRefreshToken: string;
+    let cookieWithValidRefreshToken: string;
 
     beforeAll(async () => {
         createdUser = (await createTestUsers({password: userPassword}))[0];
@@ -575,23 +676,29 @@ describe("logout /logout", () => {
             .expect(401)
     })
 
-    it("should logout user", async () => {
+    it("should return 401 for outdated refresh token", async () => {
         const loginRes = await req
             .post(`${SETTINGS.PATH.AUTH}/login`)
             .send(authData)
             .expect(200)
-        cookieWithRefreshToken = loginRes.headers["set-cookie"];
+        const cookieWithOutdatedRefreshToken = loginRes.headers["set-cookie"];
+
+        const refreshRes = await req
+            .set("cookie", loginRes.headers["set-cookie"])
+            .post(`${SETTINGS.PATH.AUTH}/refresh-token`)
+            .expect(200)
+        cookieWithValidRefreshToken = refreshRes.headers["set-cookie"];
 
         await req
-            .set("cookie", cookieWithRefreshToken)
-            .post(`${SETTINGS.PATH.AUTH}/logout`)
-            .expect(204)
-    })
-
-    it("should return 401 for outdated refresh token", async () => {
-        await req
-            .set("cookie", cookieWithRefreshToken)
+            .set("cookie", cookieWithOutdatedRefreshToken)
             .post(`${SETTINGS.PATH.AUTH}/logout`)
             .expect(401)
+    })
+
+    it("should logout user", async () => {
+        await req
+            .set("cookie", cookieWithValidRefreshToken)
+            .post(`${SETTINGS.PATH.AUTH}/logout`)
+            .expect(204)
     })
 })
