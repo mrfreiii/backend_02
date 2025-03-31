@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 
-import { blogsRepository } from "../../repositories/blogsRepositories";
+import { BlogsRepository } from "../../repositories/blogsRepositories";
 import { postsRepository } from "../../repositories/postsRepositories";
 import { UsersRepository } from "../../repositories/usersRepositories";
 import { sessionsRepository } from "../../repositories/sessionsRepositories";
@@ -12,7 +12,7 @@ export const testingRouter = Router();
 const testingController = {
     deleteAllData: async (req: Request, res: Response) => {
         try {
-            const isBlogsDeleted = await blogsRepository.clearDB();
+            const isBlogsDeleted = await BlogsRepository.clearDB();
             const isPostsDeleted = await postsRepository.clearDB();
             const isUsersDeleted = await UsersRepository.clearDB();
             const isCommentsDeleted = await commentsRepository.clearDB();

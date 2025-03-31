@@ -1,5 +1,5 @@
 import { postsRepository } from "../../repositories/postsRepositories";
-import { blogsQueryRepository } from "../../repositories/blogsRepositories";
+import { BlogsQueryRepository } from "../../repositories/blogsRepositories";
 import { PostDbType, PostViewType } from "../../repositories/postsRepositories/types";
 
 export const postsService = {
@@ -8,6 +8,8 @@ export const postsService = {
     ): Promise<string | undefined> => {
         const {title, shortDescription, content, blogId} = dto;
 
+        // TODO: заменить new BlogsQueryRepository() на inject
+        const blogsQueryRepository = new BlogsQueryRepository();
         const blog = await blogsQueryRepository.getBlogById(blogId);
         if (!blog) {
             return;
@@ -29,6 +31,8 @@ export const postsService = {
     ): Promise<boolean> => {
         const {id, title, shortDescription, content, blogId} = dto;
 
+        // TODO: заменить new BlogsQueryRepository() на inject
+        const blogsQueryRepository = new BlogsQueryRepository();
         const blog = await blogsQueryRepository.getBlogById(blogId);
         if (!blog) {
             return false;

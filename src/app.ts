@@ -5,8 +5,8 @@ import cookieParser from "cookie-parser";
 import { SETTINGS } from "./settings";
 import { authRouter } from "./routers/authRouter/authRouter";
 import { usersRouter } from "./routers/usersRouter/usersRouter";
+import { blogsRouter } from "./routers/blogsRouter/blogsRouter";
 
-import { blogsRouter } from "./routers/blogsRouter/blogsController";
 import { postsRouter } from "./routers/postsRouter/postsController";
 import { testingRouter } from "./routers/testsRouter/testingController";
 import { commentsRouter } from "./routers/commentsRouter/commentsController";

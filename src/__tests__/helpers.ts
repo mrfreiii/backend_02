@@ -5,7 +5,7 @@ import { SETTINGS } from "../settings";
 import { connectToTestDB } from "../db/mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { postsRepository } from "../repositories/postsRepositories";
-import { blogsRepository } from "../repositories/blogsRepositories";
+import { BlogsRepository } from "../repositories/blogsRepositories";
 import { UsersRepository } from "../repositories/usersRepositories";
 import { commentsRepository } from "../repositories/commentsRepositories";
 import { sessionsRepository } from "../repositories/sessionsRepositories";
@@ -27,7 +27,7 @@ export const connectToTestDBAndClearRepositories = () => {
         server = await connectToTestDB();
 
         await postsRepository.clearDB();
-        await blogsRepository.clearDB();
+        await BlogsRepository.clearDB();
         await UsersRepository.clearDB();
         await commentsRepository.clearDB();
         await rateLimitRepository.clearDB();

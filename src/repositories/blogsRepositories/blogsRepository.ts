@@ -2,20 +2,24 @@ import { ObjectId } from "mongodb";
 
 import { blogCollection } from "../../db/mongodb";
 import { BlogDbType, BlogViewType } from "./types";
+import { injectable } from "inversify";
 
-export const blogsRepository = {
-    clearDB: async () => {
+@injectable()
+export class BlogsRepository {
+    static async clearDB() {
         return blogCollection.drop();
-    },
-    addNewBlog: async (newBlog: BlogDbType): Promise<string> => {
+    }
+
+    async addNewBlog(newBlog: BlogDbType): Promise<string> {
         try {
             const createdBlog = await blogCollection.insertOne(newBlog);
             return createdBlog?.insertedId?.toString();
         } catch {
             return ""
         }
-    },
-    updateBlog: async (dto: Omit<BlogViewType, "createdAt">): Promise<boolean> => {
+    }
+
+    async updateBlog(dto: Omit<BlogViewType, "createdAt">): Promise<boolean> {
         const { id, ...updatedBlog } = dto;
 
         try {
@@ -28,13 +32,14 @@ export const blogsRepository = {
         } catch {
             return false;
         }
-    },
-    deleteBlogById: async (id: string): Promise<boolean> => {
+    }
+
+    async deleteBlogById(id: string): Promise<boolean> {
         try {
             const result = await blogCollection.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
         } catch {
             return false;
         }
-    },
+    }
 }

@@ -1,4 +1,5 @@
-import { Router, Response } from "express";
+import { Response } from "express";
+import { inject, injectable } from "inversify";
 
 import {
     CreateBlogReqType,
@@ -14,38 +15,29 @@ import {
     GetBlogByIdResType,
     UpdateBlogReqType
 } from "./types"
-import {
-    blogDescriptionValidator,
-    blogNameValidator,
-    blogWebsiteUrlValidator
-} from "./validators";
-import {
-    contentValidator,
-    postTitleValidator,
-    shortDescriptionValidator
-} from "../postsRouter/validators";
 import { HttpStatuses } from "../types";
-import { blogsService } from "../../services/blogsService/blogsService";
+import { BlogsService } from "../../services/blogsService/blogsService";
 import { postsService } from "../../services/postsService/postsService";
 import { parseBlogsQueryParams, parsePostsQueryParams } from "../../utils";
-import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
-import { blogsQueryRepository } from "../../repositories/blogsRepositories";
 import { postsQueryRepository } from "../../repositories/postsRepositories";
-import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
+import { BlogsQueryRepository } from "../../repositories/blogsRepositories";
 
-export const blogsRouter = Router();
+@injectable()
+export class BlogsController {
+    constructor(@inject(BlogsQueryRepository) private blogsQueryRepository: BlogsQueryRepository,
+                @inject(BlogsService) private blogsService: BlogsService) {}
 
-const blogsController = {
-    getBlogs: async (req: GetAllBlogsReqType, res: GetAllBlogsResType) => {
+    async getBlogs(req: GetAllBlogsReqType, res: GetAllBlogsResType) {
         const parsedQuery = parseBlogsQueryParams(req.query);
-        const allBlogs = await blogsQueryRepository.getAllBlogs(parsedQuery);
+        const allBlogs = await this.blogsQueryRepository.getAllBlogs(parsedQuery);
 
         res
             .status(200)
             .json(allBlogs);
-    },
-    getBlogById: async (req: GetBlogByIdReqType, res: GetBlogByIdResType) => {
-        const foundBlog = await blogsQueryRepository.getBlogById(req.params.id);
+    }
+
+    async getBlogById(req: GetBlogByIdReqType, res: GetBlogByIdResType) {
+        const foundBlog = await this.blogsQueryRepository.getBlogById(req.params.id);
 
         if (!foundBlog) {
             res.sendStatus(404);
@@ -55,9 +47,10 @@ const blogsController = {
         res
             .status(200)
             .json(foundBlog);
-    },
-    getPostsByBlogId: async (req: GetAllPostsByBlogIdReqType, res: GetAllPostsByBlogIdResType) => {
-        const blog = await blogsQueryRepository.getBlogById(req.params.blogId);
+    }
+
+    async getPostsByBlogId(req: GetAllPostsByBlogIdReqType, res: GetAllPostsByBlogIdResType) {
+        const blog = await this.blogsQueryRepository.getBlogById(req.params.blogId);
         if (!blog) {
             res.sendStatus(HttpStatuses.NotFound_404);
             return;
@@ -74,15 +67,16 @@ const blogsController = {
         res
             .status(HttpStatuses.Success_200)
             .json(allPosts);
-    },
-    createBlog: async (req: CreateBlogReqType, res: CreateBlogResType) => {
-        const createdBlogId = await blogsService.addNewBlog({
+    }
+
+    async createBlog(req: CreateBlogReqType, res: CreateBlogResType) {
+        const createdBlogId = await this.blogsService.addNewBlog({
             name: req.body.name,
             description: req.body.description,
             websiteUrl: req.body.websiteUrl,
             isMembership: req.body.isMembership,
         });
-        const createdBlog = await blogsQueryRepository.getBlogById(createdBlogId);
+        const createdBlog = await this.blogsQueryRepository.getBlogById(createdBlogId);
 
         if (!createdBlog) {
             res.sendStatus(599);
@@ -92,8 +86,9 @@ const blogsController = {
         res
             .status(201)
             .json(createdBlog);
-    },
-    createPostByBlogId: async (req: CreatePostByBlogIdReqType, res: CreatePostByBlogIdResType) => {
+    }
+
+    async createPostByBlogId(req: CreatePostByBlogIdReqType, res: CreatePostByBlogIdResType) {
         const createdPostId = await postsService.addNewPost({
             title: req.body.title.trim(),
             shortDescription: req.body.shortDescription.trim(),
@@ -114,9 +109,10 @@ const blogsController = {
         res
             .status(201)
             .json(createdPost);
-    },
-    updateBlog: async (req: UpdateBlogReqType, res: Response) => {
-        const isUpdated = await blogsService.updateBlog({
+    }
+
+    async updateBlog(req: UpdateBlogReqType, res: Response) {
+        const isUpdated = await this.blogsService.updateBlog({
             id: req.params.id,
             name: req.body.name,
             description: req.body.description,
@@ -130,52 +126,15 @@ const blogsController = {
         }
 
         res.sendStatus(204)
-    },
-    deleteBlogById: async (req: DeleteBlogReqType, res: Response) => {
-        const isDeleted = await blogsService.deleteBlogById(req.params.id);
+    }
+
+    async deleteBlogById(req: DeleteBlogReqType, res: Response) {
+        const isDeleted = await this.blogsService.deleteBlogById(req.params.id);
         if (!isDeleted) {
             res.sendStatus(404);
             return;
         }
 
         res.sendStatus(204);
-    },
+    }
 }
-
-blogsRouter
-    .route("/")
-    .get(blogsController.getBlogs)
-    .post(
-        basicAuthMiddleware,
-        blogNameValidator,
-        blogDescriptionValidator,
-        blogWebsiteUrlValidator,
-        errorResultMiddleware,
-        blogsController.createBlog);
-
-blogsRouter
-    .route("/:id")
-    .get(blogsController.getBlogById)
-    .put(
-        basicAuthMiddleware,
-        blogNameValidator,
-        blogDescriptionValidator,
-        blogWebsiteUrlValidator,
-        errorResultMiddleware,
-        blogsController.updateBlog)
-    .delete(
-        basicAuthMiddleware,
-        blogsController.deleteBlogById);
-
-blogsRouter
-    .route("/:blogId/posts")
-    .get(blogsController.getPostsByBlogId)
-    .post(
-        basicAuthMiddleware,
-        postTitleValidator,
-        shortDescriptionValidator,
-        contentValidator,
-        errorResultMiddleware,
-        blogsController.createPostByBlogId);
-
-

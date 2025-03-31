@@ -1,8 +1,13 @@
-import { blogsRepository } from "../../repositories/blogsRepositories";
+import { inject, injectable } from "inversify";
+
+import { BlogsRepository } from "../../repositories/blogsRepositories";
 import { BlogDbType, BlogViewType } from "../../repositories/blogsRepositories/types";
 
-export const blogsService = {
-    addNewBlog: async ( dto: Omit<BlogViewType, "id" | "createdAt">): Promise<string> => {
+@injectable()
+export class BlogsService {
+    constructor(@inject(BlogsRepository) private blogsRepository: BlogsRepository) {}
+
+    async addNewBlog( dto: Omit<BlogViewType, "id" | "createdAt">): Promise<string> {
         const { name, description, websiteUrl, isMembership } = dto;
 
         const newBlog: BlogDbType = {
@@ -13,9 +18,10 @@ export const blogsService = {
             createdAt: (new Date()).toISOString(),
         };
 
-        return blogsRepository.addNewBlog(newBlog);
-    },
-    updateBlog: async ( dto: Omit<BlogViewType, "createdAt"> ): Promise<boolean> => {
+        return this.blogsRepository.addNewBlog(newBlog);
+    }
+
+    async updateBlog( dto: Omit<BlogViewType, "createdAt"> ): Promise<boolean> {
         const { id, name, description, websiteUrl, isMembership } = dto;
 
         const updatedBlog: Omit<BlogViewType, "createdAt"> = {
@@ -26,9 +32,10 @@ export const blogsService = {
             isMembership: typeof isMembership === "boolean" ? isMembership : false,
         }
 
-        return blogsRepository.updateBlog(updatedBlog);
-    },
-    deleteBlogById: async (id: string): Promise<boolean> => {
-        return blogsRepository.deleteBlogById(id);
-    },
+        return this.blogsRepository.updateBlog(updatedBlog);
+    }
+
+    async deleteBlogById(id: string): Promise<boolean> {
+        return this.blogsRepository.deleteBlogById(id);
+    }
 }
