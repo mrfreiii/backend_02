@@ -1,23 +1,30 @@
 import { add } from "date-fns";
 import { WithId } from "mongodb";
 import { v4 as uuidv4 } from "uuid";
+import { inject, injectable } from "inversify";
 
 import { ResultStatus, ResultType } from "../types";
-import { bcryptService } from "../bcryptService/bcryptService";
-import { usersRepository } from "../../repositories/usersRepositories";
+import { UsersRepository } from "../../repositories/usersRepositories";
 import { UserDbType } from "../../repositories/usersRepositories/types";
-import { nodemailerService } from "../nodemailerService/nodemailerService";
+import { BcryptService } from "../bcryptService/bcryptService";
+import { NodemailerService } from "../nodemailerService/nodemailerService";
 
-export const authService = {
-    checkCredentials: async (
+@injectable()
+export class AuthService {
+    constructor(@inject(UsersRepository) private usersRepository: UsersRepository,
+                @inject(BcryptService) private bcryptService: BcryptService,
+                @inject(NodemailerService) private nodemailerService: NodemailerService) {
+    }
+
+    async checkCredentials(
         {
             loginOrEmail,
             password
         }: {
             loginOrEmail: string,
             password: string
-        }): Promise<ResultType<WithId<UserDbType> | null>> => {
-        const user = await usersRepository.getUsersByEmailOrLogin({
+        }): Promise<ResultType<WithId<UserDbType> | null>> {
+        const user = await this.usersRepository.getUsersByEmailOrLogin({
             login: loginOrEmail,
             email: loginOrEmail
         })
@@ -31,7 +38,7 @@ export const authService = {
         }
 
         const userPasswordSalt = user.accountData.passwordHash.substring(0, 29);
-        const hashForValidation = await bcryptService.generateHash({
+        const hashForValidation = await this.bcryptService.generateHash({
             salt: userPasswordSalt,
             password
         });
@@ -50,9 +57,10 @@ export const authService = {
             extensions: [],
             data: user,
         }
-    },
-    confirmRegistration: async (code: string): Promise<ResultType<null>> => {
-        const user = await usersRepository.getUserByConfirmationCode(code);
+    }
+
+    async confirmRegistration(code: string): Promise<ResultType<null>> {
+        const user = await this.usersRepository.getUserByConfirmationCode(code);
         if(!user){
             return {
                 status: ResultStatus.BadRequest,
@@ -86,7 +94,7 @@ export const authService = {
             }
         }
 
-        const isStatusUpdated = usersRepository.updateUserConfirmationStatus(user._id);
+        const isStatusUpdated = this.usersRepository.updateUserConfirmationStatus(user._id);
         if(!isStatusUpdated){
             return {
                 status: ResultStatus.ServerError,
@@ -103,8 +111,9 @@ export const authService = {
             extensions: [],
             data: null,
         };
-    },
-    resendRegistrationEmail: async (
+    }
+
+    async resendRegistrationEmail(
         {
             email,
             confirmationURL,
@@ -112,8 +121,8 @@ export const authService = {
             email: string;
             confirmationURL: string;
         }
-    ): Promise<ResultType> => {
-        const user = await usersRepository.getUsersByEmailOrLogin({email});
+    ): Promise<ResultType> {
+        const user = await this.usersRepository.getUsersByEmailOrLogin({email});
         if (!user) {
             return {
                 status: ResultStatus.BadRequest,
@@ -145,7 +154,7 @@ export const authService = {
 
         };
 
-        const isUpdated = await usersRepository.updateUserConfirmationCodeAndExpirationDate({
+        const isUpdated = await this.usersRepository.updateUserConfirmationCodeAndExpirationDate({
             userId: user._id,
             updatedUserConfirmation
         });
@@ -160,7 +169,7 @@ export const authService = {
             }
         }
 
-        nodemailerService.sendEmailWithConfirmationCode({
+        this.nodemailerService.sendEmailWithConfirmationCode({
             email,
             confirmationCode: updatedUserConfirmation.confirmationCode,
             confirmationURL,
@@ -173,5 +182,5 @@ export const authService = {
             extensions: [],
             data: null,
         };
-    },
+    }
 }

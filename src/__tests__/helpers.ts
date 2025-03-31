@@ -6,17 +6,19 @@ import { connectToTestDB } from "../db/mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { postsRepository } from "../repositories/postsRepositories";
 import { blogsRepository } from "../repositories/blogsRepositories";
-import { usersRepository } from "../repositories/usersRepositories";
+import { UsersRepository } from "../repositories/usersRepositories";
 import { commentsRepository } from "../repositories/commentsRepositories";
 import { sessionsRepository } from "../repositories/sessionsRepositories";
 import { rateLimitRepository } from "../repositories/rateLimitsRepositories";
-import { nodemailerService } from "../services/nodemailerService/nodemailerService";
+import { NodemailerService } from "../services/nodemailerService/nodemailerService";
 
 export const req = agent(app);
 
 const userCredentials = `${SETTINGS.CREDENTIALS.LOGIN}:${SETTINGS.CREDENTIALS.PASSWORD}`;
 const encodedUserCredentials = Buffer.from(userCredentials, "utf8").toString("base64");
 export const validAuthHeader = `Basic ${encodedUserCredentials}`;
+
+export const nodemailerTestService = new NodemailerService();
 
 export const connectToTestDBAndClearRepositories = () => {
     let server: MongoMemoryServer;
@@ -26,13 +28,13 @@ export const connectToTestDBAndClearRepositories = () => {
 
         await postsRepository.clearDB();
         await blogsRepository.clearDB();
-        await usersRepository.clearDB();
+        await UsersRepository.clearDB();
         await commentsRepository.clearDB();
         await rateLimitRepository.clearDB();
         await sessionsRepository.clearDB();
         req.set("Authorization", "");
 
-        nodemailerService.sendEmailWithConfirmationCode = jest
+        nodemailerTestService.sendEmailWithConfirmationCode = jest
             .fn()
             .mockImplementation(
                 () => Promise.resolve()

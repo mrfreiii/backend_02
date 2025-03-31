@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { jwtService } from "../services/jwtService/jwtService";
-import { usersQueryRepository } from "../repositories/usersRepositories";
+import { UsersQueryRepository } from "../repositories/usersRepositories";
 
 export const AUTH_ERROR_MESSAGES = {
     NoHeader: "there is no authorization header",
@@ -39,6 +39,7 @@ export const jwtAuthMiddleware = async (req: Request, res: Response, next: NextF
         return;
     }
 
+    const usersQueryRepository = new UsersQueryRepository();
     const user = await usersQueryRepository.getUserById(userId);
     if (!user) {
         res

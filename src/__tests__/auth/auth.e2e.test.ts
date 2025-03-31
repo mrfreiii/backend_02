@@ -5,13 +5,13 @@ import {
     connectToTestDBAndClearRepositories,
     RealDate,
     mockDate,
+    nodemailerTestService,
 } from "../helpers";
 import { SETTINGS } from "../../settings";
 import { registerTestUser } from "./helpers";
 import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
 import { UserViewType } from "../../repositories/usersRepositories/types";
 import { AUTH_ERROR_MESSAGES } from "../../middlewares/jwtAuthMiddleware";
-import { nodemailerService } from "../../services/nodemailerService/nodemailerService";
 import { rateLimitRepository } from "../../repositories/rateLimitsRepositories";
 
 let validRegistrationConfirmationCode = "12345";
@@ -262,8 +262,8 @@ describe("register user /registration", () => {
             .send(newUser)
             .expect(204)
 
-        expect(nodemailerService.sendEmailWithConfirmationCode).toBeCalled();
-        expect(nodemailerService.sendEmailWithConfirmationCode).toBeCalledTimes(1);
+        expect(nodemailerTestService.sendEmailWithConfirmationCode).toBeCalled();
+        expect(nodemailerTestService.sendEmailWithConfirmationCode).toBeCalledTimes(1);
     })
 
     it("should return 429 for 6th attempt during 10 seconds", async () => {

@@ -1,20 +1,23 @@
 import { ObjectId, WithId } from "mongodb";
+import { injectable } from "inversify";
 
 import { UserDbType } from "./types";
 import { userCollection } from "../../db/mongodb";
 
-export const usersRepository = {
-    clearDB: async () => {
+@injectable()
+export class UsersRepository {
+    static async clearDB() {
         return userCollection.drop();
-    },
-    getUsersByEmailOrLogin: async (
+    }
+
+    async getUsersByEmailOrLogin(
         {
             email,
             login
         }: {
             email?: string,
             login?: string
-        }): Promise<WithId<UserDbType> | null> => {
+        }): Promise<WithId<UserDbType> | null> {
         if (!email && !login) {
             return null
         }
@@ -35,31 +38,35 @@ export const usersRepository = {
         const filter = {$or: [...loginTerm, ...emailTerm]}
 
         return userCollection.findOne(filter)
-    },
-    addNewUser: async (
+    }
+
+    async addNewUser(
         newUser: UserDbType
-    ): Promise<string> => {
+    ): Promise<string> {
         try {
             const createdUser = await userCollection.insertOne(newUser);
             return createdUser?.insertedId?.toString();
         } catch {
             return ""
         }
-    },
-    deleteUserById: async (id: string): Promise<boolean> => {
+    }
+
+    async deleteUserById(id: string): Promise<boolean> {
         try {
             const result = await userCollection.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
         } catch {
             return false;
         }
-    },
-    getUserByConfirmationCode: async (code: string): Promise<WithId<UserDbType> | null> => {
+    }
+
+    async getUserByConfirmationCode(code: string): Promise<WithId<UserDbType> | null> {
         const filter = {"emailConfirmation.confirmationCode": code}
 
         return userCollection.findOne(filter)
-    },
-    updateUserConfirmationStatus: async (userId: ObjectId): Promise<boolean> => {
+    }
+
+    async updateUserConfirmationStatus(userId: ObjectId): Promise<boolean> {
         try {
             const result = await userCollection.updateOne(
                 {_id: userId},
@@ -70,8 +77,9 @@ export const usersRepository = {
         } catch {
             return false;
         }
-    },
-    updateUserConfirmationCodeAndExpirationDate: async (
+    }
+
+    async updateUserConfirmationCodeAndExpirationDate(
         {
             userId,
             updatedUserConfirmation
@@ -79,7 +87,7 @@ export const usersRepository = {
             userId: ObjectId,
             updatedUserConfirmation: {confirmationCode: string, expirationDate: number, confirmationStatus: "notConfirmed" | "confirmed"}
         }
-    ): Promise<boolean> => {
+    ): Promise<boolean> {
         try {
             const result = await userCollection.updateOne(
                 {_id: userId},
@@ -90,5 +98,5 @@ export const usersRepository = {
         } catch {
             return false;
         }
-    },
+    }
 }

@@ -1,15 +1,21 @@
 import bcrypt from "bcrypt";
 import { add } from "date-fns";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
+import { inject, injectable } from "inversify";
 
 import { ResultStatus, ResultType } from "../types";
-import { bcryptService } from "../bcryptService/bcryptService";
-import { usersRepository } from "../../repositories/usersRepositories";
 import { UserDbType } from "../../repositories/usersRepositories/types";
-import { nodemailerService } from "../nodemailerService/nodemailerService";
+import { BcryptService } from "../bcryptService/bcryptService";
+import { NodemailerService } from "../nodemailerService/nodemailerService";
+import { UsersRepository } from "../../repositories/usersRepositories";
 
-export const usersService = {
-    addNewUser: async (
+@injectable()
+export class UsersService {
+    constructor(@inject(UsersRepository) private usersRepository: UsersRepository,
+                @inject(BcryptService) private bcryptService: BcryptService,
+                @inject(NodemailerService) private nodemailerService: NodemailerService) {}
+
+    async addNewUser(
         dto: {
             login: string;
             email: string;
@@ -17,10 +23,10 @@ export const usersService = {
             needEmailConfirmation?: boolean;
             confirmationURL?: string
         }
-    ): Promise<ResultType<string | null>> => {
+    ): Promise<ResultType<string | null>> {
         const {login, email, password, needEmailConfirmation, confirmationURL} = dto;
 
-        const anotherUserWithSameLogin = await usersRepository.getUsersByEmailOrLogin({login});
+        const anotherUserWithSameLogin = await this.usersRepository.getUsersByEmailOrLogin({login});
         if (anotherUserWithSameLogin) {
             return {
                 status: ResultStatus.BadRequest,
@@ -32,7 +38,7 @@ export const usersService = {
             }
         }
 
-        const anotherUserWithSameEmail = await usersRepository.getUsersByEmailOrLogin({email});
+        const anotherUserWithSameEmail = await this.usersRepository.getUsersByEmailOrLogin({email});
         if (anotherUserWithSameEmail) {
             return {
                 status: ResultStatus.BadRequest,
@@ -45,7 +51,10 @@ export const usersService = {
         }
 
         const passwordSalt = await bcrypt.genSalt(10);
-        const passwordHash = await bcryptService.generateHash({password, salt: passwordSalt});
+        const passwordHash = await this.bcryptService.generateHash({
+            password,
+            salt: passwordSalt
+        });
 
         const newUser: UserDbType = {
             accountData: {
@@ -56,17 +65,17 @@ export const usersService = {
             },
             emailConfirmation: {
                 confirmationCode: needEmailConfirmation ? uuidv4() : null,
-                expirationDate: needEmailConfirmation ? add(new Date(),{
+                expirationDate: needEmailConfirmation ? add(new Date(), {
                     minutes: 2,
                 }).getTime() : null,
                 confirmationStatus: needEmailConfirmation ? "notConfirmed" : "confirmed"
             }
         };
 
-        const createdUserId = await usersRepository.addNewUser(newUser);
+        const createdUserId = await this.usersRepository.addNewUser(newUser);
 
-        if(needEmailConfirmation && confirmationURL){
-            nodemailerService.sendEmailWithConfirmationCode({
+        if (needEmailConfirmation && confirmationURL) {
+            this.nodemailerService.sendEmailWithConfirmationCode({
                 email: newUser.accountData.email,
                 confirmationCode: newUser.emailConfirmation.confirmationCode!,
                 confirmationURL,
@@ -80,8 +89,9 @@ export const usersService = {
             extensions: [],
             data: createdUserId,
         };
-    },
-    deleteUserById: async (id: string): Promise<boolean> => {
-        return usersRepository.deleteUserById(id);
-    },
+    }
+
+    async deleteUserById(id: string): Promise<boolean> {
+        return this.usersRepository.deleteUserById(id);
+    }
 }
