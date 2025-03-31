@@ -2,22 +2,26 @@ import { ObjectId } from "mongodb";
 
 import { postCollection } from "../../db/mongodb";
 import { PostDbType, PostViewType } from "./types";
+import { injectable } from "inversify";
 
-export const postsRepository = {
-    clearDB: async () => {
+@injectable()
+export class PostsRepository {
+    static async clearDB() {
         return postCollection.drop();
-    },
-    addNewPost: async (
+    }
+
+    async addNewPost (
         newPost: PostDbType
-    ): Promise<string> => {
+    ): Promise<string> {
         try {
             const createdPost = await postCollection.insertOne(newPost);
             return createdPost?.insertedId?.toString();
         } catch {
             return ""
         }
-    },
-    updatePost: async (dto: Omit<PostViewType, "createdAt">): Promise<boolean> => {
+    }
+
+    async updatePost(dto: Omit<PostViewType, "createdAt">): Promise<boolean> {
         const {id, ...updatedPost} = dto;
 
         try {
@@ -30,13 +34,14 @@ export const postsRepository = {
         } catch {
             return false;
         }
-    },
-    deletePostById: async (id: string): Promise<boolean> => {
+    }
+
+    async deletePostById(id: string): Promise<boolean> {
         try{
             const result = await postCollection.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
         } catch {
             return false;
         }
-    },
+    }
 }

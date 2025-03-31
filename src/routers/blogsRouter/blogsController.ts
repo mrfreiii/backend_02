@@ -17,15 +17,17 @@ import {
 } from "./types"
 import { HttpStatuses } from "../types";
 import { BlogsService } from "../../services/blogsService/blogsService";
-import { postsService } from "../../services/postsService/postsService";
+import { PostsService } from "../../services/postsService/postsService";
 import { parseBlogsQueryParams, parsePostsQueryParams } from "../../utils";
-import { postsQueryRepository } from "../../repositories/postsRepositories";
 import { BlogsQueryRepository } from "../../repositories/blogsRepositories";
+import { PostsQueryRepository } from "../../repositories/postsRepositories";
 
 @injectable()
 export class BlogsController {
     constructor(@inject(BlogsQueryRepository) private blogsQueryRepository: BlogsQueryRepository,
-                @inject(BlogsService) private blogsService: BlogsService) {}
+                @inject(PostsQueryRepository) private postsQueryRepository: PostsQueryRepository,
+                @inject(BlogsService) private blogsService: BlogsService,
+                @inject(PostsService) private postsService: PostsService) {}
 
     async getBlogs(req: GetAllBlogsReqType, res: GetAllBlogsResType) {
         const parsedQuery = parseBlogsQueryParams(req.query);
@@ -57,7 +59,7 @@ export class BlogsController {
         }
 
         const parsedQuery = parsePostsQueryParams(req.query);
-        const allPosts = await postsQueryRepository.getAllPosts({parsedQuery, blogId: req.params.blogId});
+        const allPosts = await this.postsQueryRepository.getAllPosts({parsedQuery, blogId: req.params.blogId});
 
         if (!allPosts) {
             res.sendStatus(HttpStatuses.ServerError_500);
@@ -89,7 +91,7 @@ export class BlogsController {
     }
 
     async createPostByBlogId(req: CreatePostByBlogIdReqType, res: CreatePostByBlogIdResType) {
-        const createdPostId = await postsService.addNewPost({
+        const createdPostId = await this.postsService.addNewPost({
             title: req.body.title.trim(),
             shortDescription: req.body.shortDescription.trim(),
             content: req.body.content.trim(),
@@ -100,7 +102,7 @@ export class BlogsController {
             return;
         }
 
-        const createdPost = await postsQueryRepository.getPostById(createdPostId);
+        const createdPost = await this.postsQueryRepository.getPostById(createdPostId);
         if (!createdPost) {
             res.sendStatus(599);
             return;

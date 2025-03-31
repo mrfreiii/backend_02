@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 
 import { BlogsRepository } from "../../repositories/blogsRepositories";
-import { postsRepository } from "../../repositories/postsRepositories";
+import { PostsRepository } from "../../repositories/postsRepositories";
 import { UsersRepository } from "../../repositories/usersRepositories";
 import { sessionsRepository } from "../../repositories/sessionsRepositories";
 import { commentsRepository } from "../../repositories/commentsRepositories";
@@ -13,7 +13,7 @@ const testingController = {
     deleteAllData: async (req: Request, res: Response) => {
         try {
             const isBlogsDeleted = await BlogsRepository.clearDB();
-            const isPostsDeleted = await postsRepository.clearDB();
+            const isPostsDeleted = await PostsRepository.clearDB();
             const isUsersDeleted = await UsersRepository.clearDB();
             const isCommentsDeleted = await commentsRepository.clearDB();
             const isRateLimitDeleted = await rateLimitRepository.clearDB();

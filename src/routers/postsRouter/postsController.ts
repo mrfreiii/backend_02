@@ -1,47 +1,45 @@
-import { Router, Response } from "express";
+import { Response } from "express";
+import { inject, injectable } from "inversify";
 
 import {
-    blogIdValidator,
-    contentValidator,
-    postTitleValidator,
-    shortDescriptionValidator
-} from "./validators";
-import {
-    AddCommentByPostIdReqType, AddCommentByPostIdResType,
+    AddCommentByPostIdReqType,
+    AddCommentByPostIdResType,
     CreatePostReqType,
     CreatePostResType,
     DeletePostByIdReqType,
     GetAllPostsReqType,
-    GetAllPostsResType, GetCommentsByPostIdReqType, GetCommentsByPostIdResType,
+    GetAllPostsResType,
+    GetCommentsByPostIdReqType,
+    GetCommentsByPostIdResType,
     GetPostByIdReqType,
-    GetPostByIdResType, UpdatePostReqType
+    GetPostByIdResType,
+    UpdatePostReqType
 } from "./types";
 import { HttpStatuses } from "../types";
-import { resultCodeToHttpException } from "../helpers";
-import { commentContentValidator } from "../commentsRouter/validators";
 import { ResultStatus } from "../../services/types";
-import { postsService } from "../../services/postsService/postsService";
-import { commentsService } from "../../services/commentsService/commentsService";
-import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
-import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
-import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
-import { postsQueryRepository } from "../../repositories/postsRepositories";
-import { commentsQueryRepository } from "../../repositories/commentsRepositories";
+import { resultCodeToHttpException } from "../helpers";
 import { parseCommentsQueryParams, parsePostsQueryParams } from "../../utils";
+import { PostsService } from "../../services/postsService/postsService";
+import { commentsService } from "../../services/commentsService/commentsService";
+import { PostsQueryRepository } from "../../repositories/postsRepositories";
+import { commentsQueryRepository } from "../../repositories/commentsRepositories";
 
-export const postsRouter = Router();
+@injectable()
+export class PostsController {
+    constructor(@inject(PostsQueryRepository) private postsQueryRepository: PostsQueryRepository,
+                @inject(PostsService) private postsService: PostsService) {}
 
-const postsController = {
-    getPosts: async (req: GetAllPostsReqType, res: GetAllPostsResType) => {
+    async getPosts(req: GetAllPostsReqType, res: GetAllPostsResType) {
         const parsedQuery = parsePostsQueryParams(req.query)
-        const allPosts = await postsQueryRepository.getAllPosts({parsedQuery});
+        const allPosts = await this.postsQueryRepository.getAllPosts({parsedQuery});
 
         res
             .status(200)
             .json(allPosts);
-    },
-    getPostById: async (req: GetPostByIdReqType, res: GetPostByIdResType) => {
-        const foundPost = await postsQueryRepository.getPostById(req.params.id);
+    }
+
+    async getPostById(req: GetPostByIdReqType, res: GetPostByIdResType) {
+        const foundPost = await this.postsQueryRepository.getPostById(req.params.id);
 
         if (!foundPost) {
             res.sendStatus(404);
@@ -51,9 +49,10 @@ const postsController = {
         res
             .status(200)
             .json(foundPost);
-    },
-    createPost: async (req: CreatePostReqType, res: CreatePostResType) => {
-        const createdPostId = await postsService.addNewPost({
+    }
+
+    async createPost(req: CreatePostReqType, res: CreatePostResType) {
+        const createdPostId = await this.postsService.addNewPost({
             title: req.body.title.trim(),
             shortDescription: req.body.shortDescription.trim(),
             content: req.body.content.trim(),
@@ -64,7 +63,7 @@ const postsController = {
             return;
         }
 
-        const createdPost = await postsQueryRepository.getPostById(createdPostId);
+        const createdPost = await this.postsQueryRepository.getPostById(createdPostId);
         if (!createdPost) {
             res.sendStatus(599);
             return;
@@ -73,9 +72,10 @@ const postsController = {
         res
             .status(201)
             .json(createdPost);
-    },
-    updatePost: async (req: UpdatePostReqType, res: Response) => {
-        const isUpdated = await postsService.updatePost({
+    }
+
+    async updatePost(req: UpdatePostReqType, res: Response) {
+        const isUpdated = await this.postsService.updatePost({
             id: req.params.id,
             title: req.body.title,
             shortDescription: req.body.shortDescription,
@@ -89,18 +89,20 @@ const postsController = {
         }
 
         res.sendStatus(204);
-    },
-    deletePostById: async (req: DeletePostByIdReqType, res: Response) => {
-        const isDeleted = await postsService.deletePostById(req.params.id);
+    }
+
+    async deletePostById(req: DeletePostByIdReqType, res: Response) {
+        const isDeleted = await this.postsService.deletePostById(req.params.id);
         if (!isDeleted) {
             res.sendStatus(404);
             return;
         }
 
         res.sendStatus(204);
-    },
-    createCommentByPostId: async (req: AddCommentByPostIdReqType, res: AddCommentByPostIdResType) => {
-        const post = await postsQueryRepository.getPostById(req.params.postId);
+    }
+
+    async createCommentByPostId(req: AddCommentByPostIdReqType, res: AddCommentByPostIdResType) {
+        const post = await this.postsQueryRepository.getPostById(req.params.postId);
         if (!post) {
             res.sendStatus(HttpStatuses.NotFound_404)
             return;
@@ -128,9 +130,10 @@ const postsController = {
         res
             .status(HttpStatuses.Created_201)
             .json(createdComment);
-    },
-    getCommentsByPostId: async (req: GetCommentsByPostIdReqType, res: GetCommentsByPostIdResType) => {
-        const post = await postsQueryRepository.getPostById(req.params.postId);
+    }
+
+    async getCommentsByPostId(req: GetCommentsByPostIdReqType, res: GetCommentsByPostIdResType) {
+        const post = await this.postsQueryRepository.getPostById(req.params.postId);
         if (!post) {
             res.sendStatus(HttpStatuses.NotFound_404);
             return;
@@ -150,42 +153,5 @@ const postsController = {
         res
             .status(HttpStatuses.Success_200)
             .json(allComments);
-    },
+    }
 }
-
-postsRouter
-    .route("/")
-    .get(postsController.getPosts)
-    .post(
-        basicAuthMiddleware,
-        postTitleValidator,
-        shortDescriptionValidator,
-        contentValidator,
-        blogIdValidator,
-        errorResultMiddleware,
-        postsController.createPost);
-
-postsRouter
-    .route("/:id")
-    .get(postsController.getPostById)
-    .put(
-        basicAuthMiddleware,
-        postTitleValidator,
-        shortDescriptionValidator,
-        contentValidator,
-        blogIdValidator,
-        errorResultMiddleware,
-        postsController.updatePost)
-    .delete(
-        basicAuthMiddleware,
-        postsController.deletePostById);
-
-postsRouter
-    .route("/:postId/comments")
-    .get(postsController.getCommentsByPostId)
-    .post(
-        jwtAuthMiddleware,
-        commentContentValidator,
-        errorResultMiddleware,
-        postsController.createCommentByPostId,
-    )

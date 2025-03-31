@@ -4,7 +4,7 @@ import { app } from "../app";
 import { SETTINGS } from "../settings";
 import { connectToTestDB } from "../db/mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { postsRepository } from "../repositories/postsRepositories";
+import { PostsRepository } from "../repositories/postsRepositories";
 import { BlogsRepository } from "../repositories/blogsRepositories";
 import { UsersRepository } from "../repositories/usersRepositories";
 import { commentsRepository } from "../repositories/commentsRepositories";
@@ -26,7 +26,7 @@ export const connectToTestDBAndClearRepositories = () => {
     beforeAll(async () => {
         server = await connectToTestDB();
 
-        await postsRepository.clearDB();
+        await PostsRepository.clearDB();
         await BlogsRepository.clearDB();
         await UsersRepository.clearDB();
         await commentsRepository.clearDB();

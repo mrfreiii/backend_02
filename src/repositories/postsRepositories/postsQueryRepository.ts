@@ -4,9 +4,11 @@ import { WithPaginationType } from "../../types";
 import { postCollection } from "../../db/mongodb";
 import { PostDbType, PostViewType } from "./types";
 import { PostQueryType } from "../../routers/postsRouter/types";
+import { injectable } from "inversify";
 
-export const postsQueryRepository = {
-    getAllPosts: async ({parsedQuery, blogId}: { parsedQuery: PostQueryType, blogId?: string }): Promise<WithPaginationType<PostViewType> | undefined> => {
+@injectable()
+export class PostsQueryRepository {
+    async getAllPosts({parsedQuery, blogId}: { parsedQuery: PostQueryType, blogId?: string }): Promise<WithPaginationType<PostViewType> | undefined> {
         const {sortBy, sortDirection, pageSize, pageNumber} = parsedQuery;
         const filter: any = {};
 
@@ -20,32 +22,35 @@ export const postsQueryRepository = {
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .toArray();
-        const postCount = await postsQueryRepository.getPostsCount(filter);
+        const postCount = await this.getPostsCount(filter);
 
         return {
             pagesCount: Math.ceil(postCount / pageSize),
             page: pageNumber,
             pageSize,
             totalCount: postCount,
-            items: allPosts?.map((post) => postsQueryRepository._mapPostDbTypeToPostViewType(post))
+            items: allPosts?.map((post) => this._mapPostDbTypeToPostViewType(post))
         }
-    },
-    getPostsCount: async (filter: {blogId?: string}): Promise<number> => {
+    }
+
+    async getPostsCount(filter: {blogId?: string}): Promise<number> {
         return postCollection.countDocuments(filter);
-    },
-    getPostById: async (id: string): Promise<PostViewType | undefined> => {
+    }
+
+    async getPostById(id: string): Promise<PostViewType | undefined> {
         try {
             const post = await postCollection.findOne({_id: new ObjectId(id)});
             if (!post) {
                 return;
             }
 
-            return postsQueryRepository._mapPostDbTypeToPostViewType(post);
+            return this._mapPostDbTypeToPostViewType(post);
         } catch {
             return;
         }
-    },
-    _mapPostDbTypeToPostViewType: (post: WithId<PostDbType>): PostViewType => {
+    }
+
+    _mapPostDbTypeToPostViewType(post: WithId<PostDbType>): PostViewType {
         const {_id, title, shortDescription, content, blogId, blogName, createdAt} = post;
 
         return {
