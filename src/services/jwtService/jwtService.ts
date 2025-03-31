@@ -34,7 +34,7 @@ export const jwtService = {
         const deviceData: SessionDbType = {
             userId,
             deviceId,
-            ip: ip || "unknown",
+            ip: ip || "unknown ip",
             title: deviceTitle,
             issuedAt,
             expirationTime,
