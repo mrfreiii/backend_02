@@ -23,7 +23,7 @@ import {
     contentValidator,
     postTitleValidator,
     shortDescriptionValidator
-} from "../postsController/validators";
+} from "../postsRouter/validators";
 import { HttpStatuses } from "../types";
 import { blogsService } from "../../services/blogsService/blogsService";
 import { postsService } from "../../services/postsService/postsService";

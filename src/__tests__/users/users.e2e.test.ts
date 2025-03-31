@@ -5,7 +5,7 @@ import {
 } from "../helpers";
 import { SETTINGS } from "../../settings";
 import { createTestUsers } from "./helpers";
-import { UserQueryType } from "../../controllers/usersController/types";
+import { UserQueryType } from "../../routers/usersRouter/types";
 import { UserViewType } from "../../repositories/usersRepositories/types";
 import { AUTH_ERROR_MESSAGES } from "../../middlewares/basicAuthMiddleware";
 import { convertObjectToQueryString } from "../../utils";

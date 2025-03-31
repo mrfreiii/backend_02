@@ -3,7 +3,7 @@ import { ObjectId, SortDirection, WithId } from "mongodb";
 import { WithPaginationType } from "../../types";
 import { userCollection } from "../../db/mongodb";
 import { UserDbType, UserViewType } from "./types";
-import { UserQueryType } from "../../controllers/usersController/types";
+import { UserQueryType } from "../../routers/usersRouter/types";
 
 export const usersQueryRepository = {
     getAllUsers: async (parsedQuery: UserQueryType): Promise<WithPaginationType<UserViewType>> => {

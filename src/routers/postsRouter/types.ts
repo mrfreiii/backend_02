@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import { WithPaginationType } from "../../types";
-import { CommentQueryType } from "../commentsController/types";
+import { CommentQueryType } from "../commentsRouter/types";
 import { PostViewType } from "../../repositories/postsRepositories/types";
 import { CommentViewType } from "../../repositories/commentsRepositories/types";
 

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 import { WithPaginationType } from "../../types";
-import { PostQueryType } from "../postsController/types";
+import { PostQueryType } from "../postsRouter/types";
 import { BlogViewType } from "../../repositories/blogsRepositories/types";
 import { PostViewType } from "../../repositories/postsRepositories/types";
 

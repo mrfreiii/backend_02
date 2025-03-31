@@ -18,7 +18,7 @@ import {
 } from "./types";
 import { HttpStatuses } from "../types";
 import { resultCodeToHttpException } from "../helpers";
-import { commentContentValidator } from "../commentsController/validators";
+import { commentContentValidator } from "../commentsRouter/validators";
 import { ResultStatus } from "../../services/types";
 import { postsService } from "../../services/postsService/postsService";
 import { commentsService } from "../../services/commentsService/commentsService";

@@ -1,8 +1,8 @@
 import { AvailableSortDirections } from "../types";
-import { BlogQueryType } from "../controllers/blogsController/types";
-import { PostQueryType } from "../controllers/postsController/types";
-import { UserQueryType } from "../controllers/usersController/types";
-import { CommentQueryType } from "../controllers/commentsController/types";
+import { BlogQueryType } from "../routers/blogsRouter/types";
+import { PostQueryType } from "../routers/postsRouter/types";
+import { UserQueryType } from "../routers/usersRouter/types";
+import { CommentQueryType } from "../routers/commentsRouter/types";
 
 export const parseUsersQueryParams = (queryParams: UserQueryType): UserQueryType => {
     const {

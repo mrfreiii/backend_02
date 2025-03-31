@@ -3,13 +3,13 @@ import express from 'express';
 import cookieParser from "cookie-parser";
 
 import { SETTINGS } from "./settings";
-import { authRouter } from "./controllers/authController/authController";
-import { blogsRouter } from "./controllers/blogsController/blogsController";
-import { postsRouter } from "./controllers/postsController/postsController";
-import { usersRouter } from "./controllers/usersController/usersController";
-import { testingRouter } from "./controllers/testsController/testingController";
-import { commentsRouter } from "./controllers/commentsController/commentsController";
-import { securityRouter } from "./controllers/securityController/securityController";
+import { authRouter } from "./routers/authRouter/authController";
+import { blogsRouter } from "./routers/blogsRouter/blogsController";
+import { postsRouter } from "./routers/postsRouter/postsController";
+import { usersRouter } from "./routers/usersRouter/usersController";
+import { testingRouter } from "./routers/testsRouter/testingController";
+import { commentsRouter } from "./routers/commentsRouter/commentsController";
+import { securityRouter } from "./routers/securityRouter/securityController";
 
 export const app = express();
 

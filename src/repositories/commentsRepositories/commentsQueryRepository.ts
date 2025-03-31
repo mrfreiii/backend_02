@@ -3,7 +3,7 @@ import { ObjectId, SortDirection, WithId } from "mongodb";
 import { WithPaginationType } from "../../types";
 import { commentCollection } from "../../db/mongodb";
 import { CommentDbType, CommentViewType } from "./types";
-import { CommentQueryType } from "../../controllers/commentsController/types";
+import { CommentQueryType } from "../../routers/commentsRouter/types";
 
 export const commentsQueryRepository = {
     getAllComments: async ({parsedQuery, postId}: { parsedQuery: CommentQueryType, postId?: string }): Promise<WithPaginationType<CommentViewType>> => {

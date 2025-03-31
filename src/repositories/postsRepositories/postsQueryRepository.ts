@@ -3,7 +3,7 @@ import { ObjectId, SortDirection, WithId } from "mongodb";
 import { WithPaginationType } from "../../types";
 import { postCollection } from "../../db/mongodb";
 import { PostDbType, PostViewType } from "./types";
-import { PostQueryType } from "../../controllers/postsController/types";
+import { PostQueryType } from "../../routers/postsRouter/types";
 
 export const postsQueryRepository = {
     getAllPosts: async ({parsedQuery, blogId}: { parsedQuery: PostQueryType, blogId?: string }): Promise<WithPaginationType<PostViewType> | undefined> => {
