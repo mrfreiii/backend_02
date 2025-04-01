@@ -8,6 +8,8 @@ import {
 import {
     confirmationCodeValidator,
     loginOrEmailValidator,
+    newPasswordValidator,
+    passwordRecoveryCodeValidator,
     passwordValidator
 } from "./validators";
 import { AuthController } from "./authController";
@@ -77,3 +79,12 @@ authRouter
         userEmailValidator,
         errorResultMiddleware,
         authController.recoverPassword.bind(authController));
+
+authRouter
+    .route("/new-password")
+    .post(
+        rateLimitMiddleware({maxAttempts: 5, periodInSec: 10}),
+        newPasswordValidator,
+        passwordRecoveryCodeValidator,
+        errorResultMiddleware,
+        authController.confirmPasswordRecovery.bind(authController));

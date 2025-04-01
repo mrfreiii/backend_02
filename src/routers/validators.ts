@@ -12,6 +12,3 @@ export const userPasswordValidator = body('password')
 export const userEmailValidator = body('email')
     .isString().withMessage("value must be a string")
     .isEmail().withMessage("value must be email")
-
-
-

@@ -50,10 +50,8 @@ export class UsersService {
             }
         }
 
-        const passwordSalt = await bcrypt.genSalt(10);
         const passwordHash = await this.bcryptService.generateHash({
             password,
-            salt: passwordSalt
         });
 
         const newUser: UserDbType = {

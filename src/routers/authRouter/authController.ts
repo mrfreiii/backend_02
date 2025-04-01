@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
 
 import {
+    ConfirmPasswordRecoveryReqType,
     ConfirmRegistrationReqType,
     LoginUserReqType,
     LogoutUserReqType,
@@ -172,6 +173,20 @@ export class AuthController {
             email: req.body.email.trim(),
             currentURL: `${req.protocol + "://" + req.get("host")}`
         })
+
+        res.sendStatus(204)
+    }
+
+    async confirmPasswordRecovery (req: ConfirmPasswordRecoveryReqType, res: Response) {
+        const result = await this.authService.confirmPasswordRecovery({
+            newPassword: req.body.newPassword,
+            recoveryCode: req.body.recoveryCode,
+        });
+
+        if (result.status !== ResultStatus.Success) {
+            res.sendStatus(resultCodeToHttpException(result.status))
+            return;
+        }
 
         res.sendStatus(204)
     }

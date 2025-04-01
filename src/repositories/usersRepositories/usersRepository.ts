@@ -126,4 +126,30 @@ export class UsersRepository {
             return false;
         }
     }
+
+    async getUserByPasswordRecoveryCode(code: string): Promise<WithId<UserDbType> | null> {
+        const filter = {"passwordRecovery.recoveryCode": code}
+
+        return userCollection.findOne(filter)
+    }
+
+    async updateUserPasswordHash(
+        {
+            userId,
+            passwordHash
+        }: {
+            userId: ObjectId;
+            passwordHash: string
+        }): Promise<boolean> {
+        try {
+            const result = await userCollection.updateOne(
+                {_id: userId},
+                {$set: {"accountData.passwordHash": passwordHash}}
+            );
+
+            return result.matchedCount === 1;
+        } catch {
+            return false;
+        }
+    }
 }

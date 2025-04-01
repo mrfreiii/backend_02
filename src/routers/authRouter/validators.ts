@@ -10,3 +10,10 @@ export const passwordValidator = body('password')
 
 export const confirmationCodeValidator = body('code')
     .isString().withMessage("value must be a string")
+
+export const passwordRecoveryCodeValidator = body('recoveryCode')
+    .isString().withMessage("value must be a string")
+
+export const newPasswordValidator = body('newPassword')
+    .isString().withMessage("value must be a string")
+    .trim().isLength({min: 6, max: 20}).withMessage("length must be: min 6, max 20")

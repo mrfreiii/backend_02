@@ -224,4 +224,61 @@ export class AuthService {
             console.log(`Sending password recovery email error: ${err}`)
         })
     }
+
+    async confirmPasswordRecovery(
+        {
+            newPassword,
+            recoveryCode
+        }: {
+            newPassword: string;
+            recoveryCode: string
+        }): Promise<ResultType<null>> {
+        const user = await this.usersRepository.getUserByPasswordRecoveryCode(recoveryCode);
+        if (!user) {
+            return {
+                status: ResultStatus.BadRequest,
+                errorMessage: "код не найден",
+                extensions: [
+                    {field: "code", message: "code not found"}
+                ],
+                data: null,
+            }
+        }
+
+        if (user.passwordRecovery!.expirationDate < new Date().getTime()) {
+            return {
+                status: ResultStatus.BadRequest,
+                errorMessage: "время жизни кода истекло",
+                extensions: [
+                    {field: "code", message: "code expired"}
+                ],
+                data: null,
+            }
+        }
+
+        const passwordHash = await this.bcryptService.generateHash({
+            password: newPassword
+        });
+
+        const isHashUpdated = this.usersRepository.updateUserPasswordHash({
+            userId: user._id,
+            passwordHash
+        });
+        if (!isHashUpdated) {
+            return {
+                status: ResultStatus.ServerError,
+                errorMessage: "не удалось обновить пароль",
+                extensions: [
+                    {field: "code", message: "failed updating user password"}
+                ],
+                data: null,
+            }
+        }
+
+        return {
+            status: ResultStatus.Success,
+            extensions: [],
+            data: null,
+        };
+    }
 }
