@@ -239,7 +239,7 @@ export class AuthService {
                 status: ResultStatus.BadRequest,
                 errorMessage: "код не найден",
                 extensions: [
-                    {field: "code", message: "code not found"}
+                    {field: "recoveryCode", message: "code not found"}
                 ],
                 data: null,
             }
@@ -250,7 +250,7 @@ export class AuthService {
                 status: ResultStatus.BadRequest,
                 errorMessage: "время жизни кода истекло",
                 extensions: [
-                    {field: "code", message: "code expired"}
+                    {field: "recoveryCode", message: "code expired"}
                 ],
                 data: null,
             }

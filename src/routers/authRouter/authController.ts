@@ -184,7 +184,11 @@ export class AuthController {
         });
 
         if (result.status !== ResultStatus.Success) {
-            res.sendStatus(resultCodeToHttpException(result.status))
+            res
+                .status(resultCodeToHttpException(result.status))
+                .json({
+                    errorsMessages: result.extensions
+                })
             return;
         }
 
