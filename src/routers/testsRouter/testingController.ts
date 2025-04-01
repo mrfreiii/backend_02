@@ -5,7 +5,7 @@ import { PostsRepository } from "../../repositories/postsRepositories";
 import { UsersRepository } from "../../repositories/usersRepositories";
 import { CommentsRepository } from "../../repositories/commentsRepositories";
 import { SessionsRepository } from "../../repositories/sessionsRepositories";
-import { rateLimitRepository } from "../../repositories/rateLimitsRepositories";
+import { RateLimitRepository } from "../../repositories/rateLimitsRepositories";
 
 export const testingRouter = Router();
 
@@ -16,7 +16,7 @@ const testingController = {
             const isPostsDeleted = await PostsRepository.clearDB();
             const isUsersDeleted = await UsersRepository.clearDB();
             const isCommentsDeleted = await CommentsRepository.clearDB();
-            const isRateLimitDeleted = await rateLimitRepository.clearDB();
+            const isRateLimitDeleted = await RateLimitRepository.clearDB();
             const isSessionsDeleted = await SessionsRepository.clearDB();
 
 

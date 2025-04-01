@@ -3,16 +3,18 @@ import { InsertOneResult } from "mongodb";
 import { RateLimitDbType } from "./types";
 import { rateLimitCollection } from "../../db/mongodb";
 
-export const rateLimitRepository = {
-    clearDB: async () => {
+export class RateLimitRepository{
+    static async clearDB()  {
         return rateLimitCollection.drop();
-    },
-    addNewRequest: async (
+    }
+
+    static async addNewRequest(
         newRequest: RateLimitDbType
-    ): Promise<InsertOneResult<RateLimitDbType>> => {
+    ): Promise<InsertOneResult<RateLimitDbType>> {
         return rateLimitCollection.insertOne(newRequest);
-    },
-    getRequestCount: async (parametersForSearch: RateLimitDbType): Promise<number> => {
+    }
+
+    static async getRequestCount(parametersForSearch: RateLimitDbType): Promise<number> {
         const filter = {
             url: parametersForSearch.url,
             ip: parametersForSearch.ip,
@@ -20,5 +22,5 @@ export const rateLimitRepository = {
         }
 
         return rateLimitCollection.countDocuments(filter);
-    },
+    }
 }

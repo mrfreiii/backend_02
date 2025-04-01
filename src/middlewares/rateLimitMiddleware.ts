@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { HttpStatuses } from "../routers/types";
-import { rateLimitRepository } from "../repositories/rateLimitsRepositories";
+import { RateLimitRepository } from "../repositories/rateLimitsRepositories";
 
 export const rateLimitMiddleware = ({maxAttempts, periodInSec}: {
     maxAttempts: number,
@@ -12,14 +12,14 @@ export const rateLimitMiddleware = ({maxAttempts, periodInSec}: {
     const date = Date.now();
 
     const dateForSearch = date - (periodInSec * 1000);
-    const sameRequestCount = await rateLimitRepository.getRequestCount({url, ip: ip!, date: dateForSearch})
+    const sameRequestCount = await RateLimitRepository.getRequestCount({url, ip: ip!, date: dateForSearch})
 
     if(sameRequestCount > maxAttempts - 1){
         res.sendStatus(HttpStatuses.TooManyRequests_429)
         return;
     }
 
-    await rateLimitRepository.addNewRequest({url, ip: ip!, date});
+    await RateLimitRepository.addNewRequest({url, ip: ip!, date});
 
     next();
 }

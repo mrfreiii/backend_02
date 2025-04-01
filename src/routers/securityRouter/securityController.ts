@@ -10,7 +10,7 @@ import {
 import { HttpStatuses } from "../types";
 import { ResultStatus } from "../../services/types";
 import { resultCodeToHttpException } from "../helpers";
-import { jwtService } from "../../services/jwtService/jwtService";
+import { JwtService } from "../../services/jwtService/jwtService";
 import { SessionQueryRepository } from "../../repositories/sessionsRepositories";
 import { SessionsService } from "../../services/sessionsService/sessionsService";
 
@@ -27,7 +27,7 @@ export class SecurityController{
             return;
         }
 
-        const {userId} = jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        const {userId} = JwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId) {
             res.sendStatus(HttpStatuses.Unauthorized_401)
             return;

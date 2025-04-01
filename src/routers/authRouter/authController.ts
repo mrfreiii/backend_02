@@ -12,14 +12,15 @@ import {
 import { HttpStatuses } from "../types";
 import { ResultStatus } from "../../services/types";
 import { resultCodeToHttpException } from "../helpers";
-import { jwtService } from "../../services/jwtService/jwtService";
+import { JwtService } from "../../services/jwtService/jwtService";
 import { AuthService } from "../../services/authService/authService";
 import { UsersService } from "../../services/usersService/usersService";
 
 @injectable()
 export class AuthController {
     constructor(@inject(AuthService) private authService: AuthService,
-                @inject(UsersService) private usersService: UsersService) {}
+                @inject(UsersService) private usersService: UsersService,
+                @inject(JwtService) private jwtService: JwtService) {}
 
     async loginUser(req: LoginUserReqType, res: Response) {
         const {loginOrEmail, password} = req.body;
@@ -34,7 +35,7 @@ export class AuthController {
         const userAgent = req.headers["user-agent"];
         const ip = req.ip;
 
-        const tokensResult = await jwtService.createJWT({userId, userAgent, ip});
+        const tokensResult = await this.jwtService.createJWT({userId, userAgent, ip});
         if (tokensResult.status !== ResultStatus.Success) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
@@ -60,7 +61,7 @@ export class AuthController {
         const userAgent = req.headers["user-agent"];
         const ip = req.ip;
 
-        const tokensResult = await jwtService.updateJWT({refreshToken, userAgent, ip});
+        const tokensResult = await this.jwtService.updateJWT({refreshToken, userAgent, ip});
 
         if (tokensResult.status !== ResultStatus.Success) {
             res.sendStatus(resultCodeToHttpException(tokensResult.status))
@@ -85,7 +86,7 @@ export class AuthController {
             return;
         }
 
-        const result = await jwtService.revokeRefreshToken(refreshToken);
+        const result = await this.jwtService.revokeRefreshToken(refreshToken);
 
         if (result.status !== ResultStatus.Success) {
             res.sendStatus(resultCodeToHttpException(result.status))

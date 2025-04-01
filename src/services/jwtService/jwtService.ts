@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
+import { inject, injectable } from "inversify";
 
 import { SETTINGS } from "../../settings";
 import { RefreshJwtPayloadType } from "./types";
@@ -9,8 +10,11 @@ import { SessionsRepository } from "../../repositories/sessionsRepositories";
 import { SessionDbType } from "../../repositories/sessionsRepositories/types";
 import { createAccessToken, createRefreshToken, getDeviceTitle } from "./helpers";
 
-export const jwtService = {
-    createJWT: async (
+@injectable()
+export class JwtService{
+    constructor(@inject(SessionsRepository) private sessionsRepository: SessionsRepository) {}
+
+    async createJWT(
         {
             userId,
             userAgent,
@@ -22,7 +26,7 @@ export const jwtService = {
         }): Promise<ResultType<{
         accessToken: string;
         refreshToken: string
-    } | null>> => {
+    } | null>> {
         const deviceId = uuidv4();
 
         const accessToken = createAccessToken(userId);
@@ -40,9 +44,7 @@ export const jwtService = {
             expirationTime,
         }
 
-        // TODO: заменить sessionsRepository на inject
-        const sessionsRepository = new SessionsRepository();
-        const sessionId = sessionsRepository.addNewSession(deviceData);
+        const sessionId = this.sessionsRepository.addNewSession(deviceData);
         if (!sessionId) {
             return {
                 status: ResultStatus.ServerError,
@@ -59,8 +61,9 @@ export const jwtService = {
                 refreshToken,
             }
         }
-    },
-    updateJWT: async (
+    }
+
+    async updateJWT(
         {
             refreshToken,
             userAgent,
@@ -72,11 +75,11 @@ export const jwtService = {
         }): Promise<ResultType<{
         accessToken: string;
         refreshToken: string
-    } | null>> => {
+    } | null>> {
         const {
             userId,
             deviceId
-        } = jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        } = JwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId || !deviceId) {
             return {
                 status: ResultStatus.Unauthorized,
@@ -87,9 +90,7 @@ export const jwtService = {
 
         const {issuedAt} = getDatesFromToken(refreshToken);
 
-        // TODO: заменить sessionsRepository на inject
-        const sessionsRepository = new SessionsRepository();
-        const currentSession = await sessionsRepository.getSession({
+        const currentSession = await this.sessionsRepository.getSession({
             userId,
             deviceId,
             issuedAt
@@ -120,7 +121,7 @@ export const jwtService = {
             expirationTime: newExpirationTime,
         }
 
-        const isSessionUpdated = await sessionsRepository.updateSession({
+        const isSessionUpdated = await this.sessionsRepository.updateSession({
             _id: currentSession._id,
             updatedSession: updatedDeviceData
         })
@@ -140,9 +141,10 @@ export const jwtService = {
                 refreshToken: newRefreshToken,
             }
         }
-    },
-    revokeRefreshToken: async (refreshToken: string): Promise<ResultType> => {
-        const {userId, deviceId} = jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+    }
+
+    async revokeRefreshToken(refreshToken: string): Promise<ResultType> {
+        const {userId, deviceId} = JwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId || !deviceId) {
             return {
                 status: ResultStatus.Unauthorized,
@@ -152,9 +154,7 @@ export const jwtService = {
         }
 
         const {issuedAt} = getDatesFromToken(refreshToken);
-        // TODO: заменить sessionsRepository на inject
-        const sessionsRepository = new SessionsRepository();
-        const isCurrentSessionValid = await sessionsRepository.getSession({
+        const isCurrentSessionValid = await this.sessionsRepository.getSession({
             userId,
             deviceId,
             issuedAt,
@@ -167,7 +167,7 @@ export const jwtService = {
             }
         }
 
-        const isSessionDeleted = await sessionsRepository.deleteSession({
+        const isSessionDeleted = await this.sessionsRepository.deleteSession({
             userId,
             deviceId,
         })
@@ -184,8 +184,9 @@ export const jwtService = {
             extensions: [],
             data: null,
         };
-    },
-    verifyRefreshTokenAndParseIt: (token: string): RefreshJwtPayloadType | null => {
+    }
+
+    static verifyRefreshTokenAndParseIt(token: string): RefreshJwtPayloadType | null {
         try {
             return jwt.verify(token, SETTINGS.JWT_SECRET) as RefreshJwtPayloadType;
         } catch {

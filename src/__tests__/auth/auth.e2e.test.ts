@@ -12,7 +12,7 @@ import { registerTestUser } from "./helpers";
 import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
 import { UserViewType } from "../../repositories/usersRepositories/types";
 import { AUTH_ERROR_MESSAGES } from "../../middlewares/jwtAuthMiddleware";
-import { rateLimitRepository } from "../../repositories/rateLimitsRepositories";
+import { RateLimitRepository } from "../../repositories/rateLimitsRepositories";
 
 let validRegistrationConfirmationCode = "12345";
 jest.mock("uuid", () => ({
@@ -111,7 +111,7 @@ describe("login user /login", () => {
     })
 
     it("should return 429 for 6th request during 10 seconds (rate limit) and 401 after waiting", async () => {
-        await rateLimitRepository.clearDB();
+        await RateLimitRepository.clearDB();
 
         const nonExistentUser: { loginOrEmail: string, password: string } = {
             loginOrEmail: "noExist",
@@ -217,7 +217,7 @@ describe("register user /registration", () => {
     connectToTestDBAndClearRepositories();
 
     beforeEach(async () => {
-        await rateLimitRepository.clearDB();
+        await RateLimitRepository.clearDB();
     })
 
     it("should return 400 for login, password, and email are not string", async () => {
@@ -384,7 +384,7 @@ describe("confirm user registration /registration-confirmation", () => {
     })
 
     it("should return 429 for 6th attempt and 400 after waiting 10sec", async () => {
-        await rateLimitRepository.clearDB();
+        await RateLimitRepository.clearDB();
 
         // attempt #1
         await req
@@ -446,7 +446,7 @@ describe("resend registration email /registration-email-resending", () => {
     })
 
     beforeEach(async () => {
-        await rateLimitRepository.clearDB();
+        await RateLimitRepository.clearDB();
     })
 
     afterEach(() => {

@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import {Container} from "inversify";
 
+import { JwtService } from "./services/jwtService/jwtService";
 import { AuthService } from "./services/authService/authService";
 import { UsersService } from "./services/usersService/usersService";
 import { BlogsService } from "./services/blogsService/blogsService";
@@ -52,6 +53,7 @@ compositionRootContainer.bind(BlogsService).toSelf();
 compositionRootContainer.bind(PostsService).toSelf();
 compositionRootContainer.bind(CommentsService).toSelf();
 compositionRootContainer.bind(SessionsService).toSelf();
+compositionRootContainer.bind(JwtService).toSelf();
 
 // Controllers
 compositionRootContainer.bind(UsersController).toSelf();

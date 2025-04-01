@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
-import { jwtService } from "../services/jwtService/jwtService";
+import { JwtService } from "../services/jwtService/jwtService";
 import { UsersQueryRepository } from "../repositories/usersRepositories";
 
 export const AUTH_ERROR_MESSAGES = {
@@ -30,7 +30,7 @@ export const jwtAuthMiddleware = async (req: Request, res: Response, next: NextF
     }
 
     const jwtToken = authData[1];
-    const { userId } = jwtService.verifyRefreshTokenAndParseIt(jwtToken) || {};
+    const { userId } = JwtService.verifyRefreshTokenAndParseIt(jwtToken) || {};
     if (!userId) {
         res
             .status(401)

@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 
 import { ResultStatus, ResultType } from "../types";
-import { jwtService } from "../jwtService/jwtService";
+import { JwtService } from "../jwtService/jwtService";
 import { getDatesFromToken } from "../../utils/jwtTokens";
 import { SessionsRepository } from "../../repositories/sessionsRepositories";
 
@@ -10,7 +10,7 @@ export class SessionsService {
     constructor(@inject(SessionsRepository) private sessionsRepository: SessionsRepository) {}
 
     async deleteAllDevices(refreshToken: string): Promise<ResultType> {
-        const { userId, deviceId} = jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        const { userId, deviceId} = JwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId || !deviceId) {
             return {
                 status: ResultStatus.Unauthorized,
@@ -39,7 +39,7 @@ export class SessionsService {
             deviceId: string;
             refreshToken: string;
         }): Promise<ResultType> {
-        const { userId, deviceId: deviceIdFromToken} = jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        const { userId, deviceId: deviceIdFromToken} = JwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId) {
             return {
                 status: ResultStatus.Unauthorized,
