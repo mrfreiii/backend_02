@@ -8,7 +8,7 @@ import { PostsRepository } from "../repositories/postsRepositories";
 import { BlogsRepository } from "../repositories/blogsRepositories";
 import { UsersRepository } from "../repositories/usersRepositories";
 import { CommentsRepository } from "../repositories/commentsRepositories";
-import { sessionsRepository } from "../repositories/sessionsRepositories";
+import { SessionsRepository } from "../repositories/sessionsRepositories";
 import { rateLimitRepository } from "../repositories/rateLimitsRepositories";
 import { NodemailerService } from "../services/nodemailerService/nodemailerService";
 
@@ -31,7 +31,7 @@ export const connectToTestDBAndClearRepositories = () => {
         await UsersRepository.clearDB();
         await CommentsRepository.clearDB();
         await rateLimitRepository.clearDB();
-        await sessionsRepository.clearDB();
+        await SessionsRepository.clearDB();
         req.set("Authorization", "");
 
         nodemailerTestService.sendEmailWithConfirmationCode = jest

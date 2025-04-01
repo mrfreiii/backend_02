@@ -5,7 +5,7 @@ import { SETTINGS } from "../../settings";
 import { RefreshJwtPayloadType } from "./types";
 import { ResultStatus, ResultType } from "../types";
 import { getDatesFromToken } from "../../utils/jwtTokens";
-import { sessionsRepository } from "../../repositories/sessionsRepositories";
+import { SessionsRepository } from "../../repositories/sessionsRepositories";
 import { SessionDbType } from "../../repositories/sessionsRepositories/types";
 import { createAccessToken, createRefreshToken, getDeviceTitle } from "./helpers";
 
@@ -40,6 +40,8 @@ export const jwtService = {
             expirationTime,
         }
 
+        // TODO: заменить sessionsRepository на inject
+        const sessionsRepository = new SessionsRepository();
         const sessionId = sessionsRepository.addNewSession(deviceData);
         if (!sessionId) {
             return {
@@ -85,6 +87,8 @@ export const jwtService = {
 
         const {issuedAt} = getDatesFromToken(refreshToken);
 
+        // TODO: заменить sessionsRepository на inject
+        const sessionsRepository = new SessionsRepository();
         const currentSession = await sessionsRepository.getSession({
             userId,
             deviceId,
@@ -148,6 +152,8 @@ export const jwtService = {
         }
 
         const {issuedAt} = getDatesFromToken(refreshToken);
+        // TODO: заменить sessionsRepository на inject
+        const sessionsRepository = new SessionsRepository();
         const isCurrentSessionValid = await sessionsRepository.getSession({
             userId,
             deviceId,

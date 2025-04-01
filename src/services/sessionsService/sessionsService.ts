@@ -1,10 +1,15 @@
+import { inject, injectable } from "inversify";
+
 import { ResultStatus, ResultType } from "../types";
 import { jwtService } from "../jwtService/jwtService";
 import { getDatesFromToken } from "../../utils/jwtTokens";
-import { sessionsRepository } from "../../repositories/sessionsRepositories";
+import { SessionsRepository } from "../../repositories/sessionsRepositories";
 
-export const sessionsService = {
-    deleteAllDevices: async (refreshToken: string): Promise<ResultType> => {
+@injectable()
+export class SessionsService {
+    constructor(@inject(SessionsRepository) private sessionsRepository: SessionsRepository) {}
+
+    async deleteAllDevices(refreshToken: string): Promise<ResultType> {
         const { userId, deviceId} = jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId || !deviceId) {
             return {
@@ -14,7 +19,7 @@ export const sessionsService = {
             }
         }
 
-        await sessionsRepository.deleteAllOtherSessions({
+        await this.sessionsRepository.deleteAllOtherSessions({
             userId,
             currentDeviceId: deviceId
         })
@@ -24,15 +29,16 @@ export const sessionsService = {
             extensions: [],
             data: null,
         }
-    },
-    deleteDeviceById: async (
+    }
+
+    async deleteDeviceById(
         {
             deviceId,
             refreshToken,
         }:{
             deviceId: string;
             refreshToken: string;
-        }): Promise<ResultType> => {
+        }): Promise<ResultType> {
         const { userId, deviceId: deviceIdFromToken} = jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId) {
             return {
@@ -43,7 +49,7 @@ export const sessionsService = {
         }
 
         const {issuedAt} = getDatesFromToken(refreshToken);
-        const isCurrentSessionValid = await sessionsRepository.getSession({
+        const isCurrentSessionValid = await this.sessionsRepository.getSession({
             userId,
             deviceId: deviceIdFromToken,
             issuedAt,
@@ -56,7 +62,7 @@ export const sessionsService = {
             }
         }
 
-        const deviceForDeletionInfo = await sessionsRepository.getSession({deviceId});
+        const deviceForDeletionInfo = await this.sessionsRepository.getSession({deviceId});
         if (!deviceForDeletionInfo) {
             return {
                 status: ResultStatus.NotFound,
@@ -73,7 +79,7 @@ export const sessionsService = {
             }
         }
 
-        const isSessionDeleted = await sessionsRepository.deleteSession({
+        const isSessionDeleted = await this.sessionsRepository.deleteSession({
             userId,
             deviceId,
         })
@@ -90,5 +96,5 @@ export const sessionsService = {
             extensions: [],
             data: null,
         }
-    },
+    }
 }

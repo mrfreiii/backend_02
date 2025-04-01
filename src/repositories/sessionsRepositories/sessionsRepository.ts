@@ -1,21 +1,25 @@
 import { ObjectId, WithId } from "mongodb";
+import { injectable } from "inversify";
 
 import { SessionDbType } from "./types";
 import { sessionCollection } from "../../db/mongodb";
 
-export const sessionsRepository = {
-    clearDB: async () => {
+@injectable()
+export class SessionsRepository {
+    static async clearDB() {
         return sessionCollection.drop();
-    },
-    addNewSession: async (newSession: SessionDbType): Promise<string> => {
+    }
+
+    async addNewSession(newSession: SessionDbType): Promise<string> {
         try {
             const createdSession = await sessionCollection.insertOne(newSession);
             return createdSession?.insertedId?.toString();
         } catch {
             return ""
         }
-    },
-    getSession: async (
+    }
+
+    async getSession(
         {
             deviceId,
             userId,
@@ -24,18 +28,19 @@ export const sessionsRepository = {
             deviceId?: string;
             userId?: string;
             issuedAt?: string;
-        }): Promise<WithId<SessionDbType> | null> => {
+        }): Promise<WithId<SessionDbType> | null> {
         const filter = {
             ...(deviceId && {deviceId}),
             ...(userId && {userId}),
             ...(issuedAt && {issuedAt}),
         }
         return sessionCollection.findOne(filter);
-    },
-    updateSession: async ({_id, updatedSession}: {
+    }
+
+    async updateSession({_id, updatedSession}: {
         _id: ObjectId;
         updatedSession: SessionDbType
-    }): Promise<boolean> => {
+    }): Promise<boolean> {
         try {
             const result = await sessionCollection.updateOne(
                 {_id},
@@ -46,33 +51,35 @@ export const sessionsRepository = {
         } catch {
             return false;
         }
-    },
-    deleteSession: async (
+    }
+
+    async deleteSession(
         {
             deviceId,
             userId,
         }: {
             deviceId: string;
             userId: string;
-        }): Promise<boolean> => {
+        }): Promise<boolean> {
         try {
             const result = await sessionCollection.deleteOne({deviceId, userId});
             return result.deletedCount === 1;
         } catch {
             return false;
         }
-    },
-    deleteAllOtherSessions: async (
+    }
+
+    async deleteAllOtherSessions(
         {
             currentDeviceId,
             userId
         }: {
             currentDeviceId: string;
             userId: string;
-        }) => {
+        }) {
         await sessionCollection.deleteMany({
             deviceId: { $ne: currentDeviceId },
             userId
         });
-    },
+    }
 }
