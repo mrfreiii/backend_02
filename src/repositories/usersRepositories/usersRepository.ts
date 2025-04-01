@@ -85,13 +85,40 @@ export class UsersRepository {
             updatedUserConfirmation
         }: {
             userId: ObjectId,
-            updatedUserConfirmation: {confirmationCode: string, expirationDate: number, confirmationStatus: "notConfirmed" | "confirmed"}
+            updatedUserConfirmation: {
+                confirmationCode: string,
+                expirationDate: number,
+                confirmationStatus: "notConfirmed" | "confirmed"
+            }
         }
     ): Promise<boolean> {
         try {
             const result = await userCollection.updateOne(
                 {_id: userId},
                 {$set: {emailConfirmation: updatedUserConfirmation}}
+            );
+
+            return result.matchedCount === 1;
+        } catch {
+            return false;
+        }
+    }
+
+    async updateUserPasswordRecoveryInfo(
+        {
+            userId,
+            passwordRecoveryInfo,
+        }: {
+            userId: ObjectId,
+            passwordRecoveryInfo: {
+                recoveryCode: string,
+                expirationDate: number
+            }
+        }): Promise<boolean> {
+        try {
+            const result = await userCollection.updateOne(
+                {_id: userId},
+                {$set: {passwordRecovery: passwordRecoveryInfo}}
             );
 
             return result.matchedCount === 1;

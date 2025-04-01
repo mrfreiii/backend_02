@@ -69,3 +69,11 @@ authRouter
         userEmailValidator,
         errorResultMiddleware,
         authController.resendRegistrationEmail.bind(authController));
+
+authRouter
+    .route("/password-recovery")
+    .post(
+        rateLimitMiddleware({maxAttempts: 5, periodInSec: 10}),
+        userEmailValidator,
+        errorResultMiddleware,
+        authController.recoverPassword.bind(authController));

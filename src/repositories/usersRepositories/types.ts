@@ -17,4 +17,8 @@ export type UserDbType = {
         expirationDate: number | null;
         confirmationStatus: "confirmed" | "notConfirmed";
     }
+    passwordRecovery?: {
+        recoveryCode: string;
+        expirationDate: number;
+    }
 }

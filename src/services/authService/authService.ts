@@ -61,7 +61,7 @@ export class AuthService {
 
     async confirmRegistration(code: string): Promise<ResultType<null>> {
         const user = await this.usersRepository.getUserByConfirmationCode(code);
-        if(!user){
+        if (!user) {
             return {
                 status: ResultStatus.BadRequest,
                 errorMessage: "неверный код",
@@ -72,7 +72,7 @@ export class AuthService {
             }
         }
 
-        if(user.emailConfirmation.expirationDate! < new Date().getTime()){
+        if (user.emailConfirmation.expirationDate! < new Date().getTime()) {
             return {
                 status: ResultStatus.BadRequest,
                 errorMessage: "время жизни кода истекло",
@@ -83,7 +83,7 @@ export class AuthService {
             }
         }
 
-        if(user.emailConfirmation.confirmationStatus === "confirmed"){
+        if (user.emailConfirmation.confirmationStatus === "confirmed") {
             return {
                 status: ResultStatus.BadRequest,
                 errorMessage: "пользователь уже подтвержден",
@@ -95,7 +95,7 @@ export class AuthService {
         }
 
         const isStatusUpdated = this.usersRepository.updateUserConfirmationStatus(user._id);
-        if(!isStatusUpdated){
+        if (!isStatusUpdated) {
             return {
                 status: ResultStatus.ServerError,
                 errorMessage: "не удалось обновить статус регистрации",
@@ -116,10 +116,10 @@ export class AuthService {
     async resendRegistrationEmail(
         {
             email,
-            confirmationURL,
+            currentURL,
         }: {
             email: string;
-            confirmationURL: string;
+            currentURL: string;
         }
     ): Promise<ResultType> {
         const user = await this.usersRepository.getUsersByEmailOrLogin({email});
@@ -145,7 +145,11 @@ export class AuthService {
             }
         }
 
-        const updatedUserConfirmation: { confirmationCode: string, expirationDate: number, confirmationStatus: "notConfirmed" | "confirmed" } = {
+        const updatedUserConfirmation: {
+            confirmationCode: string,
+            expirationDate: number,
+            confirmationStatus: "notConfirmed" | "confirmed"
+        } = {
             confirmationCode: uuidv4(),
             expirationDate: add(new Date(), {
                 minutes: 2,
@@ -172,7 +176,7 @@ export class AuthService {
         this.nodemailerService.sendEmailWithConfirmationCode({
             email,
             confirmationCode: updatedUserConfirmation.confirmationCode,
-            confirmationURL,
+            currentURL,
         }).catch((err: any) => {
             console.log(`Sending registration email error: ${err}`)
         })
@@ -182,5 +186,42 @@ export class AuthService {
             extensions: [],
             data: null,
         };
+    }
+
+    async recoverPassword(
+        {
+            email,
+            currentURL,
+        }: {
+            email: string;
+            currentURL: string;
+        }): Promise<undefined> {
+        const user = await this.usersRepository.getUsersByEmailOrLogin({email});
+        if (!user) {
+            return;
+        }
+
+        const passwordRecoveryInfo: { recoveryCode: string, expirationDate: number } = {
+            recoveryCode: uuidv4(),
+            expirationDate: add(new Date(), {
+                minutes: 2,
+            }).getTime(),
+        };
+
+        const isUpdated = await this.usersRepository.updateUserPasswordRecoveryInfo({
+            userId: user._id,
+            passwordRecoveryInfo,
+        });
+        if (!isUpdated) {
+            return;
+        }
+
+        this.nodemailerService.sendEmailWithPasswordRecoveryCode({
+            email,
+            recoveryCode: passwordRecoveryInfo.recoveryCode,
+            currentURL,
+        }).catch((err: any) => {
+            console.log(`Sending password recovery email error: ${err}`)
+        })
     }
 }

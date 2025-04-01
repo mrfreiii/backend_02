@@ -5,6 +5,7 @@ import {
     ConfirmRegistrationReqType,
     LoginUserReqType,
     LogoutUserReqType,
+    RecoverPasswordReqType,
     RefreshTokenReqType,
     RegisterUserReqType,
     ResendRegistrationEmailReqType
@@ -118,7 +119,7 @@ export class AuthController {
             password: req.body.password,
             email: req.body.email.trim(),
             needEmailConfirmation: true,
-            confirmationURL: `${req.protocol + "://" + req.get("host")}`
+            currentURL: `${req.protocol + "://" + req.get("host")}`
         });
 
         if (result.status !== ResultStatus.Success) {
@@ -151,7 +152,7 @@ export class AuthController {
     async resendRegistrationEmail (req: ResendRegistrationEmailReqType, res: Response) {
         const result = await this.authService.resendRegistrationEmail({
             email: req.body.email,
-            confirmationURL: `${req.protocol + "://" + req.get("host")}`
+            currentURL: `${req.protocol + "://" + req.get("host")}`
         });
 
         if (result.status !== ResultStatus.Success) {
@@ -162,6 +163,15 @@ export class AuthController {
                 })
             return;
         }
+
+        res.sendStatus(204)
+    }
+
+    async recoverPassword (req: RecoverPasswordReqType, res: Response) {
+        await this.authService.recoverPassword({
+            email: req.body.email.trim(),
+            currentURL: `${req.protocol + "://" + req.get("host")}`
+        })
 
         res.sendStatus(204)
     }

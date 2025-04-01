@@ -562,39 +562,6 @@ describe("resend registration email /registration-email-resending", () => {
             .send({email: user2Email})
             .expect(204)
     })
-
-    it("should return 429 for 6th request during 10 seconds", async () => {
-        // attempt #1
-        await req
-            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
-            .send({email: user2Email})
-            .expect(204)
-        // attempt #2
-        await req
-            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
-            .send({email: user2Email})
-            .expect(204)
-        // attempt #3
-        await req
-            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
-            .send({email: user2Email})
-            .expect(204)
-        // attempt #4
-        await req
-            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
-            .send({email: user2Email})
-            .expect(204)
-        // attempt #5
-        await req
-            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
-            .send({email: user2Email})
-            .expect(204)
-        // attempt #6
-        await req
-            .post(`${SETTINGS.PATH.AUTH}/registration-email-resending`)
-            .send({email: user2Email})
-            .expect(429)
-    })
 })
 
 describe("refresh token /refresh-token", () => {
@@ -711,5 +678,105 @@ describe("logout /logout", () => {
             .set("cookie", cookieWithValidRefreshToken)
             .post(`${SETTINGS.PATH.AUTH}/logout`)
             .expect(204)
+    })
+})
+
+describe("send password recovery code /password-recovery", () => {
+    connectToTestDBAndClearRepositories();
+
+    const userEmail = "user1@email.com";
+
+    beforeAll(async () => {
+        await registerTestUser([userEmail]);
+    })
+
+    beforeEach(async () => {
+        await RateLimitRepository.clearDB();
+    })
+
+    afterEach(() => {
+        global.Date = RealDate;
+    })
+
+    it("should return 429 for 6th request and 400 after waiting 10 sec", async () => {
+        // attempt #1
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+            .send({email: "qwerty"})
+            .expect(400)
+
+        // attempt #2
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+            .send({email: "qwerty"})
+            .expect(400)
+
+        // attempt #3
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+            .send({email: "qwerty"})
+            .expect(400)
+
+        // attempt #4
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+            .send({email: "qwerty"})
+            .expect(400)
+
+        // attempt #5
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+            .send({email: "qwerty"})
+            .expect(400)
+
+        // attempt #6
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+            .send({email: "qwerty"})
+            .expect(429)
+
+        const dateInFuture = add(new Date(),{
+            seconds: 10,
+        })
+        mockDate(dateInFuture.toISOString());
+
+        // attempt #7
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+            .send({email: "qwerty"})
+            .expect(400)
+    })
+
+    it("should return 400 for invalid email format", async () => {
+        const res = await req
+            .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+            .send({email: "qwerty"})
+            .expect(400)
+
+        expect(res.body.errorsMessages.length).toBe(1);
+        expect(res.body.errorsMessages).toEqual([
+                {
+                    field: "email",
+                    message: "value must be email"
+                },
+            ]
+        );
+    })
+
+    it("should return 204 for unregistered email", async () => {
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+            .send({email: "qwerty@test.com"})
+            .expect(204)
+    })
+
+    it("should send email", async () => {
+        await req
+            .post(`${SETTINGS.PATH.AUTH}/password-recovery`)
+            .send({email: userEmail})
+            .expect(204)
+
+        expect(nodemailerTestService.sendEmailWithConfirmationCode).toBeCalled();
+        expect(nodemailerTestService.sendEmailWithConfirmationCode).toBeCalledTimes(1);
     })
 })

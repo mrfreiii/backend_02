@@ -16,3 +16,4 @@ export type ConfirmRegistrationReqType = Request<{}, {}, { code: string; }>;
 
 export type ResendRegistrationEmailReqType = Request<{}, {}, { email: string; }>;
 
+export type RecoverPasswordReqType = Request<{}, {}, { email: string; }>;

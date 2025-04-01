@@ -21,10 +21,10 @@ export class UsersService {
             email: string;
             password: string;
             needEmailConfirmation?: boolean;
-            confirmationURL?: string
+            currentURL?: string
         }
     ): Promise<ResultType<string | null>> {
-        const {login, email, password, needEmailConfirmation, confirmationURL} = dto;
+        const {login, email, password, needEmailConfirmation, currentURL} = dto;
 
         const anotherUserWithSameLogin = await this.usersRepository.getUsersByEmailOrLogin({login});
         if (anotherUserWithSameLogin) {
@@ -74,11 +74,11 @@ export class UsersService {
 
         const createdUserId = await this.usersRepository.addNewUser(newUser);
 
-        if (needEmailConfirmation && confirmationURL) {
+        if (needEmailConfirmation && currentURL) {
             this.nodemailerService.sendEmailWithConfirmationCode({
                 email: newUser.accountData.email,
                 confirmationCode: newUser.emailConfirmation.confirmationCode!,
-                confirmationURL,
+                currentURL,
             }).catch((err: any) => {
                 console.log(`Sending registration email error: ${err}`)
             })
