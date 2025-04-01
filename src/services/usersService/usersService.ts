@@ -1,4 +1,3 @@
-import bcrypt from "bcrypt";
 import { add } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
 import { inject, injectable } from "inversify";
