@@ -1,16 +1,19 @@
+import { inject, injectable } from "inversify";
+
 import {
     CommentDbType,
     CommentViewType
 } from "../../repositories/commentsRepositories/types";
-import {
-    commentsRepository
-} from "../../repositories/commentsRepositories";
 import { ResultStatus, ResultType } from "../types";
+import { CommentsRepository } from "../../repositories/commentsRepositories";
 
-export const commentsService = {
-    addNewComment: async (
+@injectable()
+export class CommentsService {
+    constructor(@inject(CommentsRepository) private commentsRepository: CommentsRepository) {}
+
+    async addNewComment(
         dto: Omit<CommentViewType, "id" | "createdAt"> & { postId: string }
-    ): Promise<ResultType<string | null>> => {
+    ): Promise<ResultType<string | null>> {
         const {content, commentatorInfo, postId} = dto;
 
         const newComment: CommentDbType = {
@@ -23,7 +26,7 @@ export const commentsService = {
             createdAt: (new Date()).toISOString(),
         };
 
-        const createdCommentId = await commentsRepository.addNewComment(newComment);
+        const createdCommentId = await this.commentsRepository.addNewComment(newComment);
         if (!createdCommentId) {
             return {
                 status: ResultStatus.ServerError,
@@ -38,9 +41,10 @@ export const commentsService = {
             extensions: [],
             data: createdCommentId,
         }
-    },
-    updateComment: async (dto: { id: string; content: string }): Promise<ResultType<boolean | null>> => {
-        const isUpdated = commentsRepository.updateComment(dto);
+    }
+
+    async updateComment(dto: { id: string; content: string }): Promise<ResultType<boolean | null>> {
+        const isUpdated = this.commentsRepository.updateComment(dto);
 
         if (!isUpdated) {
             return {
@@ -56,9 +60,10 @@ export const commentsService = {
             extensions: [],
             data: true,
         }
-    },
-    deleteComment: async (id: string): Promise<ResultType<boolean | null>> => {
-        const isDeleted = commentsRepository.deleteComment(id);
+    }
+
+    async deleteComment(id: string): Promise<ResultType<boolean | null>> {
+        const isDeleted = this.commentsRepository.deleteComment(id);
 
         if (!isDeleted) {
             return {
@@ -74,5 +79,5 @@ export const commentsService = {
             extensions: [],
             data: true,
         }
-    },
+    }
 }

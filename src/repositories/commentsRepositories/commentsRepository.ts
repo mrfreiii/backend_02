@@ -1,21 +1,25 @@
 import { ObjectId } from "mongodb";
+import { injectable } from "inversify";
 
 import { CommentDbType } from "./types";
 import { commentCollection } from "../../db/mongodb";
 
-export const commentsRepository = {
-    clearDB: async () => {
+@injectable()
+export class CommentsRepository {
+    static async clearDB() {
         return commentCollection.drop();
-    },
-    addNewComment: async (newComment: CommentDbType): Promise<string> => {
+    }
+
+    async addNewComment(newComment: CommentDbType): Promise<string> {
         try {
             const createdComment = await commentCollection.insertOne(newComment);
             return createdComment?.insertedId?.toString();
         } catch {
             return ""
         }
-    },
-    updateComment: async (dto: {id: string; content: string}): Promise<boolean> => {
+    }
+
+    async updateComment(dto: {id: string; content: string}): Promise<boolean> {
         const { id, content } = dto;
 
         try {
@@ -28,13 +32,14 @@ export const commentsRepository = {
         } catch {
             return false;
         }
-    },
-    deleteComment: async (id: string): Promise<boolean> => {
+    }
+
+    async deleteComment(id: string): Promise<boolean> {
         try {
             const result = await commentCollection.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
         } catch {
             return false;
         }
-    },
+    }
 }

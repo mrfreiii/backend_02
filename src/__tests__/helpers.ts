@@ -7,7 +7,7 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 import { PostsRepository } from "../repositories/postsRepositories";
 import { BlogsRepository } from "../repositories/blogsRepositories";
 import { UsersRepository } from "../repositories/usersRepositories";
-import { commentsRepository } from "../repositories/commentsRepositories";
+import { CommentsRepository } from "../repositories/commentsRepositories";
 import { sessionsRepository } from "../repositories/sessionsRepositories";
 import { rateLimitRepository } from "../repositories/rateLimitsRepositories";
 import { NodemailerService } from "../services/nodemailerService/nodemailerService";
@@ -29,7 +29,7 @@ export const connectToTestDBAndClearRepositories = () => {
         await PostsRepository.clearDB();
         await BlogsRepository.clearDB();
         await UsersRepository.clearDB();
-        await commentsRepository.clearDB();
+        await CommentsRepository.clearDB();
         await rateLimitRepository.clearDB();
         await sessionsRepository.clearDB();
         req.set("Authorization", "");

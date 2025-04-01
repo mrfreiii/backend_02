@@ -7,9 +7,9 @@ import { authRouter } from "./routers/authRouter/authRouter";
 import { usersRouter } from "./routers/usersRouter/usersRouter";
 import { blogsRouter } from "./routers/blogsRouter/blogsRouter";
 import { postsRouter } from "./routers/postsRouter/postsRouter";
+import { commentsRouter } from "./routers/commentsRouter/commentsRouter";
 
 import { testingRouter } from "./routers/testsRouter/testingController";
-import { commentsRouter } from "./routers/commentsRouter/commentsController";
 import { securityRouter } from "./routers/securityRouter/securityController";
 
 export const app = express();

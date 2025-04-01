@@ -20,14 +20,16 @@ import { ResultStatus } from "../../services/types";
 import { resultCodeToHttpException } from "../helpers";
 import { parseCommentsQueryParams, parsePostsQueryParams } from "../../utils";
 import { PostsService } from "../../services/postsService/postsService";
-import { commentsService } from "../../services/commentsService/commentsService";
+import { CommentsService } from "../../services/commentsService/commentsService";
 import { PostsQueryRepository } from "../../repositories/postsRepositories";
-import { commentsQueryRepository } from "../../repositories/commentsRepositories";
+import { CommentsQueryRepository } from "../../repositories/commentsRepositories";
 
 @injectable()
 export class PostsController {
     constructor(@inject(PostsQueryRepository) private postsQueryRepository: PostsQueryRepository,
-                @inject(PostsService) private postsService: PostsService) {}
+                @inject(CommentsQueryRepository) private commentsQueryRepository: CommentsQueryRepository,
+                @inject(PostsService) private postsService: PostsService,
+                @inject(CommentsService) private commentsService: CommentsService) {}
 
     async getPosts(req: GetAllPostsReqType, res: GetAllPostsResType) {
         const parsedQuery = parsePostsQueryParams(req.query)
@@ -108,7 +110,7 @@ export class PostsController {
             return;
         }
 
-        const result = await commentsService.addNewComment({
+        const result = await this.commentsService.addNewComment({
             content: req.body.content.trim(),
             commentatorInfo: {
                 userId: req.user?.id!,
@@ -121,7 +123,7 @@ export class PostsController {
             return;
         }
 
-        const createdComment = await commentsQueryRepository.getCommentById(result.data!);
+        const createdComment = await this.commentsQueryRepository.getCommentById(result.data!);
         if (!createdComment) {
             res.sendStatus(HttpStatuses.ServerError_500);
             return;
@@ -140,7 +142,7 @@ export class PostsController {
         }
 
         const parsedQuery = parseCommentsQueryParams(req.query)
-        const allComments = await commentsQueryRepository.getAllComments({
+        const allComments = await this.commentsQueryRepository.getAllComments({
             parsedQuery,
             postId: req.params.postId
         });

@@ -1,3 +1,4 @@
+import { injectable } from "inversify";
 import { ObjectId, SortDirection, WithId } from "mongodb";
 
 import { WithPaginationType } from "../../types";
@@ -5,8 +6,9 @@ import { commentCollection } from "../../db/mongodb";
 import { CommentDbType, CommentViewType } from "./types";
 import { CommentQueryType } from "../../routers/commentsRouter/types";
 
-export const commentsQueryRepository = {
-    getAllComments: async ({parsedQuery, postId}: { parsedQuery: CommentQueryType, postId?: string }): Promise<WithPaginationType<CommentViewType>> => {
+@injectable()
+export class CommentsQueryRepository {
+    async getAllComments({parsedQuery, postId}: { parsedQuery: CommentQueryType, postId?: string }): Promise<WithPaginationType<CommentViewType>> {
         const {sortBy, sortDirection, pageSize, pageNumber} = parsedQuery;
         const filter: any = {};
 
@@ -20,32 +22,35 @@ export const commentsQueryRepository = {
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .toArray();
-        const commentsCount = await commentsQueryRepository.getCommentsCount(filter);
+        const commentsCount = await this.getCommentsCount(filter);
 
         return {
             pagesCount: Math.ceil(commentsCount / pageSize),
             page: pageNumber,
             pageSize,
             totalCount: commentsCount,
-            items: allComments?.map((comment) => commentsQueryRepository._mapCommentDbTypeToCommentViewType(comment))
+            items: allComments?.map((comment) => this._mapCommentDbTypeToCommentViewType(comment))
         }
-    },
-    getCommentsCount: async (filter: {postId?: string}): Promise<number> => {
+    }
+
+    async getCommentsCount(filter: {postId?: string}): Promise<number> {
         return commentCollection.countDocuments(filter);
-    },
-    getCommentById: async (id: string): Promise<CommentViewType | undefined> => {
+    }
+
+    async getCommentById(id: string): Promise<CommentViewType | undefined> {
         try {
             const comment = await commentCollection.findOne({_id: new ObjectId(id)});
             if (!comment) {
                 return;
             }
 
-            return commentsQueryRepository._mapCommentDbTypeToCommentViewType(comment);
+            return this._mapCommentDbTypeToCommentViewType(comment);
         } catch {
             return;
         }
-    },
-    _mapCommentDbTypeToCommentViewType: (comment: WithId<CommentDbType>): CommentViewType => {
+    }
+
+    _mapCommentDbTypeToCommentViewType(comment: WithId<CommentDbType>): CommentViewType {
         const {_id, content, commentatorInfo, createdAt} = comment;
 
         return {

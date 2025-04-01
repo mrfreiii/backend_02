@@ -1,4 +1,5 @@
-import { Router, Response } from "express";
+import { Response } from "express";
+import { inject, injectable } from "inversify";
 
 import {
     DeleteCommentReqType,
@@ -7,19 +8,18 @@ import {
     UpdateCommentReqType
 } from "./types";
 import { HttpStatuses } from "../types";
-import { resultCodeToHttpException } from "../helpers";
-import { commentContentValidator } from "./validators";
 import { ResultStatus } from "../../services/types";
-import { commentsService } from "../../services/commentsService/commentsService";
-import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
-import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
-import { commentsQueryRepository } from "../../repositories/commentsRepositories";
+import { resultCodeToHttpException } from "../helpers";
+import { CommentsService } from "../../services/commentsService/commentsService";
+import { CommentsQueryRepository } from "../../repositories/commentsRepositories";
 
-export const commentsRouter = Router();
+@injectable()
+export class CommentsController {
+    constructor(@inject(CommentsQueryRepository) private commentsQueryRepository: CommentsQueryRepository,
+                @inject(CommentsService) private commentsService: CommentsService) {}
 
-const commentsController = {
-    getCommentById: async (req: GetCommentByIdReqType, res: GetCommentByIdResType) => {
-        const comment = await commentsQueryRepository.getCommentById(req.params.id);
+    async getCommentById(req: GetCommentByIdReqType, res: GetCommentByIdResType) {
+        const comment = await this.commentsQueryRepository.getCommentById(req.params.id);
 
         if (!comment) {
             res.sendStatus(HttpStatuses.NotFound_404);
@@ -29,9 +29,10 @@ const commentsController = {
         res
             .status(HttpStatuses.Success_200)
             .json(comment);
-    },
-    updateComment: async (req: UpdateCommentReqType, res: Response) => {
-        const comment = await commentsQueryRepository.getCommentById(req.params.id);
+    }
+
+    async updateComment(req: UpdateCommentReqType, res: Response) {
+        const comment = await this.commentsQueryRepository.getCommentById(req.params.id);
         if (!comment) {
             res.sendStatus(HttpStatuses.NotFound_404)
             return;
@@ -42,7 +43,7 @@ const commentsController = {
             return;
         }
 
-        const result = await commentsService.updateComment({
+        const result = await this.commentsService.updateComment({
             id: req.params.id,
             content: req.body.content.trim(),
         });
@@ -53,9 +54,10 @@ const commentsController = {
         }
 
         res.sendStatus(HttpStatuses.NoContent_204)
-    },
-    deleteComment: async (req: DeleteCommentReqType, res: Response) => {
-        const comment = await commentsQueryRepository.getCommentById(req.params.id);
+    }
+
+    async deleteComment(req: DeleteCommentReqType, res: Response) {
+        const comment = await this.commentsQueryRepository.getCommentById(req.params.id);
         if (!comment) {
             res.sendStatus(HttpStatuses.NotFound_404)
             return;
@@ -66,7 +68,7 @@ const commentsController = {
             return;
         }
 
-        const result = await commentsService.deleteComment(req.params.id);
+        const result = await this.commentsService.deleteComment(req.params.id);
 
         if (result.status !== ResultStatus.Success) {
             res.sendStatus(resultCodeToHttpException(result.status))
@@ -74,17 +76,5 @@ const commentsController = {
         }
 
         res.sendStatus(HttpStatuses.NoContent_204)
-    },
+    }
 }
-
-commentsRouter
-    .route("/:id")
-    .get(commentsController.getCommentById)
-    .put(
-        jwtAuthMiddleware,
-        commentContentValidator,
-        errorResultMiddleware,
-        commentsController.updateComment)
-    .delete(
-        jwtAuthMiddleware,
-        commentsController.deleteComment);
