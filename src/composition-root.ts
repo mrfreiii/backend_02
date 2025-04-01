@@ -15,6 +15,7 @@ import { AuthController } from "./routers/authRouter/authController";
 import { UsersController } from "./routers/usersRouter/usersController";
 import { BlogsController } from "./routers/blogsRouter/blogsController";
 import { PostsController } from "./routers/postsRouter/postsController";
+import { TestingController } from "./routers/testsRouter/testingController";
 import { CommentsController } from "./routers/commentsRouter/commentsController";
 import { SecurityController } from "./routers/securityRouter/securityController";
 
@@ -62,3 +63,4 @@ compositionRootContainer.bind(BlogsController).toSelf();
 compositionRootContainer.bind(PostsController).toSelf();
 compositionRootContainer.bind(CommentsController).toSelf();
 compositionRootContainer.bind(SecurityController).toSelf();
+compositionRootContainer.bind(TestingController).toSelf();
