@@ -3,7 +3,7 @@ import { InsertOneResult } from "mongodb";
 import { RateLimitDbType } from "./types";
 import { rateLimitCollection } from "../../db/mongodb";
 
-export class RateLimitRepository{
+export class RateLimitRepository {
     static async clearDB()  {
         return rateLimitCollection.drop();
     }

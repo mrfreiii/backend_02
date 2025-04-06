@@ -4,6 +4,7 @@ import { app } from "../app";
 import { SETTINGS } from "../settings";
 import { connectToTestDB } from "../db/mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server";
+import { compositionRootContainer } from "../composition-root";
 import { PostsRepository } from "../repositories/postsRepositories";
 import { BlogsRepository } from "../repositories/blogsRepositories";
 import { UsersRepository } from "../repositories/usersRepositories";
@@ -26,19 +27,21 @@ export const connectToTestDBAndClearRepositories = () => {
     beforeAll(async () => {
         server = await connectToTestDB();
 
-        await PostsRepository.clearDB();
-        await BlogsRepository.clearDB();
-        await UsersRepository.clearDB();
-        await CommentsRepository.clearDB();
+        await compositionRootContainer.get(BlogsRepository).clearDB();
+        await compositionRootContainer.get(PostsRepository).clearDB();
+        await compositionRootContainer.get(UsersRepository).clearDB();
+        await compositionRootContainer.get(SessionsRepository).clearDB();
+        await compositionRootContainer.get(CommentsRepository).clearDB();
         await RateLimitRepository.clearDB();
-        await SessionsRepository.clearDB();
         req.set("Authorization", "");
 
         nodemailerTestService.sendEmailWithConfirmationCode = jest
             .fn()
-            .mockImplementation(
-                () => Promise.resolve()
-            )
+            .mockImplementation(() => Promise.resolve());
+
+        nodemailerTestService.sendEmailWithPasswordRecoveryCode = jest
+            .fn()
+            .mockImplementation(() => Promise.resolve());
     })
 
     afterAll(async () => {

@@ -6,7 +6,7 @@ import { injectable } from "inversify";
 
 @injectable()
 export class PostsRepository {
-    static async clearDB() {
+    async clearDB() {
         return postCollection.drop();
     }
 

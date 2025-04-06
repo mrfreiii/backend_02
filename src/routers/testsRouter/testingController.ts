@@ -1,6 +1,7 @@
 import { injectable } from "inversify";
 import { Request, Response } from "express";
 
+import { compositionRootContainer } from "../../composition-root";
 import { BlogsRepository } from "../../repositories/blogsRepositories";
 import { PostsRepository } from "../../repositories/postsRepositories";
 import { UsersRepository } from "../../repositories/usersRepositories";
@@ -12,15 +13,21 @@ import { RateLimitRepository } from "../../repositories/rateLimitsRepositories";
 export class TestingController {
     async deleteAllData(req: Request, res: Response) {
         try {
-            const isBlogsDeleted = await BlogsRepository.clearDB();
-            const isPostsDeleted = await PostsRepository.clearDB();
-            const isUsersDeleted = await UsersRepository.clearDB();
-            const isSessionsDeleted = await SessionsRepository.clearDB();
-            const isCommentsDeleted = await CommentsRepository.clearDB();
+            const isBlogsDeleted = await compositionRootContainer.get(BlogsRepository).clearDB();
+            const isPostsDeleted = await compositionRootContainer.get(PostsRepository).clearDB();
+            const isUsersDeleted = await compositionRootContainer.get(UsersRepository).clearDB();
+            const isSessionsDeleted = await compositionRootContainer.get(SessionsRepository).clearDB();
+            const isCommentsDeleted = await compositionRootContainer.get(CommentsRepository).clearDB();
             const isRateLimitDeleted = await RateLimitRepository.clearDB();
 
-
-            if (!isBlogsDeleted || !isPostsDeleted || !isUsersDeleted || !isCommentsDeleted || !isRateLimitDeleted || !isSessionsDeleted) {
+            if (
+                !isBlogsDeleted ||
+                !isPostsDeleted ||
+                !isUsersDeleted ||
+                !isSessionsDeleted ||
+                !isCommentsDeleted ||
+                !isRateLimitDeleted
+            ) {
                 res.sendStatus(599)
                 return;
             }

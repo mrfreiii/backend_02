@@ -6,7 +6,7 @@ import { commentCollection } from "../../db/mongodb";
 
 @injectable()
 export class CommentsRepository {
-    static async clearDB() {
+    async clearDB() {
         return commentCollection.drop();
     }
 

@@ -6,7 +6,7 @@ import { sessionCollection } from "../../db/mongodb";
 
 @injectable()
 export class SessionsRepository {
-    static async clearDB() {
+    async clearDB() {
         return sessionCollection.drop();
     }
 
