@@ -1,10 +1,10 @@
 import { Router } from "express";
 
+import { ioc } from "../../composition-root";
 import { SecurityController } from "./securityController";
-import { compositionRootContainer } from "../../composition-root";
 
 export const securityRouter = Router();
-const securityController = compositionRootContainer.get(SecurityController)
+const securityController = ioc.get(SecurityController)
 
 securityRouter
     .route("/devices")

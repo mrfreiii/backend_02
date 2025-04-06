@@ -6,15 +6,15 @@ import {
     postTitleValidator,
     shortDescriptionValidator
 } from "./validators";
+import { ioc } from "../../composition-root";
 import { PostsController } from "./postsController";
-import { compositionRootContainer } from "../../composition-root";
 import { commentContentValidator } from "../commentsRouter/validators";
 import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
 import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
 export const postsRouter = Router();
-const postsController = compositionRootContainer.get(PostsController)
+const postsController = ioc.get(PostsController)
 
 postsRouter
     .route("/")

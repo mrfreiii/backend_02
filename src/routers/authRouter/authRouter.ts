@@ -12,14 +12,14 @@ import {
     passwordRecoveryCodeValidator,
     passwordValidator
 } from "./validators";
+import { ioc } from "../../composition-root";
 import { AuthController } from "./authController";
-import { compositionRootContainer } from "../../composition-root";
 import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
 import { rateLimitMiddleware } from "../../middlewares/rateLimitMiddleware";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
 export const authRouter = Router();
-const authController = compositionRootContainer.get(AuthController)
+const authController = ioc.get(AuthController)
 
 authRouter
     .route("/login")

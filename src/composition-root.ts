@@ -31,36 +31,36 @@ import { PostsQueryRepository, PostsRepository } from "./repositories/postsRepos
 import { UsersQueryRepository, UsersRepository } from "./repositories/usersRepositories";
 import { BlogsQueryRepository, BlogsRepository } from "./repositories/blogsRepositories";
 
-export const compositionRootContainer = new Container();
+export const ioc = new Container();
 
 // Repositories
-compositionRootContainer.bind(UsersRepository).toSelf();
-compositionRootContainer.bind(UsersQueryRepository).toSelf();
-compositionRootContainer.bind(BlogsRepository).toSelf();
-compositionRootContainer.bind(BlogsQueryRepository).toSelf();
-compositionRootContainer.bind(PostsRepository).toSelf();
-compositionRootContainer.bind(PostsQueryRepository).toSelf();
-compositionRootContainer.bind(CommentsRepository).toSelf();
-compositionRootContainer.bind(CommentsQueryRepository).toSelf();
-compositionRootContainer.bind(SessionsRepository).toSelf();
-compositionRootContainer.bind(SessionQueryRepository).toSelf();
+ioc.bind(UsersRepository).toSelf();
+ioc.bind(UsersQueryRepository).toSelf();
+ioc.bind(BlogsRepository).toSelf();
+ioc.bind(BlogsQueryRepository).toSelf();
+ioc.bind(PostsRepository).toSelf();
+ioc.bind(PostsQueryRepository).toSelf();
+ioc.bind(CommentsRepository).toSelf();
+ioc.bind(CommentsQueryRepository).toSelf();
+ioc.bind(SessionsRepository).toSelf();
+ioc.bind(SessionQueryRepository).toSelf();
 
 // Services
-compositionRootContainer.bind(UsersService).toSelf();
-compositionRootContainer.bind(AuthService).toSelf();
-compositionRootContainer.bind(BcryptService).toSelf();
-compositionRootContainer.bind(NodemailerService).toSelf();
-compositionRootContainer.bind(BlogsService).toSelf();
-compositionRootContainer.bind(PostsService).toSelf();
-compositionRootContainer.bind(CommentsService).toSelf();
-compositionRootContainer.bind(SessionsService).toSelf();
-compositionRootContainer.bind(JwtService).toSelf();
+ioc.bind(UsersService).toSelf();
+ioc.bind(AuthService).toSelf();
+ioc.bind(BcryptService).toSelf();
+ioc.bind(NodemailerService).toSelf();
+ioc.bind(BlogsService).toSelf();
+ioc.bind(PostsService).toSelf();
+ioc.bind(CommentsService).toSelf();
+ioc.bind(SessionsService).toSelf();
+ioc.bind(JwtService).toSelf();
 
 // Controllers
-compositionRootContainer.bind(UsersController).toSelf();
-compositionRootContainer.bind(AuthController).toSelf();
-compositionRootContainer.bind(BlogsController).toSelf();
-compositionRootContainer.bind(PostsController).toSelf();
-compositionRootContainer.bind(CommentsController).toSelf();
-compositionRootContainer.bind(SecurityController).toSelf();
-compositionRootContainer.bind(TestingController).toSelf();
+ioc.bind(UsersController).toSelf();
+ioc.bind(AuthController).toSelf();
+ioc.bind(BlogsController).toSelf();
+ioc.bind(PostsController).toSelf();
+ioc.bind(CommentsController).toSelf();
+ioc.bind(SecurityController).toSelf();
+ioc.bind(TestingController).toSelf();

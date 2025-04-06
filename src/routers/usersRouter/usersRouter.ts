@@ -5,13 +5,13 @@ import {
     userLoginValidator,
     userPasswordValidator
 } from "../validators";
+import { ioc } from "../../composition-root";
 import { UsersController } from "./usersController";
-import { compositionRootContainer } from "../../composition-root";
 import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
 export const usersRouter = Router();
-const usersController = compositionRootContainer.get(UsersController)
+const usersController = ioc.get(UsersController)
 
 usersRouter
     .route("/")

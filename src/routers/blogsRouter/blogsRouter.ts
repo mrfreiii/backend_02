@@ -10,13 +10,13 @@ import {
     postTitleValidator,
     shortDescriptionValidator
 } from "../postsRouter/validators";
+import { ioc } from "../../composition-root";
 import { BlogsController } from "./blogsController";
-import { compositionRootContainer } from "../../composition-root";
 import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
 export const blogsRouter = Router();
-const blogsController = compositionRootContainer.get(BlogsController)
+const blogsController = ioc.get(BlogsController)
 
 blogsRouter
     .route("/")

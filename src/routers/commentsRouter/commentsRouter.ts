@@ -1,13 +1,13 @@
 import { Router } from "express";
 
+import { ioc } from "../../composition-root";
 import { commentContentValidator } from "./validators";
 import { CommentsController } from "./commentsController";
-import { compositionRootContainer } from "../../composition-root";
 import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
 export const commentsRouter = Router();
-const commentsController =compositionRootContainer.get(CommentsController)
+const commentsController =ioc.get(CommentsController)
 
 commentsRouter
     .route("/:id")

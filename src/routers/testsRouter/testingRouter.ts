@@ -1,10 +1,10 @@
 import { Router } from "express";
 
+import { ioc } from "../../composition-root";
 import { TestingController } from "./testingController";
-import { compositionRootContainer } from "../../composition-root";
 
 export const testingRouter = Router();
-const testingController = compositionRootContainer.get(TestingController)
+const testingController = ioc.get(TestingController)
 
 testingRouter
     .route("/all-data")

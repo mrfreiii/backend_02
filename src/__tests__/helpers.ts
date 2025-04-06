@@ -2,9 +2,9 @@ import { agent } from "supertest";
 
 import { app } from "../app";
 import { SETTINGS } from "../settings";
+import { ioc } from "../composition-root";
 import { connectToTestDB } from "../db/mongodb";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { compositionRootContainer } from "../composition-root";
 import { PostsRepository } from "../repositories/postsRepositories";
 import { BlogsRepository } from "../repositories/blogsRepositories";
 import { UsersRepository } from "../repositories/usersRepositories";
@@ -27,11 +27,11 @@ export const connectToTestDBAndClearRepositories = () => {
     beforeAll(async () => {
         server = await connectToTestDB();
 
-        await compositionRootContainer.get(BlogsRepository).clearDB();
-        await compositionRootContainer.get(PostsRepository).clearDB();
-        await compositionRootContainer.get(UsersRepository).clearDB();
-        await compositionRootContainer.get(SessionsRepository).clearDB();
-        await compositionRootContainer.get(CommentsRepository).clearDB();
+        await ioc.get(BlogsRepository).clearDB();
+        await ioc.get(PostsRepository).clearDB();
+        await ioc.get(UsersRepository).clearDB();
+        await ioc.get(SessionsRepository).clearDB();
+        await ioc.get(CommentsRepository).clearDB();
         await RateLimitRepository.clearDB();
         req.set("Authorization", "");
 
