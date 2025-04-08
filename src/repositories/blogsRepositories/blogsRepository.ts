@@ -1,19 +1,19 @@
 import { ObjectId } from "mongodb";
-
-import { blogCollection } from "../../db/mongodb";
-import { BlogDbType, BlogViewType } from "./types";
 import { injectable } from "inversify";
+
+import { BlogDbType, BlogViewType } from "./types";
+import { BlogModel } from "../../models/blogsModel/blog.entity";
 
 @injectable()
 export class BlogsRepository {
     async clearDB() {
-        return blogCollection.drop();
+        return BlogModel.collection.drop();
     }
 
     async addNewBlog(newBlog: BlogDbType): Promise<string> {
         try {
-            const createdBlog = await blogCollection.insertOne(newBlog);
-            return createdBlog?.insertedId?.toString();
+            const createdBlog = await BlogModel.create(newBlog);
+            return createdBlog?._id?.toString();
         } catch {
             return ""
         }
@@ -23,7 +23,7 @@ export class BlogsRepository {
         const { id, ...updatedBlog } = dto;
 
         try {
-            const result = await blogCollection.updateOne(
+            const result = await BlogModel.updateOne(
                 {_id: new ObjectId(id)},
                 {$set: updatedBlog}
             );
@@ -36,7 +36,7 @@ export class BlogsRepository {
 
     async deleteBlogById(id: string): Promise<boolean> {
         try {
-            const result = await blogCollection.deleteOne({_id: new ObjectId(id)});
+            const result = await BlogModel.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
         } catch {
             return false;

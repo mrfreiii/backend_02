@@ -2,9 +2,9 @@ import { injectable } from "inversify";
 import { ObjectId, SortDirection, WithId } from "mongodb";
 
 import { WithPaginationType } from "../../types";
-import { blogCollection } from "../../db/mongodb";
 import { BlogDbType, BlogViewType } from "./types";
 import { BlogQueryType } from "../../routers/blogsRouter/types";
+import { BlogModel } from "../../models/blogsModel/blog.entity";
 
 @injectable()
 export class BlogsQueryRepository {
@@ -16,12 +16,12 @@ export class BlogsQueryRepository {
             filter.name = {$regex: searchNameTerm, $options: "i"};
         }
 
-        const allBlogs = await blogCollection
+        const allBlogs = await BlogModel
             .find(filter)
             .sort({[sortBy as string]: sortDirection as SortDirection})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray();
+            .lean();
         const blogsCount = await this.getBlogsCount(searchNameTerm);
 
         return {
@@ -41,12 +41,12 @@ export class BlogsQueryRepository {
             filter.name = {$regex: searchNameTerm, $options: "i"};
         }
 
-        return blogCollection.countDocuments(filter);
+        return BlogModel.countDocuments(filter);
     }
 
     async getBlogById(id: string): Promise<BlogViewType | undefined> {
         try {
-            const blog = await blogCollection.findOne({_id: new ObjectId(id)});
+            const blog = await BlogModel.findOne({_id: new ObjectId(id)});
             if (!blog) {
                 return;
             }

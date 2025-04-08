@@ -1,17 +1,18 @@
-import { InsertOneResult } from "mongodb";
+import { injectable } from "inversify";
 
 import { RateLimitDbType } from "./types";
-import { rateLimitCollection } from "../../db/mongodb";
+import { RateLimitModel } from "../../models/rateLimit/rateLimit.entity";
 
+@injectable()
 export class RateLimitRepository {
-    static async clearDB()  {
-        return rateLimitCollection.drop();
+    async clearDB()  {
+        return RateLimitModel.collection.drop();
     }
 
     static async addNewRequest(
         newRequest: RateLimitDbType
-    ): Promise<InsertOneResult<RateLimitDbType>> {
-        return rateLimitCollection.insertOne(newRequest);
+    ): Promise<RateLimitDbType> {
+        return RateLimitModel.create(newRequest);
     }
 
     static async getRequestCount(parametersForSearch: RateLimitDbType): Promise<number> {
@@ -21,6 +22,6 @@ export class RateLimitRepository {
             date: { $gte: parametersForSearch.date }
         }
 
-        return rateLimitCollection.countDocuments(filter);
+        return RateLimitModel.countDocuments(filter);
     }
 }

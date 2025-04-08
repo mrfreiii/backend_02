@@ -1,9 +1,10 @@
+import mongoose from "mongoose";
 import { agent } from "supertest";
 
 import { app } from "../app";
 import { SETTINGS } from "../settings";
 import { ioc } from "../composition-root";
-import { connectToTestDB } from "../db/mongodb";
+import { connectToTestDB } from "../db/db";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { PostsRepository } from "../repositories/postsRepositories";
 import { BlogsRepository } from "../repositories/blogsRepositories";
@@ -23,16 +24,19 @@ export const nodemailerTestService = new NodemailerService();
 
 export const connectToTestDBAndClearRepositories = () => {
     let server: MongoMemoryServer;
+    let mongooseConnection: typeof mongoose;
 
     beforeAll(async () => {
-        server = await connectToTestDB();
+        const connections = await connectToTestDB();
+        server = connections?.server;
+        mongooseConnection = connections?.mongooseConnection;
 
         await ioc.get(BlogsRepository).clearDB();
         await ioc.get(PostsRepository).clearDB();
         await ioc.get(UsersRepository).clearDB();
         await ioc.get(SessionsRepository).clearDB();
         await ioc.get(CommentsRepository).clearDB();
-        await RateLimitRepository.clearDB();
+        await ioc.get(RateLimitRepository).clearDB();
         req.set("Authorization", "");
 
         nodemailerTestService.sendEmailWithConfirmationCode = jest
@@ -46,6 +50,7 @@ export const connectToTestDBAndClearRepositories = () => {
 
     afterAll(async () => {
         await server.stop();
+        await mongooseConnection.connection.close()
     })
 }
 
@@ -66,10 +71,10 @@ export const mockDate = (isoDate: string) => {
     global.Date = MockDate;
 }
 
-export const delayInSec = (delay: number) =>{
-    return new Promise((resolve)=>{
-        setTimeout(()=>{
+export const delayInSec = (delay: number) => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
             resolve({})
-        },delay * 1000)
+        }, delay * 1000)
     })
 }

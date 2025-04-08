@@ -1,10 +1,10 @@
+import { injectable } from "inversify";
 import { ObjectId, SortDirection, WithId } from "mongodb";
 
 import { WithPaginationType } from "../../types";
-import { postCollection } from "../../db/mongodb";
 import { PostDbType, PostViewType } from "./types";
+import { PostModel } from "../../models/postModel/post.entity";
 import { PostQueryType } from "../../routers/postsRouter/types";
-import { injectable } from "inversify";
 
 @injectable()
 export class PostsQueryRepository {
@@ -16,12 +16,12 @@ export class PostsQueryRepository {
             filter.blogId = blogId;
         }
 
-        const allPosts = await postCollection
+        const allPosts = await PostModel
             .find(filter)
             .sort({[sortBy as string]: sortDirection as SortDirection})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray();
+            .lean();
         const postCount = await this.getPostsCount(filter);
 
         return {
@@ -34,12 +34,12 @@ export class PostsQueryRepository {
     }
 
     async getPostsCount(filter: {blogId?: string}): Promise<number> {
-        return postCollection.countDocuments(filter);
+        return PostModel.countDocuments(filter);
     }
 
     async getPostById(id: string): Promise<PostViewType | undefined> {
         try {
-            const post = await postCollection.findOne({_id: new ObjectId(id)});
+            const post = await PostModel.findOne({_id: new ObjectId(id)});
             if (!post) {
                 return;
             }

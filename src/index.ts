@@ -2,7 +2,7 @@ import {config} from 'dotenv';
 
 import {app} from './app';
 import {SETTINGS} from './settings';
-import { connectToDB } from "./db/mongodb";
+import { connectToDB } from "./db/db";
 
 config();
 

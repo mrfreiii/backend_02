@@ -1,15 +1,15 @@
 import { WithId } from "mongodb";
 import { injectable } from "inversify";
 
-import { sessionCollection } from "../../db/mongodb";
 import { SessionDbType, SessionViewType } from "./types";
+import { SessionModel } from "../../models/sessionsModel/session.entity";
 
 @injectable()
 export class SessionQueryRepository {
     async getAllSessions(userId: string): Promise<SessionViewType[]> {
-        const allSessions = await sessionCollection
+        const allSessions = await SessionModel
             .find({userId})
-            .toArray();
+            .lean();
 
         const onlyActiveSessions = allSessions.filter((session) => new Date(session.expirationTime) > new Date());
 

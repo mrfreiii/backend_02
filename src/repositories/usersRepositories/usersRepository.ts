@@ -1,13 +1,13 @@
-import { ObjectId, WithId } from "mongodb";
 import { injectable } from "inversify";
+import { ObjectId, WithId } from "mongodb";
 
 import { UserDbType } from "./types";
-import { userCollection } from "../../db/mongodb";
+import { UserModel } from "../../models/userModel/user.entity";
 
 @injectable()
 export class UsersRepository {
     async clearDB() {
-        return userCollection.drop();
+        return UserModel.collection.drop();
     }
 
     async getUsersByEmailOrLogin(
@@ -37,15 +37,15 @@ export class UsersRepository {
 
         const filter = {$or: [...loginTerm, ...emailTerm]}
 
-        return userCollection.findOne(filter)
+        return UserModel.findOne(filter)
     }
 
     async addNewUser(
         newUser: UserDbType
     ): Promise<string> {
         try {
-            const createdUser = await userCollection.insertOne(newUser);
-            return createdUser?.insertedId?.toString();
+            const createdUser = await UserModel.create(newUser);
+            return createdUser?._id?.toString();
         } catch {
             return ""
         }
@@ -53,7 +53,7 @@ export class UsersRepository {
 
     async deleteUserById(id: string): Promise<boolean> {
         try {
-            const result = await userCollection.deleteOne({_id: new ObjectId(id)});
+            const result = await UserModel.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
         } catch {
             return false;
@@ -63,12 +63,12 @@ export class UsersRepository {
     async getUserByConfirmationCode(code: string): Promise<WithId<UserDbType> | null> {
         const filter = {"emailConfirmation.confirmationCode": code}
 
-        return userCollection.findOne(filter)
+        return UserModel.findOne(filter)
     }
 
     async updateUserConfirmationStatus(userId: ObjectId): Promise<boolean> {
         try {
-            const result = await userCollection.updateOne(
+            const result = await UserModel.updateOne(
                 {_id: userId},
                 {$set: {"emailConfirmation.confirmationStatus": "confirmed"}}
             );
@@ -93,7 +93,7 @@ export class UsersRepository {
         }
     ): Promise<boolean> {
         try {
-            const result = await userCollection.updateOne(
+            const result = await UserModel.updateOne(
                 {_id: userId},
                 {$set: {emailConfirmation: updatedUserConfirmation}}
             );
@@ -116,7 +116,7 @@ export class UsersRepository {
             }
         }): Promise<boolean> {
         try {
-            const result = await userCollection.updateOne(
+            const result = await UserModel.updateOne(
                 {_id: userId},
                 {$set: {passwordRecovery: passwordRecoveryInfo}}
             );
@@ -130,7 +130,7 @@ export class UsersRepository {
     async getUserByPasswordRecoveryCode(code: string): Promise<WithId<UserDbType> | null> {
         const filter = {"passwordRecovery.recoveryCode": code}
 
-        return userCollection.findOne(filter)
+        return UserModel.findOne(filter)
     }
 
     async updateUserPasswordHash(
@@ -142,7 +142,7 @@ export class UsersRepository {
             passwordHash: string
         }): Promise<boolean> {
         try {
-            const result = await userCollection.updateOne(
+            const result = await UserModel.updateOne(
                 {_id: userId},
                 {$set: {"accountData.passwordHash": passwordHash}}
             );

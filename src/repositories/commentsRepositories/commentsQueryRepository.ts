@@ -2,9 +2,9 @@ import { injectable } from "inversify";
 import { ObjectId, SortDirection, WithId } from "mongodb";
 
 import { WithPaginationType } from "../../types";
-import { commentCollection } from "../../db/mongodb";
 import { CommentDbType, CommentViewType } from "./types";
 import { CommentQueryType } from "../../routers/commentsRouter/types";
+import { CommentModel } from "../../models/commentsModel/comment.entity";
 
 @injectable()
 export class CommentsQueryRepository {
@@ -16,12 +16,12 @@ export class CommentsQueryRepository {
             filter.postId = postId;
         }
 
-        const allComments = await commentCollection
+        const allComments = await CommentModel
             .find(filter)
             .sort({[sortBy as string]: sortDirection as SortDirection})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray();
+            .lean();
         const commentsCount = await this.getCommentsCount(filter);
 
         return {
@@ -34,12 +34,12 @@ export class CommentsQueryRepository {
     }
 
     async getCommentsCount(filter: {postId?: string}): Promise<number> {
-        return commentCollection.countDocuments(filter);
+        return CommentModel.countDocuments(filter);
     }
 
     async getCommentById(id: string): Promise<CommentViewType | undefined> {
         try {
-            const comment = await commentCollection.findOne({_id: new ObjectId(id)});
+            const comment = await CommentModel.findOne({_id: new ObjectId(id)});
             if (!comment) {
                 return;
             }

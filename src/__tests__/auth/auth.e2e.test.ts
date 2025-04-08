@@ -9,6 +9,7 @@ import {
 } from "../helpers";
 import { SETTINGS } from "../../settings";
 import { registerTestUser } from "./helpers";
+import { ioc } from "../../composition-root";
 import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
 import { UserViewType } from "../../repositories/usersRepositories/types";
 import { AUTH_ERROR_MESSAGES } from "../../middlewares/jwtAuthMiddleware";
@@ -111,7 +112,7 @@ describe("login user /login", () => {
     })
 
     it("should return 429 for 6th request during 10 seconds (rate limit) and 401 after waiting", async () => {
-        await RateLimitRepository.clearDB();
+        await ioc.get(RateLimitRepository).clearDB();
 
         const nonExistentUser: { loginOrEmail: string, password: string } = {
             loginOrEmail: "noExist",
@@ -217,7 +218,7 @@ describe("register user /registration", () => {
     connectToTestDBAndClearRepositories();
 
     beforeEach(async () => {
-        await RateLimitRepository.clearDB();
+        await ioc.get(RateLimitRepository).clearDB();
     })
 
     it("should return 400 for login, password, and email are not string", async () => {
@@ -384,7 +385,7 @@ describe("confirm user registration /registration-confirmation", () => {
     })
 
     it("should return 429 for 6th attempt and 400 after waiting 10sec", async () => {
-        await RateLimitRepository.clearDB();
+        await ioc.get(RateLimitRepository).clearDB();
 
         // attempt #1
         await req
@@ -446,7 +447,7 @@ describe("resend registration email /registration-email-resending", () => {
     })
 
     beforeEach(async () => {
-        await RateLimitRepository.clearDB();
+        await ioc.get(RateLimitRepository).clearDB();
     })
 
     afterEach(() => {
@@ -691,7 +692,7 @@ describe("send password recovery code /password-recovery", () => {
     })
 
     beforeEach(async () => {
-        await RateLimitRepository.clearDB();
+        await ioc.get(RateLimitRepository).clearDB();
     })
 
     afterEach(() => {
@@ -796,7 +797,7 @@ describe("confirm password recovery /new-password", () => {
     })
 
     beforeEach(async () => {
-        await RateLimitRepository.clearDB();
+        await ioc.get(RateLimitRepository).clearDB();
     })
 
     afterEach(() => {

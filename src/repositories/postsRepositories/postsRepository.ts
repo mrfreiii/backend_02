@@ -1,21 +1,21 @@
 import { ObjectId } from "mongodb";
-
-import { postCollection } from "../../db/mongodb";
-import { PostDbType, PostViewType } from "./types";
 import { injectable } from "inversify";
+
+import { PostDbType, PostViewType } from "./types";
+import { PostModel } from "../../models/postModel/post.entity";
 
 @injectable()
 export class PostsRepository {
     async clearDB() {
-        return postCollection.drop();
+        return PostModel.collection.drop();
     }
 
     async addNewPost (
         newPost: PostDbType
     ): Promise<string> {
         try {
-            const createdPost = await postCollection.insertOne(newPost);
-            return createdPost?.insertedId?.toString();
+            const createdPost = await PostModel.create(newPost);
+            return createdPost?._id?.toString();
         } catch {
             return ""
         }
@@ -25,7 +25,7 @@ export class PostsRepository {
         const {id, ...updatedPost} = dto;
 
         try {
-            const result = await postCollection.updateOne(
+            const result = await PostModel.updateOne(
                 {_id: new ObjectId(id)},
                 {$set: updatedPost}
             );
@@ -38,7 +38,7 @@ export class PostsRepository {
 
     async deletePostById(id: string): Promise<boolean> {
         try{
-            const result = await postCollection.deleteOne({_id: new ObjectId(id)});
+            const result = await PostModel.deleteOne({_id: new ObjectId(id)});
             return result.deletedCount === 1;
         } catch {
             return false;

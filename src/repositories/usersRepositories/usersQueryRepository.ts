@@ -2,8 +2,8 @@ import { ObjectId, SortDirection, WithId } from "mongodb";
 import { injectable } from "inversify";
 
 import { WithPaginationType } from "../../types";
-import { userCollection } from "../../db/mongodb";
 import { UserDbType, UserViewType } from "./types";
+import { UserModel } from "../../models/userModel/user.entity";
 import { UserQueryType } from "../../routers/usersRouter/types";
 
 @injectable()
@@ -28,12 +28,12 @@ export class UsersQueryRepository {
             }
         }
 
-        const allUsers = await userCollection
+        const allUsers = await UserModel
             .find(filter)
             .sort({[sortBy as string]: sortDirection as SortDirection})
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
-            .toArray();
+            .lean();
         const userCount = await this.getUsersCount(filter);
 
         return {
@@ -46,12 +46,12 @@ export class UsersQueryRepository {
     }
 
     async getUsersCount(filter: any): Promise<number> {
-        return userCollection.countDocuments(filter);
+        return UserModel.countDocuments(filter);
     }
 
     async getUserById(id: string): Promise<UserViewType | undefined> {
         try {
-            const user = await userCollection.findOne({_id: new ObjectId(id)});
+            const user = await UserModel.findOne({_id: new ObjectId(id)});
             if (!user) {
                 return;
             }

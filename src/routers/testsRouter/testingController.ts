@@ -18,7 +18,7 @@ export class TestingController {
             const isUsersDeleted = await ioc.get(UsersRepository).clearDB();
             const isSessionsDeleted = await ioc.get(SessionsRepository).clearDB();
             const isCommentsDeleted = await ioc.get(CommentsRepository).clearDB();
-            const isRateLimitDeleted = await RateLimitRepository.clearDB();
+            const isRateLimitDeleted = await ioc.get(RateLimitRepository).clearDB();
 
             if (
                 !isBlogsDeleted ||
