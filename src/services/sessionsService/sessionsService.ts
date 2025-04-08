@@ -7,10 +7,11 @@ import { SessionsRepository } from "../../repositories/sessionsRepositories";
 
 @injectable()
 export class SessionsService {
-    constructor(@inject(SessionsRepository) private sessionsRepository: SessionsRepository) {}
+    constructor(@inject(SessionsRepository) private sessionsRepository: SessionsRepository,
+                @inject(JwtService) private jwtService: JwtService) {}
 
     async deleteAllDevices(refreshToken: string): Promise<ResultType> {
-        const { userId, deviceId} = JwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        const { userId, deviceId} = this.jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId || !deviceId) {
             return {
                 status: ResultStatus.Unauthorized,
@@ -39,7 +40,7 @@ export class SessionsService {
             deviceId: string;
             refreshToken: string;
         }): Promise<ResultType> {
-        const { userId, deviceId: deviceIdFromToken} = JwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        const { userId, deviceId: deviceIdFromToken} = this.jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId) {
             return {
                 status: ResultStatus.Unauthorized,

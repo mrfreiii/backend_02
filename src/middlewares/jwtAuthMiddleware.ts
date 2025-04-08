@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
+import { ioc } from "../composition-root";
 import { JwtService } from "../services/jwtService/jwtService";
 import { UsersQueryRepository } from "../repositories/usersRepositories";
 
@@ -30,7 +31,7 @@ export const jwtAuthMiddleware = async (req: Request, res: Response, next: NextF
     }
 
     const jwtToken = authData[1];
-    const { userId } = JwtService.verifyRefreshTokenAndParseIt(jwtToken) || {};
+    const { userId } = ioc.get(JwtService).verifyRefreshTokenAndParseIt(jwtToken) || {};
     if (!userId) {
         res
             .status(401)

@@ -79,7 +79,7 @@ export class JwtService{
         const {
             userId,
             deviceId
-        } = JwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        } = this.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId || !deviceId) {
             return {
                 status: ResultStatus.Unauthorized,
@@ -144,7 +144,7 @@ export class JwtService{
     }
 
     async revokeRefreshToken(refreshToken: string): Promise<ResultType> {
-        const {userId, deviceId} = JwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        const {userId, deviceId} = this.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId || !deviceId) {
             return {
                 status: ResultStatus.Unauthorized,
@@ -186,7 +186,7 @@ export class JwtService{
         };
     }
 
-    static verifyRefreshTokenAndParseIt(token: string): RefreshJwtPayloadType | null {
+    verifyRefreshTokenAndParseIt(token: string): RefreshJwtPayloadType | null {
         try {
             return jwt.verify(token, SETTINGS.JWT_SECRET) as RefreshJwtPayloadType;
         } catch {

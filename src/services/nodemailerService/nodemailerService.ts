@@ -1,5 +1,5 @@
-import { sendEmail } from "./emailTransport";
 import { injectable } from "inversify";
+import { sendEmail } from "./emailTransport";
 
 @injectable()
 export class NodemailerService {

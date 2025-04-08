@@ -18,6 +18,7 @@ import { SessionsService } from "../../services/sessionsService/sessionsService"
 @injectable()
 export class SecurityController{
     constructor(@inject(SessionQueryRepository) private sessionQueryRepository: SessionQueryRepository,
+                @inject(JwtService) private jwtService: JwtService,
                 @inject(SessionsService) private sessionsService: SessionsService) {}
 
     async getActiveSessions(req: getActiveSessionsReqType, res: getActiveSessionsResType) {
@@ -27,7 +28,7 @@ export class SecurityController{
             return;
         }
 
-        const {userId} = JwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        const {userId} = this.jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
         if (!userId) {
             res.sendStatus(HttpStatuses.Unauthorized_401)
             return;

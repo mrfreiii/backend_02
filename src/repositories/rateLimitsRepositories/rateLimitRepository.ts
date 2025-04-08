@@ -9,13 +9,13 @@ export class RateLimitRepository {
         return RateLimitModel.collection.drop();
     }
 
-    static async addNewRequest(
+    async addNewRequest(
         newRequest: RateLimitDbType
     ): Promise<RateLimitDbType> {
         return RateLimitModel.create(newRequest);
     }
 
-    static async getRequestCount(parametersForSearch: RateLimitDbType): Promise<number> {
+    async getRequestCount(parametersForSearch: RateLimitDbType): Promise<number> {
         const filter = {
             url: parametersForSearch.url,
             ip: parametersForSearch.ip,
