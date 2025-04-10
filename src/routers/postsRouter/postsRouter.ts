@@ -45,7 +45,10 @@ postsRouter
 
 postsRouter
     .route("/:postId/comments")
-    .get(postsController.getCommentsByPostId.bind(postsController))
+    .get(
+        jwtAuthMiddleware(false),
+        // @ts-ignore
+        postsController.getCommentsByPostId.bind(postsController))
     .post(
         jwtAuthMiddleware(),
         commentContentValidator,
