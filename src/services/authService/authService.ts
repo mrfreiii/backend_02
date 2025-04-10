@@ -30,7 +30,7 @@ export class AuthService {
         })
         if (!user) {
             return {
-                status: ResultStatus.Unauthorized,
+                status: ResultStatus.Unauthorized_401,
                 errorMessage: "неверный логин или пароль",
                 extensions: [],
                 data: null,
@@ -45,7 +45,7 @@ export class AuthService {
 
         if (hashForValidation !== user.accountData.passwordHash) {
             return {
-                status: ResultStatus.Unauthorized,
+                status: ResultStatus.Unauthorized_401,
                 errorMessage: "неверный логин или пароль",
                 extensions: [],
                 data: null,
@@ -53,7 +53,7 @@ export class AuthService {
         }
 
         return {
-            status: ResultStatus.Success,
+            status: ResultStatus.Success_200,
             extensions: [],
             data: user,
         }
@@ -63,7 +63,7 @@ export class AuthService {
         const user = await this.usersRepository.getUserByConfirmationCode(code);
         if (!user) {
             return {
-                status: ResultStatus.BadRequest,
+                status: ResultStatus.BadRequest_400,
                 errorMessage: "неверный код",
                 extensions: [
                     {field: "code", message: "invalid confirmation code"}
@@ -74,7 +74,7 @@ export class AuthService {
 
         if (user.emailConfirmation.expirationDate! < new Date().getTime()) {
             return {
-                status: ResultStatus.BadRequest,
+                status: ResultStatus.BadRequest_400,
                 errorMessage: "время жизни кода истекло",
                 extensions: [
                     {field: "code", message: "code expired"}
@@ -85,7 +85,7 @@ export class AuthService {
 
         if (user.emailConfirmation.confirmationStatus === "confirmed") {
             return {
-                status: ResultStatus.BadRequest,
+                status: ResultStatus.BadRequest_400,
                 errorMessage: "пользователь уже подтвержден",
                 extensions: [
                     {field: "code", message: "code already confirmed"}
@@ -97,7 +97,7 @@ export class AuthService {
         const isStatusUpdated = this.usersRepository.updateUserConfirmationStatus(user._id);
         if (!isStatusUpdated) {
             return {
-                status: ResultStatus.ServerError,
+                status: ResultStatus.ServerError_500,
                 errorMessage: "не удалось обновить статус регистрации",
                 extensions: [
                     {field: "code", message: "failed updating confirmation status"}
@@ -107,7 +107,7 @@ export class AuthService {
         }
 
         return {
-            status: ResultStatus.Success,
+            status: ResultStatus.Success_200,
             extensions: [],
             data: null,
         };
@@ -125,7 +125,7 @@ export class AuthService {
         const user = await this.usersRepository.getUsersByEmailOrLogin({email});
         if (!user) {
             return {
-                status: ResultStatus.BadRequest,
+                status: ResultStatus.BadRequest_400,
                 errorMessage: "пользователь не найден",
                 extensions: [
                     {field: "email", message: "user not found"}
@@ -136,7 +136,7 @@ export class AuthService {
 
         if (user.emailConfirmation.confirmationStatus === "confirmed") {
             return {
-                status: ResultStatus.BadRequest,
+                status: ResultStatus.BadRequest_400,
                 errorMessage: "пользователь уже подтверден",
                 extensions: [
                     {field: "email", message: "user already confirmed"}
@@ -164,7 +164,7 @@ export class AuthService {
         });
         if (!isUpdated) {
             return {
-                status: ResultStatus.ServerError,
+                status: ResultStatus.ServerError_500,
                 errorMessage: "не удалось обновить пользователя",
                 extensions: [
                     {field: "email", message: "user confirmation update failed"}
@@ -182,7 +182,7 @@ export class AuthService {
         })
 
         return {
-            status: ResultStatus.Success,
+            status: ResultStatus.Success_200,
             extensions: [],
             data: null,
         };
@@ -236,7 +236,7 @@ export class AuthService {
         const user = await this.usersRepository.getUserByPasswordRecoveryCode(recoveryCode);
         if (!user) {
             return {
-                status: ResultStatus.BadRequest,
+                status: ResultStatus.BadRequest_400,
                 errorMessage: "код не найден",
                 extensions: [
                     {field: "recoveryCode", message: "code not found"}
@@ -247,7 +247,7 @@ export class AuthService {
 
         if (user.passwordRecovery!.expirationDate < new Date().getTime()) {
             return {
-                status: ResultStatus.BadRequest,
+                status: ResultStatus.BadRequest_400,
                 errorMessage: "время жизни кода истекло",
                 extensions: [
                     {field: "recoveryCode", message: "code expired"}
@@ -266,7 +266,7 @@ export class AuthService {
         });
         if (!isHashUpdated) {
             return {
-                status: ResultStatus.ServerError,
+                status: ResultStatus.ServerError_500,
                 errorMessage: "не удалось обновить пароль",
                 extensions: [
                     {field: "code", message: "failed updating user password"}
@@ -276,7 +276,7 @@ export class AuthService {
         }
 
         return {
-            status: ResultStatus.Success,
+            status: ResultStatus.Success_200,
             extensions: [],
             data: null,
         };

@@ -28,7 +28,7 @@ export class AuthController {
         const {loginOrEmail, password} = req.body;
         const result = await this.authService.checkCredentials({loginOrEmail, password});
 
-        if (result.status !== ResultStatus.Success) {
+        if (result.status !== ResultStatus.Success_200) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
@@ -38,7 +38,7 @@ export class AuthController {
         const ip = req.ip;
 
         const tokensResult = await this.jwtService.createJWT({userId, userAgent, ip});
-        if (tokensResult.status !== ResultStatus.Success) {
+        if (tokensResult.status !== ResultStatus.Success_200) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
@@ -65,7 +65,7 @@ export class AuthController {
 
         const tokensResult = await this.jwtService.updateJWT({refreshToken, userAgent, ip});
 
-        if (tokensResult.status !== ResultStatus.Success) {
+        if (tokensResult.status !== ResultStatus.Success_200) {
             res.sendStatus(resultCodeToHttpException(tokensResult.status))
             return;
         }
@@ -90,7 +90,7 @@ export class AuthController {
 
         const result = await this.jwtService.revokeRefreshToken(refreshToken);
 
-        if (result.status !== ResultStatus.Success) {
+        if (result.status !== ResultStatus.Success_200) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
@@ -123,7 +123,7 @@ export class AuthController {
             currentURL: `${req.protocol + "://" + req.get("host")}`
         });
 
-        if (result.status !== ResultStatus.Success) {
+        if (result.status !== ResultStatus.Success_200) {
             res
                 .status(resultCodeToHttpException(result.status))
                 .json({
@@ -138,7 +138,7 @@ export class AuthController {
     async confirmRegistration (req: ConfirmRegistrationReqType, res: Response) {
         const result = await this.authService.confirmRegistration(req.body.code);
 
-        if (result.status !== ResultStatus.Success) {
+        if (result.status !== ResultStatus.Success_200) {
             res
                 .status(resultCodeToHttpException(result.status))
                 .json({
@@ -156,7 +156,7 @@ export class AuthController {
             currentURL: `${req.protocol + "://" + req.get("host")}`
         });
 
-        if (result.status !== ResultStatus.Success) {
+        if (result.status !== ResultStatus.Success_200) {
             res
                 .status(resultCodeToHttpException(result.status))
                 .json({
@@ -183,7 +183,7 @@ export class AuthController {
             recoveryCode: req.body.recoveryCode,
         });
 
-        if (result.status !== ResultStatus.Success) {
+        if (result.status !== ResultStatus.Success_200) {
             res
                 .status(resultCodeToHttpException(result.status))
                 .json({

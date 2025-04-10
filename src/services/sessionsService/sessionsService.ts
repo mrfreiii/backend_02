@@ -11,10 +11,10 @@ export class SessionsService {
                 @inject(JwtService) private jwtService: JwtService) {}
 
     async deleteAllDevices(refreshToken: string): Promise<ResultType> {
-        const { userId, deviceId} = this.jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        const { userId, deviceId} = this.jwtService.verifyTokenAndParseIt(refreshToken) || {};
         if (!userId || !deviceId) {
             return {
-                status: ResultStatus.Unauthorized,
+                status: ResultStatus.Unauthorized_401,
                 extensions: [],
                 data: null,
             }
@@ -26,7 +26,7 @@ export class SessionsService {
         })
 
         return {
-            status: ResultStatus.Success,
+            status: ResultStatus.Success_200,
             extensions: [],
             data: null,
         }
@@ -40,10 +40,10 @@ export class SessionsService {
             deviceId: string;
             refreshToken: string;
         }): Promise<ResultType> {
-        const { userId, deviceId: deviceIdFromToken} = this.jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        const { userId, deviceId: deviceIdFromToken} = this.jwtService.verifyTokenAndParseIt(refreshToken) || {};
         if (!userId) {
             return {
-                status: ResultStatus.Unauthorized,
+                status: ResultStatus.Unauthorized_401,
                 extensions: [],
                 data: null,
             }
@@ -57,7 +57,7 @@ export class SessionsService {
         })
         if (!isCurrentSessionValid) {
             return {
-                status: ResultStatus.Unauthorized,
+                status: ResultStatus.Unauthorized_401,
                 extensions: [],
                 data: null,
             }
@@ -66,7 +66,7 @@ export class SessionsService {
         const deviceForDeletionInfo = await this.sessionsRepository.getSession({deviceId});
         if (!deviceForDeletionInfo) {
             return {
-                status: ResultStatus.NotFound,
+                status: ResultStatus.NotFound_404,
                 extensions: [],
                 data: null,
             }
@@ -74,7 +74,7 @@ export class SessionsService {
 
         if(userId !== deviceForDeletionInfo.userId){
             return {
-                status: ResultStatus.Forbidden,
+                status: ResultStatus.Forbidden_403,
                 extensions: [],
                 data: null,
             }
@@ -86,14 +86,14 @@ export class SessionsService {
         })
         if (!isSessionDeleted) {
             return {
-                status: ResultStatus.ServerError,
+                status: ResultStatus.ServerError_500,
                 extensions: [],
                 data: null,
             }
         }
 
         return {
-            status: ResultStatus.Success,
+            status: ResultStatus.Success_200,
             extensions: [],
             data: null,
         }

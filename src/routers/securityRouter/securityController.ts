@@ -28,7 +28,7 @@ export class SecurityController{
             return;
         }
 
-        const {userId} = this.jwtService.verifyRefreshTokenAndParseIt(refreshToken) || {};
+        const {userId} = this.jwtService.verifyTokenAndParseIt(refreshToken) || {};
         if (!userId) {
             res.sendStatus(HttpStatuses.Unauthorized_401)
             return;
@@ -48,7 +48,7 @@ export class SecurityController{
         }
 
         const result = await this.sessionsService.deleteAllDevices(refreshToken);
-        if (result.status !== ResultStatus.Success) {
+        if (result.status !== ResultStatus.Success_200) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
@@ -67,7 +67,7 @@ export class SecurityController{
             deviceId: req.params.deviceId,
             refreshToken
         });
-        if (result.status !== ResultStatus.Success) {
+        if (result.status !== ResultStatus.Success_200) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
