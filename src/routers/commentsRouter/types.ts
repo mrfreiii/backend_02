@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 
+import { LikeStatusEnum } from "../../repositories/likesRepositories/types";
 import { CommentViewType } from "../../repositories/commentsRepositories/types";
 
 export type CommentQueryType = {
@@ -15,3 +16,5 @@ export type GetCommentByIdResType = Response<CommentViewType>;
 export type UpdateCommentReqType = Request<{ id: string }, {}, { content: string }>;
 
 export type DeleteCommentReqType = Request<{ id: string }>;
+
+export type UpdateLikeStatusReqType = Request<{ id: string }, {}, { likeStatus: LikeStatusEnum }>;

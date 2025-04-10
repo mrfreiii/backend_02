@@ -14,5 +14,7 @@ const commentSchema = new mongoose.Schema<CommentDbType>({
         userLogin: { type: String, required: true },
     },
     createdAt: { type: String, required: true },
+    likesCount: { type: Number, required: true },
+    dislikesCount: { type: Number, required: true },
 })
 export const CommentModel = model<CommentDbType, CommentModel>(SETTINGS.PATH.COMMENTS, commentSchema)

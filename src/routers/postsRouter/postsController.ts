@@ -29,7 +29,8 @@ export class PostsController {
     constructor(@inject(PostsQueryRepository) private postsQueryRepository: PostsQueryRepository,
                 @inject(CommentsQueryRepository) private commentsQueryRepository: CommentsQueryRepository,
                 @inject(PostsService) private postsService: PostsService,
-                @inject(CommentsService) private commentsService: CommentsService) {}
+                @inject(CommentsService) private commentsService: CommentsService) {
+    }
 
     async getPosts(req: GetAllPostsReqType, res: GetAllPostsResType) {
         const parsedQuery = parsePostsQueryParams(req.query)
@@ -118,12 +119,15 @@ export class PostsController {
             },
             postId: req.params.postId,
         });
-        if (result.status !== ResultStatus.Success) {
+        if (result.status !== ResultStatus.Success_200) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
 
-        const createdComment = await this.commentsQueryRepository.getCommentById(result.data!);
+        const createdComment = await this.commentsQueryRepository.getCommentById({
+            commentId: result.data!,
+            userId: req.user?.id
+        });
         if (!createdComment) {
             res.sendStatus(HttpStatuses.ServerError_500);
             return;
@@ -144,7 +148,8 @@ export class PostsController {
         const parsedQuery = parseCommentsQueryParams(req.query)
         const allComments = await this.commentsQueryRepository.getAllComments({
             parsedQuery,
-            postId: req.params.postId
+            postId: req.params.postId,
+            userId: req.user?.id
         });
 
         if (!allComments) {

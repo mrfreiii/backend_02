@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 
 import { ioc } from "../../composition-root";
 import { BlogsRepository } from "../../repositories/blogsRepositories";
+import { LikesRepository } from "../../repositories/likesRepositories";
 import { PostsRepository } from "../../repositories/postsRepositories";
 import { UsersRepository } from "../../repositories/usersRepositories";
 import { CommentsRepository } from "../../repositories/commentsRepositories";
@@ -19,6 +20,7 @@ export class TestingController {
             const isSessionsDeleted = await ioc.get(SessionsRepository).clearDB();
             const isCommentsDeleted = await ioc.get(CommentsRepository).clearDB();
             const isRateLimitDeleted = await ioc.get(RateLimitRepository).clearDB();
+            const isLikesDeleted = await ioc.get(LikesRepository).clearDB();
 
             if (
                 !isBlogsDeleted ||
@@ -26,7 +28,8 @@ export class TestingController {
                 !isUsersDeleted ||
                 !isSessionsDeleted ||
                 !isCommentsDeleted ||
-                !isRateLimitDeleted
+                !isRateLimitDeleted ||
+                !isLikesDeleted
             ) {
                 res.sendStatus(599)
                 return;

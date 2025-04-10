@@ -19,13 +19,13 @@ export class CommentsRepository {
         }
     }
 
-    async updateComment(dto: {id: string; content: string}): Promise<boolean> {
-        const { id, content } = dto;
+    async updateComment(dto: { id: string; comment: Partial<CommentDbType> }): Promise<boolean> {
+        const {id, comment} = dto;
 
         try {
             const result = await CommentModel.updateOne(
                 {_id: new ObjectId(id)},
-                {$set: {content}}
+                {$set: comment}
             );
 
             return result.matchedCount === 1;
@@ -40,6 +40,14 @@ export class CommentsRepository {
             return result.deletedCount === 1;
         } catch {
             return false;
+        }
+    }
+
+    async getCommentById(id: string): Promise<CommentDbType | null> {
+        try{
+            return CommentModel.findOne({_id: new ObjectId(id)});
+        } catch {
+            return null;
         }
     }
 }

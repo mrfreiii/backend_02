@@ -5,7 +5,8 @@ import {
     DeleteCommentReqType,
     GetCommentByIdReqType,
     GetCommentByIdResType,
-    UpdateCommentReqType
+    UpdateCommentReqType,
+    UpdateLikeStatusReqType
 } from "./types";
 import { HttpStatuses } from "../types";
 import { ResultStatus } from "../../services/types";
@@ -16,10 +17,14 @@ import { CommentsQueryRepository } from "../../repositories/commentsRepositories
 @injectable()
 export class CommentsController {
     constructor(@inject(CommentsQueryRepository) private commentsQueryRepository: CommentsQueryRepository,
-                @inject(CommentsService) private commentsService: CommentsService) {}
+                @inject(CommentsService) private commentsService: CommentsService) {
+    }
 
     async getCommentById(req: GetCommentByIdReqType, res: GetCommentByIdResType) {
-        const comment = await this.commentsQueryRepository.getCommentById(req.params.id);
+        const comment = await this.commentsQueryRepository.getCommentById({
+            commentId:req.params.id,
+            userId: req.user?.id!, // user can be not authorized
+        });
 
         if (!comment) {
             res.sendStatus(HttpStatuses.NotFound_404);
@@ -32,7 +37,10 @@ export class CommentsController {
     }
 
     async updateComment(req: UpdateCommentReqType, res: Response) {
-        const comment = await this.commentsQueryRepository.getCommentById(req.params.id);
+        const comment = await this.commentsQueryRepository.getCommentById({
+            commentId: req.params.id,
+            userId: req.user?.id,
+        });
         if (!comment) {
             res.sendStatus(HttpStatuses.NotFound_404)
             return;
@@ -48,7 +56,7 @@ export class CommentsController {
             content: req.body.content.trim(),
         });
 
-        if (result.status !== ResultStatus.Success) {
+        if (result.status !== ResultStatus.Success_200) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
@@ -57,7 +65,10 @@ export class CommentsController {
     }
 
     async deleteComment(req: DeleteCommentReqType, res: Response) {
-        const comment = await this.commentsQueryRepository.getCommentById(req.params.id);
+        const comment = await this.commentsQueryRepository.getCommentById({
+            commentId: req.params.id,
+            userId: req.user?.id,
+        });
         if (!comment) {
             res.sendStatus(HttpStatuses.NotFound_404)
             return;
@@ -70,7 +81,23 @@ export class CommentsController {
 
         const result = await this.commentsService.deleteComment(req.params.id);
 
-        if (result.status !== ResultStatus.Success) {
+        if (result.status !== ResultStatus.Success_200) {
+            res.sendStatus(resultCodeToHttpException(result.status))
+            return;
+        }
+
+        res.sendStatus(HttpStatuses.NoContent_204)
+    }
+
+
+    async updateCommentLikeStatus(req: UpdateLikeStatusReqType, res: Response) {
+        const result = await this.commentsService.updateCommentLikeStatus({
+            commentId: req.params.id,
+            newLikeStatus: req.body.likeStatus,
+            userId: req.user?.id!,
+        });
+
+        if (result.status !== ResultStatus.Success_200) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }

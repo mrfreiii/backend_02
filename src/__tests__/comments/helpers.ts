@@ -3,7 +3,10 @@ import { SETTINGS } from "../../settings";
 import { createTestPosts } from "../posts/helpers";
 import { createTestBlogs } from "../blogs/helpers";
 import { createTestUsers, getUsersJwtTokens } from "../users/helpers";
-import { CommentViewType } from "../../repositories/commentsRepositories/types";
+import {
+    CommentDbType,
+    CommentViewType
+} from "../../repositories/commentsRepositories/types";
 
 
 export const createTestComments = async (count: number = 1): Promise<{ comments: CommentViewType[], createdPostId: string, userToken: string }> => {
@@ -16,7 +19,7 @@ export const createTestComments = async (count: number = 1): Promise<{ comments:
     const createdPost = (await createTestPosts({blogId: createdBlog.id}))[0];
 
     for (let i = 0; i < count; i++) {
-        const comment: Omit<CommentViewType, "id" | "createdAt"> = {
+        const comment: Omit<CommentDbType, "postId" | "likesCount" | "dislikesCount" | "createdAt"> = {
             content: `comment content is ${i + 1}`,
             commentatorInfo: {
                 userId: createdUser.id,

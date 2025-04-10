@@ -13,6 +13,7 @@ import { CommentsRepository } from "../repositories/commentsRepositories";
 import { SessionsRepository } from "../repositories/sessionsRepositories";
 import { RateLimitRepository } from "../repositories/rateLimitsRepositories";
 import { NodemailerService } from "../services/nodemailerService/nodemailerService";
+import { LikesRepository } from "../repositories/likesRepositories";
 
 export const req = agent(app);
 
@@ -37,6 +38,7 @@ export const connectToTestDBAndClearRepositories = () => {
         await ioc.get(SessionsRepository).clearDB();
         await ioc.get(CommentsRepository).clearDB();
         await ioc.get(RateLimitRepository).clearDB();
+        await ioc.get(LikesRepository).clearDB();
         req.set("Authorization", "");
 
         nodemailerTestService.sendEmailWithConfirmationCode = jest

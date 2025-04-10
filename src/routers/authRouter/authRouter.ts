@@ -43,7 +43,7 @@ authRouter
 authRouter
     .route("/me")
     .get(
-        jwtAuthMiddleware,
+        jwtAuthMiddleware(),
         authController.getUserInfo.bind(authController));
 
 authRouter

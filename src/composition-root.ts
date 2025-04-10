@@ -27,6 +27,7 @@ import {
     SessionQueryRepository,
     SessionsRepository
 } from "./repositories/sessionsRepositories";
+import { LikesRepository } from "./repositories/likesRepositories";
 import { RateLimitRepository } from "./repositories/rateLimitsRepositories";
 import { PostsQueryRepository, PostsRepository } from "./repositories/postsRepositories";
 import { UsersQueryRepository, UsersRepository } from "./repositories/usersRepositories";
@@ -46,6 +47,7 @@ ioc.bind(CommentsQueryRepository).toSelf();
 ioc.bind(SessionsRepository).toSelf();
 ioc.bind(SessionQueryRepository).toSelf();
 ioc.bind(RateLimitRepository).toSelf();
+ioc.bind(LikesRepository).toSelf();
 
 // Services
 ioc.bind(UsersService).toSelf();

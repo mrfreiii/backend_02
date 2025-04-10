@@ -335,7 +335,7 @@ describe("create comment by post id /posts", () => {
     let userToken: string;
     let createdPost: PostViewType;
 
-    beforeAll(async ()=>{
+    beforeAll(async () => {
         createdUser = (await createTestUsers({}))[0];
         userToken = (await getUsersJwtTokens([createdUser]))[0];
 
@@ -430,6 +430,11 @@ describe("create comment by post id /posts", () => {
                 },
                 id: expect.any(String),
                 createdAt: expect.any(String),
+                likesInfo: {
+                    dislikesCount: 0,
+                    likesCount: 0,
+                    myStatus: "None",
+                },
             }
         );
     })

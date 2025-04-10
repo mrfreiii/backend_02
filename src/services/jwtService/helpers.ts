@@ -10,7 +10,7 @@ export const createAccessToken = (userId: string): string => {
         iat: new Date().getTime(),
     }
 
-    return jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "10s"});
+    return jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "5m"});
 }
 
 export const createRefreshToken = (
@@ -27,7 +27,7 @@ export const createRefreshToken = (
         iat: new Date().getTime(),
     }
 
-    return jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "20s"});
+    return jwt.sign(payload, SETTINGS.JWT_SECRET, {expiresIn: "24h"});
 }
 
 export const getDeviceTitle = (userAgent: string | undefined): string => {
