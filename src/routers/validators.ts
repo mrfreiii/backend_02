@@ -12,3 +12,16 @@ export const userPasswordValidator = body('password')
 export const userEmailValidator = body('email')
     .isString().withMessage("value must be a string")
     .isEmail().withMessage("value must be email")
+
+export const likeStatusValidator = body('likeStatus')
+    .isString().withMessage("value must be a string")
+    .custom(async (likeStatus)=>{
+        try{
+            const availableStatuses = ["None", "Like", "Dislike"];
+            if(!availableStatuses.includes(likeStatus)){
+                return Promise.reject();
+            }
+        } catch {
+            return Promise.reject();
+        }
+    }).withMessage("status must None, Like, or Dislike")

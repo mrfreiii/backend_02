@@ -7,6 +7,8 @@ type LikeModel = Model<LikeDbType>;
 const likeSchema = new mongoose.Schema<LikeDbType>({
     status: { type: String, enum: LikeStatusEnum, required: true },
     userId: { type: String, required: true },
+    userLogin: { type: String, required: true },
     entityId: { type: String, required: true },
+    addedAt: { type: Number, required: true },
 })
 export const LikeModel = model<LikeDbType, LikeModel>("likes", likeSchema)

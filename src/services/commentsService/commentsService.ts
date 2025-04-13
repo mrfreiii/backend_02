@@ -5,10 +5,12 @@ import { LikeStatusEnum } from "../../repositories/likesRepositories/types";
 import { CommentDbType } from "../../repositories/commentsRepositories/types";
 import { LikesRepository } from "../../repositories/likesRepositories";
 import { CommentsRepository } from "../../repositories/commentsRepositories";
+import { UsersRepository } from "../../repositories/usersRepositories";
 
 @injectable()
 export class CommentsService {
     constructor(@inject(CommentsRepository) private commentsRepository: CommentsRepository,
+                @inject(UsersRepository) private usersRepository: UsersRepository,
                 @inject(LikesRepository) private likesRepository: LikesRepository) {
     }
 
@@ -34,7 +36,7 @@ export class CommentsService {
         const createdCommentId = await this.commentsRepository.addNewComment(newComment);
         if (!createdCommentId) {
             return {
-                status: ResultStatus.ServerError_500,
+                status: ResultStatus.ServerError,
                 errorMessage: "не удалось создать пост",
                 extensions: [],
                 data: null,
@@ -42,7 +44,7 @@ export class CommentsService {
         }
 
         return {
-            status: ResultStatus.Success_200,
+            status: ResultStatus.Success,
             extensions: [],
             data: createdCommentId,
         }
@@ -63,7 +65,7 @@ export class CommentsService {
 
         if (!isUpdated) {
             return {
-                status: ResultStatus.ServerError_500,
+                status: ResultStatus.ServerError,
                 errorMessage: "не удалось обновить комментарий",
                 extensions: [],
                 data: null,
@@ -71,7 +73,7 @@ export class CommentsService {
         }
 
         return {
-            status: ResultStatus.Success_200,
+            status: ResultStatus.Success,
             extensions: [],
             data: true,
         }
@@ -82,7 +84,7 @@ export class CommentsService {
 
         if (!isDeleted) {
             return {
-                status: ResultStatus.ServerError_500,
+                status: ResultStatus.ServerError,
                 errorMessage: "не удалось удалить комментарий",
                 extensions: [],
                 data: null,
@@ -90,7 +92,7 @@ export class CommentsService {
         }
 
         return {
-            status: ResultStatus.Success_200,
+            status: ResultStatus.Success,
             extensions: [],
             data: true,
         }
@@ -106,7 +108,7 @@ export class CommentsService {
         const comment = await this.commentsRepository.getCommentById(commentId);
         if (!comment) {
             return {
-                status: ResultStatus.NotFound_404,
+                status: ResultStatus.NotFound,
                 errorMessage: "Комментарий не найден",
                 extensions: [],
                 data: null,
@@ -118,15 +120,19 @@ export class CommentsService {
             entityId: commentId
         })
 
+        const user = await this.usersRepository.getUserById(userId);
+
         if (!currentLike && newLikeStatus !== LikeStatusEnum.None) {
             const newLikeId = await this.likesRepository.addLike({
                 status: newLikeStatus,
                 userId,
+                userLogin: user?.accountData?.login || "unknown",
                 entityId: commentId,
+                addedAt: new Date().getTime(),
             })
             if (!newLikeId) {
                 return {
-                    status: ResultStatus.ServerError_500,
+                    status: ResultStatus.ServerError,
                     errorMessage: "Не удалось добавить лайк",
                     extensions: [],
                     data: null,
@@ -141,7 +147,7 @@ export class CommentsService {
             })
             if (!isUpdated) {
                 return {
-                    status: ResultStatus.ServerError_500,
+                    status: ResultStatus.ServerError,
                     errorMessage: "Не удалось добавить лайк",
                     extensions: [],
                     data: null,
@@ -153,7 +159,7 @@ export class CommentsService {
             const isDeleted = await this.likesRepository.deleteLike(currentLike._id)
             if (!isDeleted) {
                 return {
-                    status: ResultStatus.ServerError_500,
+                    status: ResultStatus.ServerError,
                     errorMessage: "Не удалось добавить лайк",
                     extensions: [],
                     data: null,
@@ -205,7 +211,7 @@ export class CommentsService {
         });
         if (!isUpdated) {
             return {
-                status: ResultStatus.ServerError_500,
+                status: ResultStatus.ServerError,
                 errorMessage: "не удалось обновить лайки",
                 extensions: [],
                 data: null,
@@ -213,7 +219,7 @@ export class CommentsService {
         }
 
         return {
-            status: ResultStatus.Success_200,
+            status: ResultStatus.Success,
             extensions: [],
             data: null,
         }

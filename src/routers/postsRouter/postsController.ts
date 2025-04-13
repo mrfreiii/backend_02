@@ -13,6 +13,7 @@ import {
     GetCommentsByPostIdResType,
     GetPostByIdReqType,
     GetPostByIdResType,
+    UpdatePostLikeStatusReqType,
     UpdatePostReqType
 } from "./types";
 import { HttpStatuses } from "../types";
@@ -34,7 +35,10 @@ export class PostsController {
 
     async getPosts(req: GetAllPostsReqType, res: GetAllPostsResType) {
         const parsedQuery = parsePostsQueryParams(req.query)
-        const allPosts = await this.postsQueryRepository.getAllPosts({parsedQuery});
+        const allPosts = await this.postsQueryRepository.getAllPosts({
+            userId: req.user?.id,
+            parsedQuery: parsedQuery,
+        });
 
         res
             .status(200)
@@ -42,7 +46,10 @@ export class PostsController {
     }
 
     async getPostById(req: GetPostByIdReqType, res: GetPostByIdResType) {
-        const foundPost = await this.postsQueryRepository.getPostById(req.params.id);
+        const foundPost = await this.postsQueryRepository.getPostById({
+            userId: req.user?.id,
+            postId: req.params.id,
+        });
 
         if (!foundPost) {
             res.sendStatus(404);
@@ -66,7 +73,10 @@ export class PostsController {
             return;
         }
 
-        const createdPost = await this.postsQueryRepository.getPostById(createdPostId);
+        const createdPost = await this.postsQueryRepository.getPostById({
+            userId: req.user?.id,
+            postId: createdPostId
+        });
         if (!createdPost) {
             res.sendStatus(599);
             return;
@@ -79,7 +89,7 @@ export class PostsController {
 
     async updatePost(req: UpdatePostReqType, res: Response) {
         const isUpdated = await this.postsService.updatePost({
-            id: req.params.id,
+            postId: req.params.id,
             title: req.body.title,
             shortDescription: req.body.shortDescription,
             content: req.body.content,
@@ -105,7 +115,10 @@ export class PostsController {
     }
 
     async createCommentByPostId(req: AddCommentByPostIdReqType, res: AddCommentByPostIdResType) {
-        const post = await this.postsQueryRepository.getPostById(req.params.postId);
+        const post = await this.postsQueryRepository.getPostById({
+            userId: req.user?.id,
+            postId: req.params.postId,
+        });
         if (!post) {
             res.sendStatus(HttpStatuses.NotFound_404)
             return;
@@ -119,7 +132,7 @@ export class PostsController {
             },
             postId: req.params.postId,
         });
-        if (result.status !== ResultStatus.Success_200) {
+        if (result.status !== ResultStatus.Success) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
@@ -139,7 +152,10 @@ export class PostsController {
     }
 
     async getCommentsByPostId(req: GetCommentsByPostIdReqType, res: GetCommentsByPostIdResType) {
-        const post = await this.postsQueryRepository.getPostById(req.params.postId);
+        const post = await this.postsQueryRepository.getPostById({
+            userId: req.user?.id,
+            postId: req.params.postId,
+        });
         if (!post) {
             res.sendStatus(HttpStatuses.NotFound_404);
             return;
@@ -160,5 +176,20 @@ export class PostsController {
         res
             .status(HttpStatuses.Success_200)
             .json(allComments);
+    }
+
+    async updatePostLikeStatus(req: UpdatePostLikeStatusReqType, res: Response) {
+        const result = await this.postsService.updatePostLikeStatus({
+            postId: req.params.postId,
+            newLikeStatus: req.body.likeStatus,
+            userId: req.user?.id!,
+        });
+
+        if (result.status !== ResultStatus.Success) {
+            res.sendStatus(resultCodeToHttpException(result.status))
+            return;
+        }
+
+        res.sendStatus(HttpStatuses.NoContent_204)
     }
 }

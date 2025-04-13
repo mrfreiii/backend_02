@@ -12,6 +12,7 @@ import {
 } from "../postsRouter/validators";
 import { ioc } from "../../composition-root";
 import { BlogsController } from "./blogsController";
+import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
 import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
@@ -45,7 +46,10 @@ blogsRouter
 
 blogsRouter
     .route("/:blogId/posts")
-    .get(blogsController.getPostsByBlogId.bind(blogsController))
+    .get(
+        jwtAuthMiddleware(false),
+        // @ts-expect-error
+        blogsController.getPostsByBlogId.bind(blogsController))
     .post(
         basicAuthMiddleware,
         postTitleValidator,

@@ -53,4 +53,15 @@ export class LikesRepository {
 
         return result.deletedCount === 1;
     }
+
+    async getLastThreeLikesForEntity(entityId: string): Promise<WithId<LikeDbType>[] | null> {
+        return LikeModel
+            .find({
+                entityId,
+                status: LikeStatusEnum.Like,
+            })
+            .sort({addedAt: "desc"})
+            .limit(3)
+            .lean();
+    }
 }

@@ -1,9 +1,10 @@
 import { Router } from "express";
 
 import { ioc } from "../../composition-root";
+import { likeStatusValidator } from "../validators";
+import { commentContentValidator } from "./validators";
 import { CommentsController } from "./commentsController";
 import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
-import { commentContentValidator, likeStatusValidator } from "./validators";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
 
 export const commentsRouter = Router();

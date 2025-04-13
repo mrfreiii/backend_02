@@ -152,4 +152,12 @@ export class UsersRepository {
             return false;
         }
     }
+
+    async getUserById(id: string): Promise<UserDbType | null> {
+        try {
+            return UserModel.findOne({_id: new ObjectId(id)});
+        } catch {
+            return null;
+        }
+    }
 }

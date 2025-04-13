@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { injectable } from "inversify";
 
-import { PostDbType, PostViewType } from "./types";
+import { PostDbType } from "./types";
 import { PostModel } from "../../models/postModel/post.entity";
 
 @injectable()
@@ -21,12 +21,12 @@ export class PostsRepository {
         }
     }
 
-    async updatePost(dto: Omit<PostViewType, "createdAt">): Promise<boolean> {
-        const {id, ...updatedPost} = dto;
+    async updatePost(dto: {postId: string; updatedPost: Partial<PostDbType>}): Promise<boolean> {
+        const {postId, updatedPost} = dto;
 
         try {
             const result = await PostModel.updateOne(
-                {_id: new ObjectId(id)},
+                {_id: new ObjectId(postId)},
                 {$set: updatedPost}
             );
 
@@ -42,6 +42,14 @@ export class PostsRepository {
             return result.deletedCount === 1;
         } catch {
             return false;
+        }
+    }
+
+    async getPostById(id: string): Promise<PostDbType | null> {
+        try {
+           return PostModel.findOne({_id: new ObjectId(id)});
+        } catch {
+            return null;
         }
     }
 }

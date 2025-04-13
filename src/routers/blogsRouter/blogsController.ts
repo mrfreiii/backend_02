@@ -27,7 +27,8 @@ export class BlogsController {
     constructor(@inject(BlogsQueryRepository) private blogsQueryRepository: BlogsQueryRepository,
                 @inject(PostsQueryRepository) private postsQueryRepository: PostsQueryRepository,
                 @inject(BlogsService) private blogsService: BlogsService,
-                @inject(PostsService) private postsService: PostsService) {}
+                @inject(PostsService) private postsService: PostsService) {
+    }
 
     async getBlogs(req: GetAllBlogsReqType, res: GetAllBlogsResType) {
         const parsedQuery = parseBlogsQueryParams(req.query);
@@ -59,7 +60,11 @@ export class BlogsController {
         }
 
         const parsedQuery = parsePostsQueryParams(req.query);
-        const allPosts = await this.postsQueryRepository.getAllPosts({parsedQuery, blogId: req.params.blogId});
+        const allPosts = await this.postsQueryRepository.getAllPosts({
+            userId: req.user?.id,
+            parsedQuery,
+            blogId: req.params.blogId
+        });
 
         if (!allPosts) {
             res.sendStatus(HttpStatuses.ServerError_500);
@@ -102,7 +107,10 @@ export class BlogsController {
             return;
         }
 
-        const createdPost = await this.postsQueryRepository.getPostById(createdPostId);
+        const createdPost = await this.postsQueryRepository.getPostById({
+            userId: req.user?.id,
+            postId: createdPostId
+        });
         if (!createdPost) {
             res.sendStatus(599);
             return;

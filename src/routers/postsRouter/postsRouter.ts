@@ -12,13 +12,17 @@ import { commentContentValidator } from "../commentsRouter/validators";
 import { jwtAuthMiddleware } from "../../middlewares/jwtAuthMiddleware";
 import { basicAuthMiddleware } from "../../middlewares/basicAuthMiddleware";
 import { errorResultMiddleware } from "../../middlewares/errorResultMiddleware";
+import { likeStatusValidator } from "../validators";
 
 export const postsRouter = Router();
 const postsController = ioc.get(PostsController)
 
 postsRouter
     .route("/")
-    .get(postsController.getPosts.bind(postsController))
+    .get(
+        jwtAuthMiddleware(false),
+        // @ts-expect-error
+        postsController.getPosts.bind(postsController))
     .post(
         basicAuthMiddleware,
         postTitleValidator,
@@ -30,7 +34,9 @@ postsRouter
 
 postsRouter
     .route("/:id")
-    .get(postsController.getPostById.bind(postsController))
+    .get(
+        jwtAuthMiddleware(false),
+        postsController.getPostById.bind(postsController))
     .put(
         basicAuthMiddleware,
         postTitleValidator,
@@ -54,3 +60,11 @@ postsRouter
         commentContentValidator,
         errorResultMiddleware,
         postsController.createCommentByPostId.bind(postsController))
+
+postsRouter
+    .route("/:postId/like-status")
+    .put(
+        jwtAuthMiddleware(),
+        likeStatusValidator,
+        errorResultMiddleware,
+        postsController.updatePostLikeStatus.bind(postsController))

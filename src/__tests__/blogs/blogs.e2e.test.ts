@@ -348,7 +348,7 @@ describe("create post by blogId /blogs", () => {
     connectToTestDBAndClearRepositories();
 
     it("should return 404 for non existent blog", async () => {
-        const newPost: Omit<PostViewType, "id" | "createdAt" | "blogId"> = {
+        const newPost: Omit<PostViewType, "id" | "createdAt" | "blogId" | "extendedLikesInfo"> = {
             title: "title1",
             shortDescription: "shortDescription1",
             content: "content1",
@@ -365,7 +365,7 @@ describe("create post by blogId /blogs", () => {
     it("should create a post", async () => {
         const createdBlog = (await createTestBlogs())[0];
 
-        const newPost: Omit<PostViewType, "id" | "createdAt" | "blogName" | "blogId"> = {
+        const newPost: Omit<PostViewType, "id" | "createdAt" | "blogName" | "blogId" | "extendedLikesInfo"> = {
             title: "title1",
             shortDescription: "shortDescription1",
             content: "content1",
@@ -383,7 +383,13 @@ describe("create post by blogId /blogs", () => {
                 id: expect.any(String),
                 blogId: createdBlog?.id,
                 blogName: createdBlog?.name,
-                createdAt: expect.any(String)
+                createdAt: expect.any(String),
+                extendedLikesInfo: {
+                    dislikesCount: 0,
+                    likesCount: 0,
+                    myStatus: "None",
+                    newestLikes: [],
+                },
             }
         );
     })

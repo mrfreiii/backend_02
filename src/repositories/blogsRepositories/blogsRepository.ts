@@ -42,4 +42,12 @@ export class BlogsRepository {
             return false;
         }
     }
+
+    async getBlogById(id: string): Promise<BlogDbType | null> {
+        try {
+            return BlogModel.findOne({_id: new ObjectId(id)});
+        } catch {
+            return null;
+        }
+    }
 }

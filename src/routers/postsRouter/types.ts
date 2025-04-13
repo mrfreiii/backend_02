@@ -4,6 +4,7 @@ import { WithPaginationType } from "../../types";
 import { CommentQueryType } from "../commentsRouter/types";
 import { PostViewType } from "../../repositories/postsRepositories/types";
 import { CommentViewType } from "../../repositories/commentsRepositories/types";
+import { LikeStatusEnum } from "../../repositories/likesRepositories/types";
 
 export type PostQueryType = {
     sortBy: string;
@@ -30,3 +31,5 @@ export type AddCommentByPostIdResType = Response<CommentViewType>;
 
 export type GetCommentsByPostIdReqType = Request<{ postId: string }, {}, {}, CommentQueryType>;
 export type GetCommentsByPostIdResType = Response<WithPaginationType<CommentViewType>>;
+
+export type UpdatePostLikeStatusReqType = Request<{postId: string}, {}, {likeStatus: LikeStatusEnum}>;
