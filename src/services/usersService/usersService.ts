@@ -28,7 +28,7 @@ export class UsersService {
         const anotherUserWithSameLogin = await this.usersRepository.getUsersByEmailOrLogin({login});
         if (anotherUserWithSameLogin) {
             return {
-                status: ResultStatus.BadRequest_400,
+                status: ResultStatus.BadRequest,
                 errorMessage: "пользователь с таких логином уже существует",
                 extensions: [
                     {field: "login", message: "login already exist"}
@@ -40,7 +40,7 @@ export class UsersService {
         const anotherUserWithSameEmail = await this.usersRepository.getUsersByEmailOrLogin({email});
         if (anotherUserWithSameEmail) {
             return {
-                status: ResultStatus.BadRequest_400,
+                status: ResultStatus.BadRequest,
                 errorMessage: "пользователь с такой почтой уже существует",
                 extensions: [
                     {field: "email", message: "email already exist"}
@@ -82,7 +82,7 @@ export class UsersService {
         }
 
         return {
-            status: ResultStatus.Success_200,
+            status: ResultStatus.Success,
             extensions: [],
             data: createdUserId,
         };

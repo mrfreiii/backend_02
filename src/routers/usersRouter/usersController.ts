@@ -36,7 +36,7 @@ export class UsersController {
             email: req.body.email.trim(),
         });
 
-        if (result.status !== ResultStatus.Success_200) {
+        if (result.status !== ResultStatus.Success) {
             res
                 .status(resultCodeToHttpException(result.status))
                 .json({

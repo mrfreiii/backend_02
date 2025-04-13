@@ -56,7 +56,7 @@ export class CommentsController {
             content: req.body.content.trim(),
         });
 
-        if (result.status !== ResultStatus.Success_200) {
+        if (result.status !== ResultStatus.Success) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
@@ -81,7 +81,7 @@ export class CommentsController {
 
         const result = await this.commentsService.deleteComment(req.params.id);
 
-        if (result.status !== ResultStatus.Success_200) {
+        if (result.status !== ResultStatus.Success) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
@@ -97,7 +97,7 @@ export class CommentsController {
             userId: req.user?.id!,
         });
 
-        if (result.status !== ResultStatus.Success_200) {
+        if (result.status !== ResultStatus.Success) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }

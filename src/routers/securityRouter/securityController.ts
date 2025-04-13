@@ -48,7 +48,7 @@ export class SecurityController{
         }
 
         const result = await this.sessionsService.deleteAllDevices(refreshToken);
-        if (result.status !== ResultStatus.Success_200) {
+        if (result.status !== ResultStatus.Success) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }
@@ -67,7 +67,7 @@ export class SecurityController{
             deviceId: req.params.deviceId,
             refreshToken
         });
-        if (result.status !== ResultStatus.Success_200) {
+        if (result.status !== ResultStatus.Success) {
             res.sendStatus(resultCodeToHttpException(result.status))
             return;
         }

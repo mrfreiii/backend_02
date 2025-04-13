@@ -47,14 +47,14 @@ export class JwtService{
         const sessionId = this.sessionsRepository.addNewSession(deviceData);
         if (!sessionId) {
             return {
-                status: ResultStatus.ServerError_500,
+                status: ResultStatus.ServerError,
                 extensions: [],
                 data: null,
             }
         }
 
         return {
-            status: ResultStatus.Success_200,
+            status: ResultStatus.Success,
             extensions: [],
             data: {
                 accessToken,
@@ -82,7 +82,7 @@ export class JwtService{
         } = this.verifyTokenAndParseIt(refreshToken) || {};
         if (!userId || !deviceId) {
             return {
-                status: ResultStatus.Unauthorized_401,
+                status: ResultStatus.Unauthorized,
                 extensions: [],
                 data: null,
             }
@@ -97,7 +97,7 @@ export class JwtService{
         })
         if (!currentSession) {
             return {
-                status: ResultStatus.Unauthorized_401,
+                status: ResultStatus.Unauthorized,
                 extensions: [],
                 data: null,
             }
@@ -127,14 +127,14 @@ export class JwtService{
         })
         if (!isSessionUpdated) {
             return {
-                status: ResultStatus.ServerError_500,
+                status: ResultStatus.ServerError,
                 extensions: [],
                 data: null,
             }
         }
 
         return {
-            status: ResultStatus.Success_200,
+            status: ResultStatus.Success,
             extensions: [],
             data: {
                 accessToken: newAccessToken,
@@ -147,7 +147,7 @@ export class JwtService{
         const {userId, deviceId} = this.verifyTokenAndParseIt(refreshToken) || {};
         if (!userId || !deviceId) {
             return {
-                status: ResultStatus.Unauthorized_401,
+                status: ResultStatus.Unauthorized,
                 extensions: [],
                 data: null,
             }
@@ -161,7 +161,7 @@ export class JwtService{
         })
         if (!isCurrentSessionValid) {
             return {
-                status: ResultStatus.Unauthorized_401,
+                status: ResultStatus.Unauthorized,
                 extensions: [],
                 data: null,
             }
@@ -173,14 +173,14 @@ export class JwtService{
         })
         if (!isSessionDeleted) {
             return {
-                status: ResultStatus.Unauthorized_401,
+                status: ResultStatus.Unauthorized,
                 extensions: [],
                 data: null,
             }
         }
 
         return {
-            status: ResultStatus.Success_200,
+            status: ResultStatus.Success,
             extensions: [],
             data: null,
         };

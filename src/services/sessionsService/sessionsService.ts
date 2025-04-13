@@ -14,7 +14,7 @@ export class SessionsService {
         const { userId, deviceId} = this.jwtService.verifyTokenAndParseIt(refreshToken) || {};
         if (!userId || !deviceId) {
             return {
-                status: ResultStatus.Unauthorized_401,
+                status: ResultStatus.Unauthorized,
                 extensions: [],
                 data: null,
             }
@@ -26,7 +26,7 @@ export class SessionsService {
         })
 
         return {
-            status: ResultStatus.Success_200,
+            status: ResultStatus.Success,
             extensions: [],
             data: null,
         }
@@ -43,7 +43,7 @@ export class SessionsService {
         const { userId, deviceId: deviceIdFromToken} = this.jwtService.verifyTokenAndParseIt(refreshToken) || {};
         if (!userId) {
             return {
-                status: ResultStatus.Unauthorized_401,
+                status: ResultStatus.Unauthorized,
                 extensions: [],
                 data: null,
             }
@@ -57,7 +57,7 @@ export class SessionsService {
         })
         if (!isCurrentSessionValid) {
             return {
-                status: ResultStatus.Unauthorized_401,
+                status: ResultStatus.Unauthorized,
                 extensions: [],
                 data: null,
             }
@@ -66,7 +66,7 @@ export class SessionsService {
         const deviceForDeletionInfo = await this.sessionsRepository.getSession({deviceId});
         if (!deviceForDeletionInfo) {
             return {
-                status: ResultStatus.NotFound_404,
+                status: ResultStatus.NotFound,
                 extensions: [],
                 data: null,
             }
@@ -74,7 +74,7 @@ export class SessionsService {
 
         if(userId !== deviceForDeletionInfo.userId){
             return {
-                status: ResultStatus.Forbidden_403,
+                status: ResultStatus.Forbidden,
                 extensions: [],
                 data: null,
             }
@@ -86,14 +86,14 @@ export class SessionsService {
         })
         if (!isSessionDeleted) {
             return {
-                status: ResultStatus.ServerError_500,
+                status: ResultStatus.ServerError,
                 extensions: [],
                 data: null,
             }
         }
 
         return {
-            status: ResultStatus.Success_200,
+            status: ResultStatus.Success,
             extensions: [],
             data: null,
         }
